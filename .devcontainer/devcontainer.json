@@ -1,0 +1,43 @@
+{
+  "name": "loco_retro",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:1-22-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "configureZshAsDefaultShell": true,
+      "username": "node"
+    },
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {}
+  },
+  "remoteUser": "node",
+  "mounts": [
+    // Per-project persisted volume for ~/.claude so auth + session history
+    // survive container rebuilds. Scoped per project via ${devcontainerId}.
+    "source=claude-code-config-${devcontainerId},target=/home/node/.claude,type=volume"
+  ],
+  "postCreateCommand": "sudo chown -R node:node /home/node/.claude && corepack enable && corepack prepare pnpm@latest --activate",
+  "forwardPorts": [5173, 4173],
+  "portsAttributes": {
+    "5173": { "label": "SvelteKit dev", "onAutoForward": "notify" },
+    "4173": { "label": "SvelteKit preview", "onAutoForward": "silent" }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "svelte.svelte-vscode",
+        "bradlc.vscode-tailwindcss",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "vitest.explorer",
+        "ms-playwright.playwright",
+        "anthropic.claude-code"
+      ]
+    }
+  }
+
+  // NOTE: Egress firewall is intentionally omitted for v1. To add it later,
+  // copy `.devcontainer/Dockerfile` and `.devcontainer/init-firewall.sh`
+  // from https://github.com/anthropics/claude-code (see the reference
+  // .devcontainer there) and switch this config from `image` to `build`.
+}

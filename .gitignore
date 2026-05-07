@@ -1,0 +1,50 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# SvelteKit / Vite build output
+.svelte-kit/
+build/
+dist/
+.vercel/
+.netlify/
+.cloudflare/
+.wrangler/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# Testing
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+playwright/.cache/
+blob-report/
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.swp
+
+# Claude Code — local-only state (commit shared config, ignore local overrides + transcripts)
+.claude/settings.local.json
+.claude/.credentials.json
+.claude/projects/
+.claude/todos/
+.claude/shell-snapshots/
+.claude/statsig/
+.claude/ide/
