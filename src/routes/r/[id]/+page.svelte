@@ -6,12 +6,12 @@
 		roomMetaStore,
 		columnsStore,
 		participantsStore,
-		type Participant
-	} from '$lib/roomStore';
+		type Participant,
+		type OpenRoom,
+		type RoomMetaSnapshot
+	} from '$lib/room';
 	import { getDisplayName, setDisplayName } from '$lib/displayName';
-	import type { OpenRoom } from '$lib/roomDoc';
 	import type { Column } from '$lib/templates';
-	import type { RoomMetaSnapshot } from '$lib/roomSeed';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();

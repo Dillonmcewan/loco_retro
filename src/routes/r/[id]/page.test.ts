@@ -10,9 +10,11 @@ const mockAwareness = {
 	off: vi.fn()
 };
 
-vi.mock('$lib/roomStore', async () => {
+vi.mock('$lib/room', async () => {
 	const { readable } = await import('svelte/store');
+	const actual = await vi.importActual<typeof import('$lib/room')>('$lib/room');
 	return {
+		...actual,
 		ensureRoom: vi.fn(() => ({
 			doc: {},
 			awareness: mockAwareness,

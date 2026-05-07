@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { generateRoomId } from '$lib/roomId';
-	import { ensureRoom } from '$lib/roomStore';
-	import { seedRoom } from '$lib/roomSeed';
+	import { generateRoomId, ensureRoom, seedRoom } from '$lib/room';
 	import { PRESET_TEMPLATES, DEFAULT_TEMPLATE_ID } from '$lib/templates';
 
 	let name = $state('');

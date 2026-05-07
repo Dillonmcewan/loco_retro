@@ -55,10 +55,7 @@ All files are new unless noted.
 **App code**
 
 - `src/lib/templates.ts` — exports the four preset templates as a typed const (id, label, ordered column titles).
-- `src/lib/roomId.ts` — `generateRoomId()` (thin wrapper around `crypto.randomUUID()`), plus a UUID-v4 validator used by the room route's load.
-- `src/lib/roomDoc.ts` — `openRoomDoc(id)` factory: creates/loads a `Y.Doc`, wires `y-indexeddb` persistence keyed by room id, opens a `y-websocket` provider against `VITE_RELAY_URL` (default `ws://localhost:1234`). Exports typed accessors for `meta` (room name, template id), `columns` (array of `{ id, title }`), and an `awareness` handle.
-- `src/lib/roomSeed.ts` — `seedRoom(doc, { name, templateId })` writes the room name and the template's columns into the doc *only if* the doc is empty (idempotent — joiners must not overwrite the facilitator's seed).
-- `src/lib/roomStore.ts` — session singleton (`ensureRoom`/`leaveRoom`) plus Svelte stores derived from a `Y.Doc`: `roomMeta`, `columns`, `participants` (from awareness). Subscribes/unsubscribes on store lifecycle.
+- `src/lib/room.ts` — single module covering everything room-related: id helpers (`generateRoomId`, `isRoomId`), the `openRoomDoc(id)` factory wiring `y-indexeddb` and `y-websocket` (`VITE_RELAY_URL`, default `ws://localhost:1234`), seed/read helpers (`seedRoom` is idempotent so joiners can't clobber the facilitator's choices), the per-tab session singleton (`ensureRoom`/`leaveRoom`), and Svelte readable stores derived from the `Y.Doc` (`roomMetaStore`, `columnsStore`, `participantsStore` driven by awareness).
 - `src/lib/displayName.ts` — `getDisplayName()` / `setDisplayName(value)` against `localStorage`, with SSR guard.
 - `src/routes/+layout.svelte`, `src/routes/+layout.ts` — minimal shell; `ssr=false` for room routes (CRDT is browser-only in v1).
 - `src/routes/+page.svelte` — landing page: a single CTA, "Create a retro" → `/create`.
@@ -69,8 +66,7 @@ All files are new unless noted.
 **Tests**
 
 - `src/lib/templates.test.ts` — every preset has 1+ columns, unique column ids, expected labels.
-- `src/lib/roomId.test.ts` — generated ids match the UUID-v4 regex; the validator accepts generated ids and rejects malformed ones.
-- `src/lib/roomSeed.test.ts` — seeding an empty doc populates meta+columns; seeding a populated doc is a no-op.
+- `src/lib/room.test.ts` — generated ids match the UUID-v4 regex and are unique; the validator accepts generated ids and rejects malformed ones; seeding an empty doc populates meta+columns; seeding a populated doc is a no-op; unknown template id throws.
 - `src/lib/displayName.test.ts` — round-trip; absent value returns `null`; SSR-safe (no `localStorage`) returns `null` rather than throwing.
 - `src/routes/create/page.test.ts` *(component)* — empty name blocks submit; valid form emits a navigation target matching `/r/<uuid>`.
 - `src/routes/r/[id]/page.test.ts` *(component)* — with no display name in `localStorage`, the name-prompt renders; submitting persists the name and reveals the room shell; with a name already set, the gate is skipped.

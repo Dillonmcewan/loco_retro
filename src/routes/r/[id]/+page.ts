@@ -1,5 +1,5 @@
 import { error } from '@sveltejs/kit';
-import { isRoomId } from '$lib/roomId';
+import { isRoomId } from '$lib/room';
 import type { PageLoad } from './$types';
 
 export const load: PageLoad = ({ params }) => {
