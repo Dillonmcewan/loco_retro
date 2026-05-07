@@ -7,11 +7,11 @@
 		columnsStore,
 		participantsStore,
 		type Participant
-	} from '$lib/room/store';
-	import { getDisplayName, setDisplayName } from '$lib/identity/displayName';
-	import type { OpenRoom } from '$lib/room/doc';
+	} from '$lib/roomStore';
+	import { getDisplayName, setDisplayName } from '$lib/displayName';
+	import type { OpenRoom } from '$lib/roomDoc';
 	import type { Column } from '$lib/templates';
-	import type { RoomMetaSnapshot } from '$lib/room/seed';
+	import type { RoomMetaSnapshot } from '$lib/roomSeed';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();

@@ -10,7 +10,7 @@ const mockAwareness = {
 	off: vi.fn()
 };
 
-vi.mock('$lib/room/store', async () => {
+vi.mock('$lib/roomStore', async () => {
 	const { readable } = await import('svelte/store');
 	return {
 		ensureRoom: vi.fn(() => ({
@@ -33,7 +33,7 @@ vi.mock('$lib/room/store', async () => {
 });
 
 import RoomPage from './+page.svelte';
-import { setDisplayName } from '$lib/identity/displayName';
+import { setDisplayName } from '$lib/displayName';
 
 const VALID_ID = '11111111-1111-4111-8111-111111111111';
 

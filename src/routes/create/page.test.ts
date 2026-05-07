@@ -7,18 +7,18 @@ vi.mock('$app/navigation', () => ({
 	goto: vi.fn(async () => {})
 }));
 
-vi.mock('$lib/room/store', () => ({
+vi.mock('$lib/roomStore', () => ({
 	ensureRoom: vi.fn(() => ({ doc: { getMap: () => ({ get: () => undefined }) } }))
 }));
 
-vi.mock('$lib/room/seed', () => ({
+vi.mock('$lib/roomSeed', () => ({
 	seedRoom: vi.fn(() => true)
 }));
 
 import CreatePage from './+page.svelte';
 import { goto } from '$app/navigation';
-import { ensureRoom } from '$lib/room/store';
-import { seedRoom } from '$lib/room/seed';
+import { ensureRoom } from '$lib/roomStore';
+import { seedRoom } from '$lib/roomSeed';
 
 describe('Create page', () => {
 	beforeEach(() => {

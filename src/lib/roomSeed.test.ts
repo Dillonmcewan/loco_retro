@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import * as Y from 'yjs';
-import { seedRoom, readRoomMeta, readColumns } from './seed';
-import { getTemplate, DEFAULT_TEMPLATE_ID } from '../templates';
+import { seedRoom, readRoomMeta, readColumns } from './roomSeed';
+import { getTemplate, DEFAULT_TEMPLATE_ID } from './templates';
 
 describe('seedRoom', () => {
 	it('writes meta and columns from the chosen template into an empty doc', () => {

@@ -55,11 +55,11 @@ All files are new unless noted.
 **App code**
 
 - `src/lib/templates.ts` — exports the four preset templates as a typed const (id, label, ordered column titles).
-- `src/lib/room/id.ts` — `generateRoomId()` (thin wrapper around `crypto.randomUUID()`), plus a UUID-v4 validator used by the room route's load.
-- `src/lib/room/doc.ts` — `openRoomDoc(id)` factory: creates/loads a `Y.Doc`, wires `y-indexeddb` persistence keyed by room id, opens a `y-websocket` provider against `VITE_RELAY_URL` (default `ws://localhost:1234`). Exports typed accessors for `meta` (room name, template id), `columns` (array of `{ id, title }`), and an `awareness` handle.
-- `src/lib/room/seed.ts` — `seedRoom(doc, { name, templateId })` writes the room name and the template's columns into the doc *only if* the doc is empty (idempotent — joiners must not overwrite the facilitator's seed).
-- `src/lib/room/store.ts` — Svelte stores derived from a `Y.Doc`: `roomMeta`, `columns`, `participants` (from awareness). Subscribes/unsubscribes on store lifecycle.
-- `src/lib/identity/displayName.ts` — `getDisplayName()` / `setDisplayName(value)` against `localStorage`, with SSR guard.
+- `src/lib/roomId.ts` — `generateRoomId()` (thin wrapper around `crypto.randomUUID()`), plus a UUID-v4 validator used by the room route's load.
+- `src/lib/roomDoc.ts` — `openRoomDoc(id)` factory: creates/loads a `Y.Doc`, wires `y-indexeddb` persistence keyed by room id, opens a `y-websocket` provider against `VITE_RELAY_URL` (default `ws://localhost:1234`). Exports typed accessors for `meta` (room name, template id), `columns` (array of `{ id, title }`), and an `awareness` handle.
+- `src/lib/roomSeed.ts` — `seedRoom(doc, { name, templateId })` writes the room name and the template's columns into the doc *only if* the doc is empty (idempotent — joiners must not overwrite the facilitator's seed).
+- `src/lib/roomStore.ts` — session singleton (`ensureRoom`/`leaveRoom`) plus Svelte stores derived from a `Y.Doc`: `roomMeta`, `columns`, `participants` (from awareness). Subscribes/unsubscribes on store lifecycle.
+- `src/lib/displayName.ts` — `getDisplayName()` / `setDisplayName(value)` against `localStorage`, with SSR guard.
 - `src/routes/+layout.svelte`, `src/routes/+layout.ts` — minimal shell; `ssr=false` for room routes (CRDT is browser-only in v1).
 - `src/routes/+page.svelte` — landing page: a single CTA, "Create a retro" → `/create`.
 - `src/routes/create/+page.svelte` — form: room name (required) + template picker (required, defaults to *Went well / Didn't / Actions*). On submit: generates a room id, opens the doc, seeds it, navigates to `/r/<id>`.
@@ -69,9 +69,9 @@ All files are new unless noted.
 **Tests**
 
 - `src/lib/templates.test.ts` — every preset has 1+ columns, unique column ids, expected labels.
-- `src/lib/room/id.test.ts` — generated ids match the UUID-v4 regex; the validator accepts generated ids and rejects malformed ones.
-- `src/lib/room/seed.test.ts` — seeding an empty doc populates meta+columns; seeding a populated doc is a no-op.
-- `src/lib/identity/displayName.test.ts` — round-trip; absent value returns `null`; SSR-safe (no `localStorage`) returns `null` rather than throwing.
+- `src/lib/roomId.test.ts` — generated ids match the UUID-v4 regex; the validator accepts generated ids and rejects malformed ones.
+- `src/lib/roomSeed.test.ts` — seeding an empty doc populates meta+columns; seeding a populated doc is a no-op.
+- `src/lib/displayName.test.ts` — round-trip; absent value returns `null`; SSR-safe (no `localStorage`) returns `null` rather than throwing.
 - `src/routes/create/page.test.ts` *(component)* — empty name blocks submit; valid form emits a navigation target matching `/r/<uuid>`.
 - `src/routes/r/[id]/page.test.ts` *(component)* — with no display name in `localStorage`, the name-prompt renders; submitting persists the name and reveals the room shell; with a name already set, the gate is skipped.
 - `e2e/create-and-join.spec.ts` — two-context flow: context A creates a room with the *Start / Stop / Continue* template and grabs the URL from the address bar; context B opens that URL, enters a name; both contexts see each other in the participant list and identical column titles.

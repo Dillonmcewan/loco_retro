@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { generateRoomId, isRoomId } from './id';
+import { generateRoomId, isRoomId } from './roomId';
 
 describe('generateRoomId', () => {
 	it('returns a valid UUID v4', () => {

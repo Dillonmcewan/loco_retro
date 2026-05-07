@@ -1,9 +1,9 @@
 import { readable, type Readable } from 'svelte/store';
 import type * as Y from 'yjs';
-import { openRoomDoc, type OpenRoom } from './doc';
-import { readRoomMeta, type RoomMetaSnapshot } from './seed';
-import type { Column } from '../templates';
-import type { RoomId } from './id';
+import { openRoomDoc, type OpenRoom } from './roomDoc';
+import { readRoomMeta, type RoomMetaSnapshot } from './roomSeed';
+import type { Column } from './templates';
+import type { RoomId } from './roomId';
 
 /**
  * Single active room session per tab. The create page opens it; the room page

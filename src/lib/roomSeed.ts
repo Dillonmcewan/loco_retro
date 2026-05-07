@@ -1,5 +1,5 @@
 import type * as Y from 'yjs';
-import { getTemplate, type Column } from '../templates';
+import { getTemplate, type Column } from './templates';
 
 export type SeedParams = {
 	name: string;

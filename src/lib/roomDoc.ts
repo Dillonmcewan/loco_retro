@@ -1,7 +1,7 @@
 import * as Y from 'yjs';
 import { IndexeddbPersistence } from 'y-indexeddb';
 import { WebsocketProvider } from 'y-websocket';
-import type { RoomId } from './id';
+import type { RoomId } from './roomId';
 
 const RELAY_URL =
 	(typeof import.meta !== 'undefined' && import.meta.env?.VITE_RELAY_URL) ?? 'ws://localhost:1234';

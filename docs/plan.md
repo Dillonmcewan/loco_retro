@@ -21,7 +21,7 @@
 - **Local-first sync model — CRDT (Yjs).** Each room is a `Y.Doc` named by its room id. Persistent state (room name, columns, cards, votes once they exist) lives in shared Yjs types inside that doc and is mirrored to IndexedDB by `y-indexeddb`. Conflicts merge automatically; no manual conflict resolution code.
 - **Realtime transport — `y-websocket`.** Each client opens a `y-websocket` provider against the relay (`VITE_RELAY_URL`, default `ws://localhost:1234`). The relay routes updates between connected clients for the same doc id. Offline edits queue locally and replay on reconnect.
 - **Identity / room model — anonymous + shareable URL.** A room is created with a fresh UUID v4; the URL `/r/<id>` is the share artifact. There are no accounts. A participant's display name is stored in `localStorage` and prefilled on subsequent visits. **Presence** (who is currently in the room) is carried on the Yjs **awareness** channel — ephemeral, not part of the persisted CRDT, so it doesn't need clean-up logic.
-- **Client state management — Svelte stores backed by Yjs.** Component code reads from thin Svelte stores that subscribe to Yjs observers and to the awareness channel; writes mutate the Yjs types directly. Stores live under `src/lib/room/`.
+- **Client state management — Svelte stores backed by Yjs.** Component code reads from thin Svelte stores that subscribe to Yjs observers and to the awareness channel; writes mutate the Yjs types directly. Stores live alongside the rest of the room helpers in `src/lib/` (flat layout — `roomStore.ts`, `roomDoc.ts`, etc.).
 
 Routes that touch CRDT state are client-rendered (`ssr=false`) — Yjs and IndexedDB are browser-only in v1.
 
