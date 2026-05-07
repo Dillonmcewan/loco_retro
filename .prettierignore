@@ -5,3 +5,8 @@ node_modules/
 playwright-report/
 test-results/
 pnpm-lock.yaml
+
+# User-authored content — don't reformat.
+docs/
+.claude/
+.devcontainer/
