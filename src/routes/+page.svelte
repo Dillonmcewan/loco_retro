@@ -1,43 +1,119 @@
 <script lang="ts">
-	// Landing page: single CTA to /create. Keeping it spartan on purpose
-	// — polish happens after the core flow lands.
+	import { goto } from '$app/navigation';
+	import { generateRoomId, ensureRoom, seedRoom } from '$lib/room';
+	import { PRESET_TEMPLATES, DEFAULT_TEMPLATE_ID } from '$lib/templates';
+
+	let name = $state('');
+	let templateId = $state<string>(DEFAULT_TEMPLATE_ID);
+	let submitting = $state(false);
+	let errorMsg = $state<string | null>(null);
+
+	async function handleSubmit(event: SubmitEvent) {
+		event.preventDefault();
+		const trimmed = name.trim();
+		if (!trimmed) {
+			errorMsg = 'Room name is required.';
+			return;
+		}
+		if (submitting) return;
+		submitting = true;
+		errorMsg = null;
+		try {
+			const id = generateRoomId();
+			const room = ensureRoom(id);
+			seedRoom(room.doc, { name: trimmed, templateId });
+			await goto(`/r/${id}`);
+		} catch (err) {
+			errorMsg = err instanceof Error ? err.message : 'Failed to create room.';
+			submitting = false;
+		}
+	}
 </script>
 
 <main>
-	<h1>loco_retro</h1>
-	<p>Local-first remote retros.</p>
-	<a class="cta" href="/create">Create a retro</a>
+	<h1>Create a retro</h1>
+
+	<form onsubmit={handleSubmit} novalidate>
+		<label>
+			<span>Room name</span>
+			<input
+				type="text"
+				name="name"
+				bind:value={name}
+				placeholder="Sprint 42 retro"
+				autocomplete="off"
+				required
+			/>
+		</label>
+
+		<label>
+			<span>Template</span>
+			<select name="templateId" bind:value={templateId}>
+				{#each PRESET_TEMPLATES as template (template.id)}
+					<option value={template.id}>{template.label}</option>
+				{/each}
+			</select>
+		</label>
+
+		{#if errorMsg}
+			<p class="error" role="alert">{errorMsg}</p>
+		{/if}
+
+		<button type="submit" disabled={submitting}>
+			{submitting ? 'Creating…' : 'Create retro'}
+		</button>
+	</form>
 </main>
 
 <style>
 	main {
 		max-width: 32rem;
-		margin: 6rem auto;
+		margin: 4rem auto;
 		padding: 0 1.5rem;
-		text-align: center;
 	}
 
 	h1 {
-		font-size: 2.5rem;
-		margin: 0 0 0.5rem;
+		margin: 0 0 1.5rem;
 	}
 
-	p {
-		color: #555;
-		margin: 0 0 2rem;
+	form {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
 	}
 
-	.cta {
-		display: inline-block;
-		padding: 0.75rem 1.5rem;
+	label {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+		font-weight: 500;
+	}
+
+	input,
+	select {
+		padding: 0.5rem 0.75rem;
+		border: 1px solid #ccc;
+		border-radius: 0.25rem;
+		font-weight: 400;
+	}
+
+	button {
+		align-self: flex-start;
+		padding: 0.625rem 1.25rem;
 		background: #1a1a1a;
 		color: white;
-		text-decoration: none;
+		border: none;
 		border-radius: 0.375rem;
 		font-weight: 500;
 	}
 
-	.cta:hover {
-		background: #333;
+	button:disabled {
+		opacity: 0.6;
+		cursor: not-allowed;
+	}
+
+	.error {
+		color: #b00020;
+		margin: 0;
 	}
 </style>

@@ -7,7 +7,7 @@ test('two clients can create and join the same room', async ({ browser }) => {
 	const pageB = await ctxB.newPage();
 
 	// A: create the room with the Start/Stop/Continue template.
-	await pageA.goto('/create');
+	await pageA.goto('/');
 	await pageA.getByLabel('Room name').fill('Sprint 42');
 	await pageA.getByLabel('Template').selectOption('start-stop-continue');
 	await pageA.getByRole('button', { name: /create retro/i }).click();

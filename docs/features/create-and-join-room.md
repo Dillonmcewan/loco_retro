@@ -58,8 +58,7 @@ All files are new unless noted.
 - `src/lib/room.ts` — single module covering everything room-related: id helpers (`generateRoomId`, `isRoomId`), the `openRoomDoc(id)` factory wiring `y-indexeddb` and `y-websocket` (`VITE_RELAY_URL`, default `ws://localhost:1234`), seed/read helpers (`seedRoom` is idempotent so joiners can't clobber the facilitator's choices), the per-tab session singleton (`ensureRoom`/`leaveRoom`), and Svelte readable stores derived from the `Y.Doc` (`roomMetaStore`, `columnsStore`, `participantsStore` driven by awareness).
 - `src/lib/displayName.ts` — `getDisplayName()` / `setDisplayName(value)` against `localStorage`, with SSR guard.
 - `src/routes/+layout.svelte`, `src/routes/+layout.ts` — minimal shell; `ssr=false` for room routes (CRDT is browser-only in v1).
-- `src/routes/+page.svelte` — landing page: a single CTA, "Create a retro" → `/create`.
-- `src/routes/create/+page.svelte` — form: room name (required) + template picker (required, defaults to *Went well / Didn't / Actions*). On submit: generates a room id, opens the doc, seeds it, navigates to `/r/<id>`.
+- `src/routes/+page.svelte` — root route is the create form (room name required + template picker, defaults to *Went well / Didn't / Actions*). On submit: generates a room id, opens the doc, seeds it, navigates to `/r/<id>`. With only one entry-action there's no separate landing page.
 - `src/routes/r/[id]/+page.ts` — load: validates that `id` is a UUID v4; 404s otherwise.
 - `src/routes/r/[id]/+page.svelte` — room view. If no display name is set in `localStorage`, renders an inline name-prompt that on submit persists the name and reveals the room. Otherwise shows the room shell directly: header with room name + copyable shareable URL, column layout with empty placeholders, participants list (driven by awareness). No card UI yet.
 
@@ -117,7 +116,6 @@ Each step a single, independently-reviewable commit:
 6. **Add display-name helper** (`src/lib/identity/displayName.ts`) + tests.
 7. **Add Y.Doc factory + seed** (`src/lib/room/doc.ts`, `src/lib/room/seed.ts`) + seed tests.
 8. **Add relay package** (`relay/`) and `pnpm dev:all` script (`concurrently`).
-9. **Add landing page** (`src/routes/+page.svelte`) — static, single CTA.
-10. **Add Create flow** (`src/routes/create/+page.svelte`) + component test.
-11. **Add Room shell + display-name gate** (`src/routes/r/[id]/+page.svelte` + load) wiring stores → UI + component test.
-12. **Add e2e** (`e2e/create-and-join.spec.ts`, `e2e/offline-reload.spec.ts`).
+9. **Add Create flow at the root route** (`src/routes/+page.svelte`) + component test. (Originally split into a landing page + a separate `/create` route; collapsed in a follow-up commit because the landing had only one CTA — the root route *is* the create form.)
+10. **Add Room shell + display-name gate** (`src/routes/r/[id]/+page.svelte` + load) wiring stores → UI + component test.
+11. **Add e2e** (`e2e/create-and-join.spec.ts`, `e2e/persistence.spec.ts`).
