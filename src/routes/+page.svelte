@@ -205,10 +205,18 @@
 	}
 
 	.template-card input {
-		/* Hide the native radio; the card itself is the click target. */
+		/* Visually hide the native radio while keeping it focusable for
+		   keyboard nav. The card carries the focus indicator. */
 		position: absolute;
-		opacity: 0;
-		pointer-events: none;
+		width: 1px;
+		height: 1px;
+		margin: -1px;
+		padding: 0;
+		border: 0;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		outline: none;
 	}
 
 	.template-name {
