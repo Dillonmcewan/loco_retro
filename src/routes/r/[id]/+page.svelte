@@ -132,6 +132,11 @@
 	main.gate {
 		max-width: 24rem;
 		margin: 6rem auto;
+		background: var(--color-surface);
+		padding: 2.25rem 2.5rem 2.5rem;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-card);
 	}
 
 	header {
@@ -148,9 +153,19 @@
 
 	header button {
 		padding: 0.5rem 1rem;
-		background: white;
-		border: 1px solid #ccc;
-		border-radius: 0.25rem;
+		background: var(--color-surface);
+		color: var(--color-text);
+		border: 1px solid var(--color-border-strong);
+		border-radius: var(--radius-sm);
+		font-weight: 500;
+		transition:
+			background 0.15s ease,
+			border-color 0.15s ease;
+	}
+
+	header button:hover {
+		border-color: var(--color-primary);
+		color: var(--color-primary);
 	}
 
 	.participants {
@@ -158,9 +173,12 @@
 	}
 
 	.participants h2 {
-		font-size: 1rem;
-		margin: 0 0 0.5rem;
-		color: #555;
+		font-size: 0.875rem;
+		font-weight: 600;
+		margin: 0 0 0.625rem;
+		color: var(--color-muted);
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
 	}
 
 	.participants ul {
@@ -173,10 +191,12 @@
 	}
 
 	.participants li {
-		padding: 0.25rem 0.625rem;
-		background: #eee;
+		padding: 0.25rem 0.75rem;
+		background: var(--color-surface-soft);
+		color: var(--color-text);
 		border-radius: 1rem;
 		font-size: 0.875rem;
+		font-weight: 500;
 	}
 
 	.columns {
@@ -186,11 +206,12 @@
 	}
 
 	.column {
-		background: white;
-		border: 1px solid #e0e0e0;
-		border-radius: 0.5rem;
-		padding: 1rem;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		padding: 1.125rem;
 		min-height: 18rem;
+		box-shadow: var(--shadow-card-sm);
 	}
 
 	.column h3 {
@@ -199,9 +220,19 @@
 	}
 
 	.empty {
-		color: #888;
+		color: var(--color-muted);
 		font-size: 0.875rem;
 		margin: 0;
+	}
+
+	.gate h1 {
+		margin: 0 0 0.5rem;
+		font-size: 1.5rem;
+	}
+
+	.gate p {
+		margin: 0 0 1.25rem;
+		color: var(--color-muted);
 	}
 
 	.gate form {
@@ -213,23 +244,47 @@
 	.gate label {
 		display: flex;
 		flex-direction: column;
-		gap: 0.25rem;
+		gap: 0.375rem;
 		font-weight: 500;
+		font-size: 0.875rem;
 	}
 
 	.gate input {
-		padding: 0.5rem 0.75rem;
-		border: 1px solid #ccc;
-		border-radius: 0.25rem;
+		padding: 0.625rem 0.75rem;
+		border: 1px solid var(--color-border-strong);
+		border-radius: var(--radius-sm);
+		background: var(--color-surface);
+		color: var(--color-text);
+		transition:
+			border-color 0.15s ease,
+			box-shadow 0.15s ease;
+	}
+
+	.gate input:focus {
+		outline: none;
+		border-color: var(--color-primary);
+		box-shadow: 0 0 0 3px var(--color-primary-soft);
 	}
 
 	.gate button {
-		align-self: flex-start;
-		padding: 0.5rem 1.25rem;
-		background: #1a1a1a;
+		align-self: stretch;
+		padding: 0.75rem 1.25rem;
+		background: var(--color-primary);
 		color: white;
 		border: none;
-		border-radius: 0.375rem;
-		font-weight: 500;
+		border-radius: var(--radius-md);
+		font-weight: 600;
+		box-shadow: var(--shadow-button);
+		transition:
+			background 0.15s ease,
+			transform 0.05s ease;
+	}
+
+	.gate button:hover {
+		background: var(--color-primary-hover);
+	}
+
+	.gate button:active {
+		transform: translateY(1px);
 	}
 </style>

@@ -81,18 +81,16 @@
 		font-size: 0.875rem;
 		letter-spacing: 0.08em;
 		text-transform: lowercase;
-		color: #888;
+		color: var(--color-muted);
 		margin: 0 0 1.25rem;
 	}
 
 	.card {
-		background: white;
+		background: var(--color-surface);
 		padding: 2.25rem 2.5rem 2.5rem;
-		border-radius: 0.875rem;
-		border: 1px solid #ececec;
-		box-shadow:
-			0 1px 2px rgba(15, 23, 42, 0.04),
-			0 12px 32px -8px rgba(15, 23, 42, 0.12);
+		border-radius: var(--radius-lg);
+		border: 1px solid var(--color-border);
+		box-shadow: var(--shadow-card);
 	}
 
 	h1 {
@@ -117,37 +115,42 @@
 	input,
 	select {
 		padding: 0.625rem 0.75rem;
-		border: 1px solid #d4d4d4;
-		border-radius: 0.375rem;
+		border: 1px solid var(--color-border-strong);
+		border-radius: var(--radius-sm);
 		font-weight: 400;
 		font-size: 1rem;
-		background: white;
-		transition: border-color 0.15s ease, box-shadow 0.15s ease;
+		background: var(--color-surface);
+		color: var(--color-text);
+		transition:
+			border-color 0.15s ease,
+			box-shadow 0.15s ease;
 	}
 
 	input:focus,
 	select:focus {
 		outline: none;
-		border-color: #1a1a1a;
-		box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.08);
+		border-color: var(--color-primary);
+		box-shadow: 0 0 0 3px var(--color-primary-soft);
 	}
 
 	button {
 		align-self: stretch;
 		padding: 0.75rem 1.25rem;
-		background: #1a1a1a;
+		background: var(--color-primary);
 		color: white;
 		border: none;
-		border-radius: 0.5rem;
-		font-weight: 500;
+		border-radius: var(--radius-md);
+		font-weight: 600;
 		font-size: 0.95rem;
 		margin-top: 0.5rem;
-		box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-		transition: background 0.15s ease, transform 0.05s ease;
+		box-shadow: var(--shadow-button);
+		transition:
+			background 0.15s ease,
+			transform 0.05s ease;
 	}
 
 	button:hover:not(:disabled) {
-		background: #2a2a2a;
+		background: var(--color-primary-hover);
 	}
 
 	button:active:not(:disabled) {
@@ -160,7 +163,7 @@
 	}
 
 	.error {
-		color: #b00020;
+		color: var(--color-danger);
 		margin: 0;
 		font-size: 0.875rem;
 	}
