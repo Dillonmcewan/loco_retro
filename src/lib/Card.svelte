@@ -46,11 +46,7 @@
 
 <article class="card">
 	{#if editing}
-		<textarea
-			bind:value={draft}
-			onkeydown={onTextareaKeydown}
-			aria-label="Edit card"
-			rows="3"
+		<textarea bind:value={draft} onkeydown={onTextareaKeydown} aria-label="Edit card" rows="3"
 		></textarea>
 		<div class="actions">
 			<button type="button" onclick={saveEdit}>Save</button>
@@ -63,12 +59,7 @@
 			{#if isOwner}
 				<div class="owner-actions">
 					<button type="button" onclick={startEdit} aria-label="Edit card">Edit</button>
-					<button
-						type="button"
-						class="secondary"
-						onclick={onDelete}
-						aria-label="Delete card"
-					>
+					<button type="button" class="secondary" onclick={onDelete} aria-label="Delete card">
 						Delete
 					</button>
 				</div>

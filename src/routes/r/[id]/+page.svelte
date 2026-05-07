@@ -5,12 +5,20 @@
 		leaveRoom,
 		roomMetaStore,
 		columnsStore,
+		cardsStore,
 		participantsStore,
+		addCard,
+		editCard,
+		deleteCard,
+		type Card,
+		type CardsByColumn,
 		type Participant,
 		type OpenRoom,
 		type RoomMetaSnapshot
 	} from '$lib/room';
-	import { getDisplayName, setDisplayName } from '$lib/displayName';
+	import { getDisplayName, setDisplayName, getAuthorId } from '$lib/displayName';
+	import CardView from '$lib/Card.svelte';
+	import CardForm from '$lib/CardForm.svelte';
 	import type { Column } from '$lib/templates';
 	import type { PageData } from './$types';
 
@@ -22,7 +30,9 @@
 
 	let meta = $state<RoomMetaSnapshot | null>(null);
 	let cols = $state<Column[]>([]);
+	let cards = $state<CardsByColumn>({});
 	let people = $state<Participant[]>([]);
+	let authorId = $state('');
 
 	let room: OpenRoom | null = null;
 
@@ -32,7 +42,10 @@
 
 		const m = roomMetaStore(opened.doc);
 		const c = columnsStore(opened.doc);
+		const cs = cardsStore(opened.doc);
 		const p = participantsStore(opened.awareness);
+
+		authorId = getAuthorId();
 
 		const unsubs: Array<() => void> = [
 			m.subscribe((v) => {
@@ -40,6 +53,9 @@
 			}),
 			c.subscribe((v) => {
 				cols = v;
+			}),
+			cs.subscribe((v) => {
+				cards = v;
 			}),
 			p.subscribe((v) => {
 				people = v;
@@ -67,6 +83,25 @@
 		setDisplayName(trimmed);
 		displayName = trimmed;
 		room.awareness.setLocalStateField('user', { name: trimmed });
+	}
+
+	function handleAddCard(columnId: string, text: string) {
+		if (!room || !displayName) return;
+		addCard(room.doc, { columnId, text, author: displayName, authorId });
+	}
+
+	function handleEditCard(columnId: string, cardId: string, text: string) {
+		if (!room) return;
+		editCard(room.doc, columnId, cardId, text);
+	}
+
+	function handleDeleteCard(columnId: string, cardId: string) {
+		if (!room) return;
+		deleteCard(room.doc, columnId, cardId);
+	}
+
+	function cardsFor(columnId: string): Card[] {
+		return cards[columnId] ?? [];
 	}
 
 	async function copyUrl() {
@@ -115,7 +150,22 @@
 			{#each cols as column (column.id)}
 				<article class="column">
 					<h3>{column.title}</h3>
-					<p class="empty">No cards yet.</p>
+					<ul class="card-list">
+						{#each cardsFor(column.id) as card (card.id)}
+							<li>
+								<CardView
+									{card}
+									currentAuthorId={authorId}
+									onEdit={(text) => handleEditCard(column.id, card.id, text)}
+									onDelete={() => handleDeleteCard(column.id, card.id)}
+								/>
+							</li>
+						{/each}
+					</ul>
+					{#if cardsFor(column.id).length === 0}
+						<p class="empty">No cards yet.</p>
+					{/if}
+					<CardForm onSubmit={(text) => handleAddCard(column.id, text)} />
 				</article>
 			{/each}
 		</section>
@@ -223,6 +273,15 @@
 		color: var(--color-muted);
 		font-size: 0.875rem;
 		margin: 0;
+	}
+
+	.card-list {
+		list-style: none;
+		padding: 0;
+		margin: 0 0 0.5rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
 	}
 
 	.gate h1 {

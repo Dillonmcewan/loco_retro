@@ -10,6 +10,26 @@ const mockAwareness = {
 	off: vi.fn()
 };
 
+const mockCards = {
+	'went-well': [
+		{
+			id: 'card-mine',
+			text: 'mine',
+			author: 'Dillon',
+			authorId: 'me',
+			createdAt: 0
+		},
+		{
+			id: 'card-foreign',
+			text: 'theirs',
+			author: 'Other',
+			authorId: 'someone-else',
+			createdAt: 0
+		}
+	],
+	didnt: []
+};
+
 vi.mock('$lib/room', async () => {
 	const { readable } = await import('svelte/store');
 	const actual = await vi.importActual<typeof import('$lib/room')>('$lib/room');
@@ -30,7 +50,19 @@ vi.mock('$lib/room', async () => {
 				{ id: 'didnt', title: "Didn't go well" }
 			])
 		),
-		participantsStore: vi.fn(() => readable([{ clientId: 1, name: 'Dillon' }]))
+		cardsStore: vi.fn(() => readable(mockCards)),
+		participantsStore: vi.fn(() => readable([{ clientId: 1, name: 'Dillon' }])),
+		addCard: vi.fn(),
+		editCard: vi.fn(),
+		deleteCard: vi.fn()
+	};
+});
+
+vi.mock('$lib/displayName', async () => {
+	const actual = await vi.importActual<typeof import('$lib/displayName')>('$lib/displayName');
+	return {
+		...actual,
+		getAuthorId: vi.fn(() => 'me')
 	};
 });
 
@@ -64,6 +96,20 @@ describe('Room page', () => {
 
 		// Columns from the mocked store render.
 		expect(screen.getByRole('heading', { name: /went well/i })).toBeInTheDocument();
+	});
+
+	it('renders cards under the right column with ownership-gated affordances', async () => {
+		setDisplayName('Dillon');
+		render(RoomPage, { props: { data: { id: VALID_ID } } });
+		await tick();
+
+		// Both cards render.
+		expect(screen.getByText('mine')).toBeInTheDocument();
+		expect(screen.getByText('theirs')).toBeInTheDocument();
+
+		// Owner sees one Edit + one Delete (for their own card only).
+		expect(screen.getAllByRole('button', { name: /edit card/i })).toHaveLength(1);
+		expect(screen.getAllByRole('button', { name: /delete card/i })).toHaveLength(1);
 	});
 
 	it('persists the name on gate submit and reveals the room', async () => {

@@ -5,7 +5,7 @@ import CardForm from './CardForm.svelte';
 
 function setup() {
 	const onSubmit = vi.fn();
-	const utils = render(CardForm, { props: { columnId: 'col-1', onSubmit } });
+	const utils = render(CardForm, { props: { onSubmit } });
 	const textarea = screen.getByRole('textbox', { name: /new card text/i }) as HTMLTextAreaElement;
 	const button = screen.getByRole('button', { name: /add/i }) as HTMLButtonElement;
 	return { ...utils, onSubmit, textarea, button };

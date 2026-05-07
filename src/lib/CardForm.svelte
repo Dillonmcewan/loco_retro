@@ -1,11 +1,10 @@
 <script lang="ts">
 	type Props = {
-		columnId: string;
 		onSubmit: (text: string) => void;
 		placeholder?: string;
 	};
 
-	let { columnId: _columnId, onSubmit, placeholder = 'Add a card…' }: Props = $props();
+	let { onSubmit, placeholder = 'Add a card…' }: Props = $props();
 
 	let text = $state('');
 
