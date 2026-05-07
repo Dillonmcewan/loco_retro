@@ -72,8 +72,8 @@ All files are new unless noted.
 - `src/lib/room/id.test.ts` — generated ids match the UUID-v4 regex; the validator accepts generated ids and rejects malformed ones.
 - `src/lib/room/seed.test.ts` — seeding an empty doc populates meta+columns; seeding a populated doc is a no-op.
 - `src/lib/identity/displayName.test.ts` — round-trip; absent value returns `null`; SSR-safe (no `localStorage`) returns `null` rather than throwing.
-- `src/routes/create/+page.test.ts` *(component)* — empty name blocks submit; valid form emits a navigation target matching `/r/<uuid>`.
-- `src/routes/r/[id]/+page.test.ts` *(component)* — with no display name in `localStorage`, the name-prompt renders; submitting persists the name and reveals the room shell; with a name already set, the gate is skipped.
+- `src/routes/create/page.test.ts` *(component)* — empty name blocks submit; valid form emits a navigation target matching `/r/<uuid>`.
+- `src/routes/r/[id]/page.test.ts` *(component)* — with no display name in `localStorage`, the name-prompt renders; submitting persists the name and reveals the room shell; with a name already set, the gate is skipped.
 - `e2e/create-and-join.spec.ts` — two-context flow: context A creates a room with the *Start / Stop / Continue* template and grabs the URL from the address bar; context B opens that URL, enters a name; both contexts see each other in the participant list and identical column titles.
 - `e2e/offline-reload.spec.ts` — context A creates a room, the test stops the relay, A reloads, room shell is still visible (loaded from IndexedDB), participant list shows only A.
 
