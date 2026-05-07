@@ -12,17 +12,18 @@
   - Unit & component: Vitest (+ `@testing-library/svelte` for components).
   - End-to-end: Playwright.
 - **Lint / format:** ESLint + Prettier (SvelteKit defaults).
-- **Database:** _none yet — deferred._ Local-first storage strategy to be decided (e.g. IndexedDB via Dexie, SQLite-WASM, or sync engine like Automerge/Yjs). Revisit before the first persistence-touching feature.
-- **Deployment adapter:** deferred. Use `@sveltejs/adapter-auto` until a target is pinned (Vercel / Cloudflare / Node).
+- **State / persistence:** **Yjs** (CRDT) + **`y-indexeddb`** for local persistence. The browser holds the authoritative copy of every retro it has touched.
+- **Realtime transport:** **`y-websocket`**. A small standalone Node relay runs as a separate package under `relay/`. The relay forwards Yjs updates between clients; it is intentionally pure pass-through and in-memory in dev. Persistence between sessions on the relay is a PRD-level open question.
+- **Deployment adapter:** still deferred. Use `@sveltejs/adapter-auto` until a target is pinned (Vercel / Cloudflare / Node). Pinning a target will likely also force a decision about whether to keep `relay/` separate or fold it into the SvelteKit deployment.
 
 ## Architecture
 
-_TBD — fill in once the first features are scoped. Topics to cover:_
+- **Local-first sync model — CRDT (Yjs).** Each room is a `Y.Doc` named by its room id. Persistent state (room name, columns, cards, votes once they exist) lives in shared Yjs types inside that doc and is mirrored to IndexedDB by `y-indexeddb`. Conflicts merge automatically; no manual conflict resolution code.
+- **Realtime transport — `y-websocket`.** Each client opens a `y-websocket` provider against the relay (`VITE_RELAY_URL`, default `ws://localhost:1234`). The relay routes updates between connected clients for the same doc id. Offline edits queue locally and replay on reconnect.
+- **Identity / room model — anonymous + shareable URL.** A room is created with a fresh UUID v4; the URL `/r/<id>` is the share artifact. There are no accounts. A participant's display name is stored in `localStorage` and prefilled on subsequent visits. **Presence** (who is currently in the room) is carried on the Yjs **awareness** channel — ephemeral, not part of the persisted CRDT, so it doesn't need clean-up logic.
+- **Client state management — Svelte stores backed by Yjs.** Component code reads from thin Svelte stores that subscribe to Yjs observers and to the awareness channel; writes mutate the Yjs types directly. Stores live under `src/lib/room/`.
 
-- Local-first sync model (CRDT? last-write-wins? offline queue?)
-- Realtime transport for remote retros (WebSocket? SSE? peer-to-peer?)
-- Authentication / room model
-- State management on the client (Svelte stores vs. signal-based)
+Routes that touch CRDT state are client-rendered (`ssr=false`) — Yjs and IndexedDB are browser-only in v1.
 
 ## Conventions
 
@@ -48,7 +49,5 @@ _TBD — fill in once the first features are scoped. Topics to cover:_
 
 ## Open decisions
 
-- Local-first persistence layer (see Architecture).
-- Realtime sync mechanism for multi-user retros.
 - Hosting / deploy target.
-- Auth approach (anonymous rooms? accounts?).
+- Whether the relay (currently a separate dev-only Node process) should be folded into the SvelteKit deployment when a target is picked, or stay a standalone service.
