@@ -5,14 +5,14 @@
 - Maps to PRD section(s):
   - **R1 — Create a room.** Facilitator picks a template (preset) and a room name; system produces a shareable URL.
   - **R2 — Join a room.** Anyone with the URL can join by entering a display name. No account. Display name is persisted locally and reused.
-  - **R3 — Templates.** *Partial.* Ships the four built-in presets (*Went well / Didn't / Actions*, *Start / Stop / Continue*, *Mad / Sad / Glad*, *4Ls*) selectable at creation. **Custom columns are deferred** to a follow-up feature.
+  - **R3 — Preset templates.** Ships the four built-in presets (*Went well / Didn't / Actions*, *Start / Stop / Continue*, *Mad / Sad / Glad*, *4Ls*) selectable at creation.
   - **R8 — Local-first sync.** Establishes the foundational mechanism: each client holds full state via a CRDT, persists locally, and syncs through a lightweight relay. Subsequent features (cards, voting, etc.) build on this plumbing.
 - Out of scope for this feature:
   - Adding/editing cards (R4) — empty columns only.
   - Phase progression (R5) — room is implicitly in *Collect*.
   - Dot voting (R6) and Discuss view (R7).
   - Closing rooms (R9).
-  - Custom columns at creation (the second half of R3).
+  - Custom columns at creation (now tracked separately as R10).
   - Production deploy target — dev-only relay process for now.
 
 ## Design

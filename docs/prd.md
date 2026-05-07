@@ -37,13 +37,14 @@ _Numbered (R1, R2, …) so feature plans in `docs/features/` can trace back._
 
 - **R1 — Create a room.** A facilitator picks a template (preset or custom columns) and a room name, and the system produces a shareable URL.
 - **R2 — Join a room.** Anyone with the URL can join by entering a display name. No account required. The display name is stored locally and reused on the next visit from the same browser.
-- **R3 — Templates.** Built-in presets are available at room creation: *Went well / Didn't go well / Actions*, *Start / Stop / Continue*, *Mad / Sad / Glad*, *4Ls (Liked / Learned / Lacked / Longed for)*. The facilitator may instead define custom columns (1–6) at room creation.
+- **R3 — Preset templates.** Built-in presets are available at room creation: *Went well / Didn't go well / Actions*, *Start / Stop / Continue*, *Mad / Sad / Glad*, *4Ls (Liked / Learned / Lacked / Longed for)*.
 - **R4 — Add / edit / delete cards.** During the *Collect* phase, any participant can create cards under any column and can edit or delete their own cards. Cards are attributed to the author's display name.
 - **R5 — Phase progression.** The room moves through phases: *Collect → Vote → Discuss → Closed*. The facilitator advances the phase; phase is shared state and UI affordances change accordingly.
 - **R6 — Dot voting.** During the *Vote* phase, each participant has N votes (default 5, configurable by the facilitator at room creation) to allocate across cards. Aggregate vote counts are visible to everyone; individual ballots are private.
 - **R7 — Discuss view.** During *Discuss*, cards are sorted by vote count (descending). The facilitator can mark a card as discussed; the indicator is visible to all.
 - **R8 — Local-first sync.** Each client holds full retro state locally via a CRDT and syncs through a lightweight relay. Edits made while offline appear locally immediately and merge on reconnect without data loss, for the duration of a single retro session.
 - **R9 — Room lifecycle.** The facilitator can close a room. Closed rooms are read-only but remain viewable by anyone with the join code as long as the state exists on at least one participant's device or the relay's best-effort cache.
+- **R10 — Custom columns.** As an alternative to picking a preset, the facilitator may define their own columns (1–6, with custom titles) at room creation.
 
 ## Open questions
 
