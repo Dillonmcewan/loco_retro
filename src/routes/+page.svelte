@@ -48,14 +48,27 @@
 			/>
 		</label>
 
-		<label>
-			<span>Template</span>
-			<select name="templateId" bind:value={templateId}>
+		<fieldset class="template-picker">
+			<legend>Template</legend>
+			<div class="template-grid">
 				{#each PRESET_TEMPLATES as template (template.id)}
-					<option value={template.id}>{template.label}</option>
+					<label class="template-card" class:selected={templateId === template.id}>
+						<input
+							type="radio"
+							name="templateId"
+							value={template.id}
+							bind:group={templateId}
+						/>
+						<span class="template-name">{template.label}</span>
+						<span class="template-cols">
+							{#each template.columns as col (col.id)}
+								<span class="col-chip">{col.title}</span>
+							{/each}
+						</span>
+					</label>
 				{/each}
-			</select>
-		</label>
+			</div>
+		</fieldset>
 
 		{#if errorMsg}
 			<p class="error" role="alert">{errorMsg}</p>
@@ -112,7 +125,7 @@
 		font-size: 0.875rem;
 	}
 
-	input,
+	input[type='text'],
 	select {
 		padding: 0.625rem 0.75rem;
 		border: 1px solid var(--color-border-strong);
@@ -126,11 +139,96 @@
 			box-shadow 0.15s ease;
 	}
 
-	input:focus,
+	input[type='text']:focus,
 	select:focus {
 		outline: none;
 		border-color: var(--color-primary);
 		box-shadow: 0 0 0 3px var(--color-primary-soft);
+	}
+
+	.template-picker {
+		border: none;
+		padding: 0;
+		margin: 0;
+	}
+
+	.template-picker legend {
+		font-weight: 500;
+		font-size: 0.875rem;
+		margin-bottom: 0.5rem;
+		padding: 0;
+	}
+
+	.template-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+		gap: 0.625rem;
+	}
+
+	.template-card {
+		display: flex;
+		flex-direction: column;
+		gap: 0.625rem;
+		padding: 0.875rem 1rem;
+		background: var(--color-surface);
+		border: 1.5px solid var(--color-border-strong);
+		border-radius: var(--radius-md);
+		cursor: pointer;
+		transition:
+			border-color 0.12s ease,
+			background 0.12s ease,
+			box-shadow 0.12s ease,
+			transform 0.05s ease;
+	}
+
+	.template-card:hover:not(.selected) {
+		border-color: var(--color-muted);
+		background: var(--color-surface-soft);
+	}
+
+	.template-card.selected {
+		border-color: var(--color-primary);
+		background: var(--color-primary-soft);
+		box-shadow: 0 0 0 3px var(--color-primary-soft);
+	}
+
+	.template-card input {
+		/* Hide the native radio; the card itself is the click target. */
+		position: absolute;
+		opacity: 0;
+		pointer-events: none;
+	}
+
+	.template-card input:focus-visible + .template-name {
+		outline: 2px solid var(--color-primary);
+		outline-offset: 4px;
+		border-radius: 2px;
+	}
+
+	.template-name {
+		font-weight: 600;
+		font-size: 0.95rem;
+		line-height: 1.3;
+	}
+
+	.template-cols {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.25rem;
+	}
+
+	.col-chip {
+		padding: 0.125rem 0.5rem;
+		background: var(--color-surface-soft);
+		color: var(--color-muted);
+		border-radius: 1rem;
+		font-size: 0.75rem;
+		font-weight: 500;
+	}
+
+	.template-card.selected .col-chip {
+		background: white;
+		color: var(--color-text);
 	}
 
 	button {
