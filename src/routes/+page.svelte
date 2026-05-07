@@ -40,10 +40,13 @@
 			<span>Room name</span>
 			<input
 				type="text"
-				name="name"
+				name="room-name"
 				bind:value={name}
 				placeholder="Sprint 42 retro"
 				autocomplete="off"
+				data-1p-ignore
+				data-lpignore="true"
+				data-form-type="other"
 				required
 			/>
 		</label>
