@@ -198,6 +198,12 @@
 		outline-offset: 3px;
 	}
 
+	/* When keyboard-focused, the focus outline replaces the .selected ring
+	   instead of stacking with it. */
+	.template-card.selected:has(input:focus-visible) {
+		box-shadow: none;
+	}
+
 	.template-card input {
 		/* Hide the native radio; the card itself is the click target. */
 		position: absolute;
