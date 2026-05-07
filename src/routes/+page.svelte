@@ -182,8 +182,9 @@
 	}
 
 	.template-card:hover:not(.selected) {
-		border-color: var(--color-muted);
-		background: var(--color-surface-soft);
+		border-color: var(--color-primary);
+		box-shadow: 0 4px 12px -4px rgba(255, 107, 91, 0.18);
+		transform: translateY(-1px);
 	}
 
 	.template-card.selected {
@@ -192,17 +193,16 @@
 		box-shadow: 0 0 0 3px var(--color-primary-soft);
 	}
 
+	.template-card:has(input:focus-visible) {
+		outline: 2px solid var(--color-primary);
+		outline-offset: 3px;
+	}
+
 	.template-card input {
 		/* Hide the native radio; the card itself is the click target. */
 		position: absolute;
 		opacity: 0;
 		pointer-events: none;
-	}
-
-	.template-card input:focus-visible + .template-name {
-		outline: 2px solid var(--color-primary);
-		outline-offset: 4px;
-		border-radius: 2px;
 	}
 
 	.template-name {
