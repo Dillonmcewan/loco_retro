@@ -65,6 +65,22 @@ describe('seedRoom', () => {
 		const doc = new Y.Doc();
 		expect(() => seedRoom(doc, { name: 'x', templateId: 'nope' })).toThrow(/Unknown template/);
 	});
+
+	it('seeds columns as Y.Map entries with a nested empty cards Y.Array', () => {
+		const doc = new Y.Doc();
+		seedRoom(doc, { name: 'Sprint 42', templateId: DEFAULT_TEMPLATE_ID });
+
+		const arr = doc.getArray<Y.Map<unknown>>('columns');
+		expect(arr.length).toBeGreaterThan(0);
+		for (const col of arr) {
+			expect(col).toBeInstanceOf(Y.Map);
+			expect(typeof col.get('id')).toBe('string');
+			expect(typeof col.get('title')).toBe('string');
+			const cards = col.get('cards');
+			expect(cards).toBeInstanceOf(Y.Array);
+			expect((cards as Y.Array<unknown>).length).toBe(0);
+		}
+	});
 });
 
 describe('readRoomMeta', () => {

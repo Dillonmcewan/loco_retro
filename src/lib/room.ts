@@ -88,12 +88,20 @@ export function seedRoom(doc: Y.Doc, params: SeedParams): boolean {
 		throw new Error(`Unknown template: ${params.templateId}`);
 	}
 
-	const columns = doc.getArray<Column>('columns');
+	const columns = doc.getArray<Y.Map<unknown>>('columns');
 
 	doc.transact(() => {
 		meta.set('name', params.name);
 		meta.set('templateId', params.templateId);
-		columns.push(template.columns.map((c) => ({ id: c.id, title: c.title })));
+		columns.push(
+			template.columns.map((c) => {
+				const col = new Y.Map<unknown>();
+				col.set('id', c.id);
+				col.set('title', c.title);
+				col.set('cards', new Y.Array<Y.Map<unknown>>());
+				return col;
+			})
+		);
 	});
 
 	return true;
@@ -108,7 +116,11 @@ export function readRoomMeta(doc: Y.Doc): RoomMetaSnapshot | null {
 }
 
 export function readColumns(doc: Y.Doc): Column[] {
-	return doc.getArray<Column>('columns').toArray();
+	return doc.getArray<Y.Map<unknown>>('columns').toArray().map(columnFromMap);
+}
+
+function columnFromMap(m: Y.Map<unknown>): Column {
+	return { id: m.get('id') as string, title: m.get('title') as string };
 }
 
 // ─── Active session (per tab) ──────────────────────────────────────────────
@@ -150,9 +162,10 @@ export function roomMetaStore(doc: Y.Doc): Readable<RoomMetaSnapshot | null> {
 }
 
 export function columnsStore(doc: Y.Doc): Readable<Column[]> {
-	const arr = doc.getArray<Column>('columns');
-	return readable<Column[]>(arr.toArray(), (set) => {
-		const handler = () => set(arr.toArray());
+	const arr = doc.getArray<Y.Map<unknown>>('columns');
+	const snapshot = () => arr.toArray().map(columnFromMap);
+	return readable<Column[]>(snapshot(), (set) => {
+		const handler = () => set(snapshot());
 		arr.observe(handler);
 		return () => arr.unobserve(handler);
 	});
