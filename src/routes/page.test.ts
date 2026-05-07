@@ -43,8 +43,7 @@ describe('Create page', () => {
 		const nameInput = screen.getByLabelText(/room name/i);
 		await user.type(nameInput, 'Sprint 42');
 
-		const templateSelect = screen.getByLabelText(/template/i);
-		await user.selectOptions(templateSelect, 'start-stop-continue');
+		await user.click(screen.getByRole('radio', { name: /start \/ stop \/ continue/i }));
 
 		await user.click(screen.getByRole('button', { name: /create/i }));
 

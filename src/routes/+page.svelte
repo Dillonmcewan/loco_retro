@@ -36,51 +36,46 @@
 		<h1>Create a retro</h1>
 
 		<form onsubmit={handleSubmit} novalidate>
-		<label>
-			<span>Room name</span>
-			<input
-				type="text"
-				name="room-name"
-				bind:value={name}
-				placeholder="Sprint 42 retro"
-				autocomplete="off"
-				data-1p-ignore
-				data-lpignore="true"
-				data-form-type="other"
-				required
-			/>
-		</label>
+			<label>
+				<span>Room name</span>
+				<input
+					type="text"
+					name="room-name"
+					bind:value={name}
+					placeholder="Sprint 42 retro"
+					autocomplete="off"
+					data-1p-ignore
+					data-lpignore="true"
+					data-form-type="other"
+					required
+				/>
+			</label>
 
-		<fieldset class="template-picker">
-			<legend>Template</legend>
-			<div class="template-grid">
-				{#each PRESET_TEMPLATES as template (template.id)}
-					<label class="template-card" class:selected={templateId === template.id}>
-						<input
-							type="radio"
-							name="templateId"
-							value={template.id}
-							bind:group={templateId}
-						/>
-						<span class="template-name">{template.label}</span>
-						<span class="template-cols">
-							{#each template.columns as col (col.id)}
-								<span class="col-chip">{col.title}</span>
-							{/each}
-						</span>
-					</label>
-				{/each}
-			</div>
-		</fieldset>
+			<fieldset class="template-picker">
+				<legend>Template</legend>
+				<div class="template-grid">
+					{#each PRESET_TEMPLATES as template (template.id)}
+						<label class="template-card" class:selected={templateId === template.id}>
+							<input type="radio" name="templateId" value={template.id} bind:group={templateId} />
+							<span class="template-name">{template.label}</span>
+							<span class="template-cols">
+								{#each template.columns as col (col.id)}
+									<span class="col-chip">{col.title}</span>
+								{/each}
+							</span>
+						</label>
+					{/each}
+				</div>
+			</fieldset>
 
-		{#if errorMsg}
-			<p class="error" role="alert">{errorMsg}</p>
-		{/if}
+			{#if errorMsg}
+				<p class="error" role="alert">{errorMsg}</p>
+			{/if}
 
-		<button type="submit" disabled={submitting}>
-			{submitting ? 'Creating…' : 'Create retro'}
-		</button>
-	</form>
+			<button type="submit" disabled={submitting}>
+				{submitting ? 'Creating…' : 'Create retro'}
+			</button>
+		</form>
 	</section>
 </main>
 
@@ -128,8 +123,7 @@
 		font-size: 0.875rem;
 	}
 
-	input[type='text'],
-	select {
+	input[type='text'] {
 		padding: 0.625rem 0.75rem;
 		border: 1px solid var(--color-border-strong);
 		border-radius: var(--radius-sm);
@@ -142,8 +136,7 @@
 			box-shadow 0.15s ease;
 	}
 
-	input[type='text']:focus,
-	select:focus {
+	input[type='text']:focus {
 		outline: none;
 		border-color: var(--color-primary);
 		box-shadow: 0 0 0 3px var(--color-primary-soft);
