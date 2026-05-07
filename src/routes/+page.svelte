@@ -193,16 +193,9 @@
 		box-shadow: 0 0 0 3px var(--color-primary-soft);
 	}
 
-	.template-card:has(input:focus-visible) {
-		outline: 2px solid var(--color-primary);
-		outline-offset: 3px;
-	}
-
-	/* When keyboard-focused, the focus outline replaces the .selected ring
-	   instead of stacking with it. */
-	.template-card.selected:has(input:focus-visible) {
-		box-shadow: none;
-	}
+	/* No separate :focus-visible outline on the card — in a radio group the
+	   focused card is always the selected card, and the .selected styling
+	   (coral border + peach fill + ring) is the visual focus indicator. */
 
 	.template-card input {
 		/* Visually hide the native radio while keeping it focusable for

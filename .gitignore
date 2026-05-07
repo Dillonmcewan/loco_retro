@@ -31,6 +31,10 @@ playwright-report/
 playwright/.cache/
 blob-report/
 
+# Local-only debug assets dropped from the host (screenshots, dumps, etc.)
+# — not shared, just a host↔container handoff.
+debug_assets/
+
 # Editor / OS
 .DS_Store
 Thumbs.db
