@@ -4,7 +4,7 @@ export default defineConfig({
 	testDir: 'e2e',
 	testMatch: '**/*.spec.ts',
 	webServer: {
-		command: 'pnpm dev',
+		command: 'pnpm dev:all',
 		url: 'http://localhost:5173',
 		reuseExistingServer: !process.env.CI,
 		timeout: 120_000

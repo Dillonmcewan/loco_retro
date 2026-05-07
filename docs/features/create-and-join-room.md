@@ -79,8 +79,7 @@ All files are new unless noted.
 
 **Relay (separate package)**
 
-- `relay/package.json` — depends on `y-websocket` and `ws`.
-- `relay/server.ts` — boots `y-websocket-server` on `PORT` (default 1234). ~20 lines.
+- `relay/package.json` — depends on `y-websocket`; `start` script invokes the bundled `y-websocket` binary directly (no glue file needed; was originally planned as `relay/server.ts` ~20 lines).
 - `relay/README.md` — one paragraph: "dev-only, in-memory, restart wipes state."
 
 **Docs**

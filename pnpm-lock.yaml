@@ -88,6 +88,12 @@ importers:
         specifier: ^2.1.0
         version: 2.1.9(@types/node@22.19.17)(jsdom@25.0.1)
 
+  relay:
+    dependencies:
+      y-websocket:
+        specifier: ^2.0.4
+        version: 2.1.0(yjs@13.6.30)
+
 packages:
 
   '@adobe/css-tools@4.4.4':
