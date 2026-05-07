@@ -17,10 +17,11 @@
     "source=claude-code-config-${devcontainerId},target=/home/node/.claude,type=volume"
   ],
   "postCreateCommand": "sudo chown -R node:node /home/node/.claude && sudo corepack enable && corepack prepare pnpm@latest --activate",
-  "forwardPorts": [5173, 4173],
+  "forwardPorts": [5173, 4173, 1234],
   "portsAttributes": {
     "5173": { "label": "SvelteKit dev", "onAutoForward": "notify" },
-    "4173": { "label": "SvelteKit preview", "onAutoForward": "silent" }
+    "4173": { "label": "SvelteKit preview", "onAutoForward": "silent" },
+    "1234": { "label": "Yjs relay (y-websocket)", "onAutoForward": "silent" }
   },
   "customizations": {
     "vscode": {
