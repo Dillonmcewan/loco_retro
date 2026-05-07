@@ -11,7 +11,7 @@
 - **Tests:**
   - Unit & component: Vitest (+ `@testing-library/svelte` for components).
   - End-to-end: Playwright.
-- **Lint / format:** **`oxlint`** for JS/TS linting (Rust-based, fast, drop-in subset of popular ESLint rules). **Prettier** (with `prettier-plugin-svelte`) for formatting all files including `.svelte` — `oxlint` doesn't lint `.svelte` and `oxfmt` doesn't format them, so we're keeping Prettier where the oxc family doesn't yet reach.
+- **Lint / format:** ESLint + Prettier (SvelteKit defaults).
 - **State / persistence:** **Yjs** (CRDT) + **`y-indexeddb`** for local persistence. The browser holds the authoritative copy of every retro it has touched.
 - **Realtime transport:** **`y-websocket`**. A small standalone Node relay runs as a separate package under `relay/`. The relay forwards Yjs updates between clients; it is intentionally pure pass-through and in-memory in dev. Persistence between sessions on the relay is a PRD-level open question.
 - **Deployment adapter:** still deferred. Use `@sveltejs/adapter-auto` until a target is pinned (Vercel / Cloudflare / Node). Pinning a target will likely also force a decision about whether to keep `relay/` separate or fold it into the SvelteKit deployment.
