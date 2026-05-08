@@ -61,13 +61,23 @@
 
 	function onTextareaBlur() {
 		if (!editing) return;
-		if (draft.trim() === '') {
+		const trimmed = draft.trim();
+		if (trimmed === '') {
 			cancelEdit();
+		} else if (trimmed === card.text) {
+			// Unchanged — exit edit mode without calling onEdit. (editCard
+			// already short-circuits on identical text, but skipping the call
+			// avoids a render churn cycle.)
+			editing = false;
+			draft = '';
 		} else {
 			saveEdit();
 		}
 	}
 
+	// Save / Cancel mousedown calls this so the textarea doesn't lose focus
+	// before the click fires. Without it, blurring the textarea would trigger
+	// onTextareaBlur (which auto-saves), beating the explicit Cancel click.
 	function keepFocus(event: MouseEvent) {
 		event.preventDefault();
 	}
