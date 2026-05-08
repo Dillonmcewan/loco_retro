@@ -12,9 +12,7 @@ const baseCard: CardType = {
 	createdAt: 0
 };
 
-function setup(
-	overrides: Partial<{ card: CardType; currentAuthorId: string; phase: Phase }> = {}
-) {
+function setup(overrides: Partial<{ card: CardType; currentAuthorId: string; phase: Phase }> = {}) {
 	const onEdit = vi.fn();
 	const onDelete = vi.fn();
 	const props = {
