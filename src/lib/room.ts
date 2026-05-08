@@ -303,12 +303,11 @@ export function leaveRoom(): void {
 	active = null;
 }
 
-export function getActiveRoom(): OpenRoom | null {
-	return active?.room ?? null;
-}
-
 // ─── Svelte stores ─────────────────────────────────────────────────────────
 
+// `meta` is currently a flat string-string map; plain `observe` is enough.
+// If meta ever gains nested Y types (phase state, vote config), switch this
+// to `observeDeep`.
 export function roomMetaStore(doc: Y.Doc): Readable<RoomMetaSnapshot | null> {
 	return readable<RoomMetaSnapshot | null>(readRoomMeta(doc), (set) => {
 		const meta = doc.getMap<string>('meta');
