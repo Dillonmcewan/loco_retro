@@ -11,7 +11,13 @@ import {
 	addCard,
 	editCard,
 	deleteCard,
-	cardsStore
+	cardsStore,
+	roomMetaStore,
+	getPhase,
+	setPhase,
+	advancePhase,
+	stepBackPhase,
+	type Phase
 } from './room';
 import { getTemplate, DEFAULT_TEMPLATE_ID } from './templates';
 
@@ -240,6 +246,56 @@ describe('deleteCard', () => {
 	it('returns false for an unknown card id', () => {
 		const doc = seededDoc();
 		expect(deleteCard(doc, firstColumnId(doc), 'nope')).toBe(false);
+	});
+});
+
+describe('phase machine', () => {
+	it('seeded doc starts in collect', () => {
+		const doc = seededDoc();
+		expect(getPhase(doc)).toBe('collect');
+	});
+
+	it('advancePhase walks Collect → Vote → Discuss → Closed and stops', () => {
+		const doc = seededDoc();
+		expect(advancePhase(doc)).toBe('vote');
+		expect(advancePhase(doc)).toBe('discuss');
+		expect(advancePhase(doc)).toBe('closed');
+		expect(advancePhase(doc)).toBe('closed');
+		expect(getPhase(doc)).toBe('closed');
+	});
+
+	it('stepBackPhase is a no-op at collect and walks back otherwise', () => {
+		const doc = seededDoc();
+		expect(stepBackPhase(doc)).toBe('collect');
+		advancePhase(doc);
+		advancePhase(doc);
+		expect(getPhase(doc)).toBe('discuss');
+		expect(stepBackPhase(doc)).toBe('vote');
+		expect(stepBackPhase(doc)).toBe('collect');
+		expect(stepBackPhase(doc)).toBe('collect');
+	});
+
+	it('setPhase rejects unknown values', () => {
+		const doc = seededDoc();
+		expect(() => setPhase(doc, 'bogus' as unknown as Phase)).toThrow(/Unknown phase/);
+		expect(getPhase(doc)).toBe('collect');
+	});
+
+	it('phase change syncs across docs and into roomMetaStore', () => {
+		const docA = seededDoc();
+		const docB = new Y.Doc();
+		Y.applyUpdate(docB, Y.encodeStateAsUpdate(docA));
+
+		const store = roomMetaStore(docB);
+		const seen: Array<Phase | undefined> = [];
+		const unsub = store.subscribe((v) => seen.push(v?.phase));
+
+		advancePhase(docA);
+		Y.applyUpdate(docB, Y.encodeStateAsUpdate(docA));
+
+		unsub();
+		expect(getPhase(docB)).toBe('vote');
+		expect(seen[seen.length - 1]).toBe('vote');
 	});
 });
 

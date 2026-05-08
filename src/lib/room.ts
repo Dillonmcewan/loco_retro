@@ -186,6 +186,40 @@ export function readRoomMeta(doc: Y.Doc): RoomMetaSnapshot | null {
 	return { name, templateId, phase };
 }
 
+// ─── Phase machine ─────────────────────────────────────────────────────────
+
+export function getPhase(doc: Y.Doc): Phase {
+	const raw = doc.getMap<string>('meta').get('phase');
+	return isPhase(raw) ? raw : 'collect';
+}
+
+export function setPhase(doc: Y.Doc, phase: Phase): void {
+	if (!isPhase(phase)) {
+		throw new Error(`Unknown phase: ${String(phase)}`);
+	}
+	doc.transact(() => {
+		doc.getMap<string>('meta').set('phase', phase);
+	});
+}
+
+export function advancePhase(doc: Y.Doc): Phase {
+	const current = getPhase(doc);
+	const idx = PHASE_ORDER.indexOf(current);
+	if (idx < 0 || idx >= PHASE_ORDER.length - 1) return current;
+	const next = PHASE_ORDER[idx + 1];
+	setPhase(doc, next);
+	return next;
+}
+
+export function stepBackPhase(doc: Y.Doc): Phase {
+	const current = getPhase(doc);
+	const idx = PHASE_ORDER.indexOf(current);
+	if (idx <= 0) return current;
+	const prev = PHASE_ORDER[idx - 1];
+	setPhase(doc, prev);
+	return prev;
+}
+
 export function readColumns(doc: Y.Doc): Column[] {
 	return doc.getArray<Y.Map<unknown>>('columns').toArray().map(columnFromMap);
 }
