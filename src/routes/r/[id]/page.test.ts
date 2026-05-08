@@ -193,7 +193,7 @@ describe('Room page', () => {
 		await user.click(screen.getByRole('button', { name: 'Close room' }));
 		await tick();
 		expect(screen.getByLabelText(/current phase/i)).toHaveTextContent(/Closed/);
-		expect(screen.queryByRole('button', { name: /advance/i })).not.toBeInTheDocument();
+		expect(screen.getByRole('button', { name: 'Advance' })).toBeDisabled();
 		expect(screen.queryByRole('button', { name: /close room/i })).not.toBeInTheDocument();
 	});
 

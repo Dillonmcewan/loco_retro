@@ -2,6 +2,7 @@
 	import ChevronLeft from 'lucide-svelte/icons/chevron-left';
 	import ChevronRight from 'lucide-svelte/icons/chevron-right';
 	import { PHASE_ORDER, type Phase } from './room';
+	import { tooltip } from './tooltip';
 
 	type Props = {
 		phase: Phase;
@@ -23,6 +24,13 @@
 	const isAtStart = $derived(phase === 'collect');
 	const isClosed = $derived(phase === 'closed');
 	const advanceLabel = $derived(phase === 'discuss' ? 'Close room' : 'Advance');
+
+	const nextPhaseLabel = $derived(
+		PHASE_ORDER[Math.min(PHASE_ORDER.indexOf(phase) + 1, PHASE_ORDER.length - 1)]
+	);
+	const prevPhaseLabel = $derived(PHASE_ORDER[Math.max(PHASE_ORDER.indexOf(phase) - 1, 0)]);
+	const advanceTooltip = $derived(`Advance: ${PHASE_LABEL[nextPhaseLabel]}`);
+	const backTooltip = $derived(`Go back: ${PHASE_LABEL[prevPhaseLabel]}`);
 </script>
 
 <div class="phase-controls" data-phase={phase}>
@@ -32,21 +40,26 @@
 		onclick={onBack}
 		disabled={isAtStart}
 		aria-label="Back to previous phase"
+		use:tooltip={isAtStart ? undefined : backTooltip}
 	>
 		<ChevronLeft />
 	</button>
 
-	<span class="pill" aria-label="Current phase">
+	<span class="phase" aria-label="Current phase">
 		<span class="label">{PHASE_LABEL[phase]}</span>
 		<span class="count">{stepNumber} of {totalSteps}</span>
 	</span>
 
-	{#if !isClosed}
-		<button type="button" class="step advance" onclick={onAdvance} aria-label={advanceLabel}>
-			<span>{advanceLabel}</span>
-			<ChevronRight />
-		</button>
-	{/if}
+	<button
+		type="button"
+		class="step advance"
+		onclick={onAdvance}
+		disabled={isClosed}
+		aria-label={advanceLabel}
+		use:tooltip={isClosed ? undefined : advanceTooltip}
+	>
+		<ChevronRight />
+	</button>
 </div>
 
 <style>
@@ -56,14 +69,11 @@
 		gap: 0.5rem;
 	}
 
-	.pill {
+	.phase {
 		display: inline-flex;
 		flex-direction: column;
 		align-items: center;
-		padding: 0.25rem 0.875rem;
-		border-radius: 1rem;
-		background: var(--color-surface-soft);
-		border: 1px solid var(--color-border);
+		padding: 0 0.5rem;
 		line-height: 1.1;
 	}
 

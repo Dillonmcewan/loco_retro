@@ -48,10 +48,11 @@ describe('PhaseControls.svelte', () => {
 		expect(screen.getByRole('button', { name: 'Close room' })).toBeInTheDocument();
 	});
 
-	it('hides the Advance button on closed', () => {
+	it('disables the Advance button on closed instead of hiding it', () => {
 		setup('closed');
-		expect(screen.queryByRole('button', { name: /advance/i })).not.toBeInTheDocument();
-		expect(screen.queryByRole('button', { name: /close room/i })).not.toBeInTheDocument();
+		const advance = screen.getByRole('button', { name: 'Advance' });
+		expect(advance).toBeInTheDocument();
+		expect(advance).toBeDisabled();
 	});
 
 	it('clicking Advance fires onAdvance', async () => {

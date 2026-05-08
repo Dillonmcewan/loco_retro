@@ -249,12 +249,21 @@
 	}
 
 	header {
-		display: flex;
+		display: grid;
+		grid-template-columns: 1fr auto 1fr;
 		align-items: center;
-		justify-content: space-between;
 		gap: 1rem;
 		margin-bottom: 2rem;
 		flex: none;
+	}
+
+	header :global(.phase-controls) {
+		justify-self: center;
+		padding: 0.375rem 0.625rem;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		box-shadow: var(--shadow-card, 0 1px 2px rgba(0, 0, 0, 0.04));
 	}
 
 	main.room header {
@@ -299,11 +308,10 @@
 	}
 
 	.participants {
-		flex: 0 1 auto;
 		min-width: 0;
 		list-style: none;
 		padding: 0;
-		margin: 0 0 0 auto;
+		margin: 0;
 		display: flex;
 		flex-wrap: wrap;
 		justify-content: flex-end;
