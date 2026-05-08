@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { generateRoomId, ensureRoom, seedRoom } from '$lib/room';
+	import { generateRoomId, ensureRoom, leaveRoom, seedRoom } from '$lib/room';
 	import { PRESET_TEMPLATES, DEFAULT_TEMPLATE_ID } from '$lib/templates';
 
 	let name = $state('');
@@ -18,12 +18,15 @@
 		}
 		if (submitting) return;
 		submitting = true;
+		const id = generateRoomId();
 		try {
-			const id = generateRoomId();
 			const room = ensureRoom(id);
 			seedRoom(room.doc, { name: trimmed, templateId });
 			await goto(`/r/${id}`);
 		} catch (err) {
+			// Seeding or navigation failed — close the doc we opened so the
+			// websocket/IndexedDB resources don't leak into the next attempt.
+			leaveRoom();
 			const message = err instanceof Error ? err.message : 'Failed to create room.';
 			fieldErrors = { roomName: message };
 			submitting = false;
