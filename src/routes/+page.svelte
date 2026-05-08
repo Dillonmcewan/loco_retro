@@ -6,25 +6,26 @@
 	let name = $state('');
 	let templateId = $state<string>(DEFAULT_TEMPLATE_ID);
 	let submitting = $state(false);
-	let errorMsg = $state<string | null>(null);
+	let fieldErrors = $state<{ roomName?: string; templateId?: string }>({});
 
 	async function handleSubmit(event: SubmitEvent) {
 		event.preventDefault();
+		fieldErrors = {};
 		const trimmed = name.trim();
 		if (!trimmed) {
-			errorMsg = 'Room name is required.';
+			fieldErrors = { roomName: 'Room name is required.' };
 			return;
 		}
 		if (submitting) return;
 		submitting = true;
-		errorMsg = null;
 		try {
 			const id = generateRoomId();
 			const room = ensureRoom(id);
 			seedRoom(room.doc, { name: trimmed, templateId });
 			await goto(`/r/${id}`);
 		} catch (err) {
-			errorMsg = err instanceof Error ? err.message : 'Failed to create room.';
+			const message = err instanceof Error ? err.message : 'Failed to create room.';
+			fieldErrors = { roomName: message };
 			submitting = false;
 		}
 	}
@@ -47,8 +48,13 @@
 					data-1p-ignore
 					data-lpignore="true"
 					data-form-type="other"
+					aria-invalid={!!fieldErrors.roomName}
+					aria-describedby={fieldErrors.roomName ? 'room-name-error' : undefined}
 					required
 				/>
+				{#if fieldErrors.roomName}
+					<span id="room-name-error" class="error" role="alert">{fieldErrors.roomName}</span>
+				{/if}
 			</label>
 
 			<fieldset class="template-picker">
@@ -66,11 +72,10 @@
 						</label>
 					{/each}
 				</div>
+				{#if fieldErrors.templateId}
+					<span class="error" role="alert">{fieldErrors.templateId}</span>
+				{/if}
 			</fieldset>
-
-			{#if errorMsg}
-				<p class="error" role="alert">{errorMsg}</p>
-			{/if}
 
 			<button type="submit" disabled={submitting}>
 				{submitting ? 'Creating…' : 'Create retro'}
@@ -140,6 +145,14 @@
 		outline: none;
 		border-color: var(--color-primary);
 		box-shadow: 0 0 0 3px var(--color-primary-soft);
+	}
+
+	input[type='text'][aria-invalid='true'] {
+		border-color: var(--color-danger);
+	}
+
+	input[type='text'][aria-invalid='true']:focus {
+		box-shadow: 0 0 0 3px var(--color-danger-soft);
 	}
 
 	.template-picker {
@@ -265,7 +278,7 @@
 
 	.error {
 		color: var(--color-danger);
-		margin: 0;
-		font-size: 0.875rem;
+		font-size: 0.8125rem;
+		margin-top: 0.125rem;
 	}
 </style>
