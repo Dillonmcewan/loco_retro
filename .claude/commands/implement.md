@@ -43,5 +43,5 @@ Once the Done criteria are met:
 1. Print the final summary: commits made, tests added, files changed, anything deferred or surprising.
 2. Ask the user (via `AskUserQuestion`): **"Ready to merge `feature/$ARGUMENTS` into `main`, or hold for review?"** with two options:
    - **Merge now** — `git switch main && git merge feature/$ARGUMENTS` (fast-forward when possible; default git behavior falls back to `--no-ff` if main has moved). Then `git branch -d feature/$ARGUMENTS`. Do not push.
-   - **Hold for review** — stay on `feature/$ARGUMENTS`. Tell the user: "drop `// REVIEW:` markers in code as you read the diff, then run `/address-review` to resolve them; run `/merge` when you're ready to land it."
+   - **Hold for review** — stay on `feature/$ARGUMENTS`. Tell the user: "starting from this clean tree, add comments inline as you read the code; then run `/address-review` to resolve them; run `/merge` when you're ready to land it."
 3. Do not push. Do not open PRs.
