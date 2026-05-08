@@ -31,9 +31,17 @@ export type SeedParams = {
 	templateId: string;
 };
 
+export const PHASE_ORDER = ['collect', 'vote', 'discuss', 'closed'] as const;
+export type Phase = (typeof PHASE_ORDER)[number];
+
+function isPhase(value: unknown): value is Phase {
+	return typeof value === 'string' && (PHASE_ORDER as readonly string[]).includes(value);
+}
+
 export type RoomMetaSnapshot = {
 	name: string;
 	templateId: string;
+	phase: Phase;
 };
 
 export type Participant = { clientId: number; name: string };
@@ -153,6 +161,7 @@ export function seedRoom(doc: Y.Doc, params: SeedParams): boolean {
 	doc.transact(() => {
 		meta.set('name', params.name);
 		meta.set('templateId', params.templateId);
+		meta.set('phase', 'collect');
 		columns.push(
 			template.columns.map((c) => {
 				const col = new Y.Map<unknown>();
@@ -172,7 +181,9 @@ export function readRoomMeta(doc: Y.Doc): RoomMetaSnapshot | null {
 	const name = meta.get('name');
 	const templateId = meta.get('templateId');
 	if (!name || !templateId) return null;
-	return { name, templateId };
+	const rawPhase = meta.get('phase');
+	const phase: Phase = isPhase(rawPhase) ? rawPhase : 'collect';
+	return { name, templateId, phase };
 }
 
 export function readColumns(doc: Y.Doc): Column[] {

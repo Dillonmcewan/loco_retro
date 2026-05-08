@@ -67,7 +67,8 @@ describe('seedRoom', () => {
 		expect(seeded).toBe(true);
 		expect(readRoomMeta(doc)).toEqual({
 			name: 'Sprint 42',
-			templateId: DEFAULT_TEMPLATE_ID
+			templateId: DEFAULT_TEMPLATE_ID,
+			phase: 'collect'
 		});
 		expect(readColumns(doc)).toEqual(getTemplate(DEFAULT_TEMPLATE_ID)?.columns);
 	});
@@ -80,7 +81,8 @@ describe('seedRoom', () => {
 		expect(seeded).toBe(false);
 		expect(readRoomMeta(doc)).toEqual({
 			name: 'Sprint 42',
-			templateId: DEFAULT_TEMPLATE_ID
+			templateId: DEFAULT_TEMPLATE_ID,
+			phase: 'collect'
 		});
 		expect(readColumns(doc)).toEqual(getTemplate(DEFAULT_TEMPLATE_ID)?.columns);
 	});
