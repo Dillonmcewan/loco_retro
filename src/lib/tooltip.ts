@@ -4,8 +4,11 @@
  * tooltip element is appended to <body> so it can escape overflow:hidden
  * containers; styling lives in app.css under `.tooltip`.
  */
+const DELAY_MS = 500;
+const VERTICAL_OFFSET_PX = 6;
+const VIEWPORT_PADDING_PX = 4;
+
 export function tooltip(node: HTMLElement, label?: string) {
-	const DELAY_MS = 500;
 	let timer: ReturnType<typeof setTimeout> | null = null;
 	let tip: HTMLDivElement | null = null;
 	let currentLabel = label;
@@ -24,10 +27,13 @@ export function tooltip(node: HTMLElement, label?: string) {
 
 		const r = node.getBoundingClientRect();
 		const tr = tip.getBoundingClientRect();
-		const top = r.top - tr.height - 6;
+		const top = r.top - tr.height - VERTICAL_OFFSET_PX;
 		const left = r.left + r.width / 2 - tr.width / 2;
-		tip.style.top = `${Math.max(4, top)}px`;
-		tip.style.left = `${Math.max(4, Math.min(left, window.innerWidth - tr.width - 4))}px`;
+		tip.style.top = `${Math.max(VIEWPORT_PADDING_PX, top)}px`;
+		tip.style.left = `${Math.max(
+			VIEWPORT_PADDING_PX,
+			Math.min(left, window.innerWidth - tr.width - VIEWPORT_PADDING_PX)
+		)}px`;
 	}
 
 	function hide() {
