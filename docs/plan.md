@@ -32,6 +32,7 @@ Routes that touch CRDT state are client-rendered (`ssr=false`) — Yjs and Index
 - **Feature-plan first.** No application code without a corresponding `docs/features/<name>.md` traced back to a PRD requirement.
 - **Tests live next to code** (`*.test.ts` for unit, `*.spec.ts` under `e2e/` for Playwright) — concrete layout TBD when the SvelteKit app is initialized.
 - **TypeScript strict mode** on from day one.
+- **Flat `src/lib/` structure.** `.ts` utilities and `.svelte` components live alongside each other in `src/lib/`, prefix-disambiguated (`Card.svelte` vs `RetroCard.svelte`). Matches the SvelteKit reference apps (sveltejs/realworld, PocketBase admin) and the dominant community advice — keep `$lib` small, colocate to routes when possible. Promote a group to its own subfolder (e.g. `lib/voting/`) only when it has its own internal structure (5+ files); never split by *type* (`components/`, `utils/`, `stores/`) because that fragments cohesive features.
 
 ## Standard commands
 
