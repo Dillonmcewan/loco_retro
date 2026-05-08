@@ -13,7 +13,7 @@
   - End-to-end: Playwright.
 - **Lint / format:** ESLint + Prettier (SvelteKit defaults).
 - **State / persistence:** **Yjs** (CRDT) + **`y-indexeddb`** for local persistence. The browser holds the authoritative copy of every retro it has touched.
-- **Realtime transport:** **`y-websocket`**. A small standalone Node relay runs as a separate package under `relay/`. The relay forwards Yjs updates between clients; it is intentionally pure pass-through and in-memory in dev. Persistence between sessions on the relay is a PRD-level open question.
+- **Realtime transport:** **`y-websocket`**. A small standalone Node relay runs as a separate package under `relay/`. The relay forwards Yjs updates between clients; it is intentionally pure pass-through and in-memory in dev. The client's relay URL is required from `VITE_RELAY_URL` (committed `.env` for dev; deploy target sets it for prod). No source-level fallback — if the env var is missing the client throws at module load. Persistence between sessions on the relay is a PRD-level open question.
 - **Deployment adapter:** still deferred. Use `@sveltejs/adapter-auto` until a target is pinned (Vercel / Cloudflare / Node). Pinning a target will likely also force a decision about whether to keep `relay/` separate or fold it into the SvelteKit deployment.
 
 ## Architecture

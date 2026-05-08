@@ -6,18 +6,14 @@ import { getTemplate, type Column } from './templates';
 
 // ─── Config ────────────────────────────────────────────────────────────────
 
+// VITE_RELAY_URL is required. The committed `.env` carries the dev default
+// (ws://localhost:1234); prod builds get it from the deploy target. Fail
+// fast at module load rather than silently connecting to the wrong place.
 const RELAY_URL =
-	(typeof import.meta !== 'undefined' && import.meta.env?.VITE_RELAY_URL) ?? 'ws://localhost:1234';
-
-// Warn loudly if a prod build ships without VITE_RELAY_URL — the localhost
-// fallback is a dev convenience that would silently break a deployed client.
-if (
-	typeof import.meta !== 'undefined' &&
-	import.meta.env?.PROD &&
-	!import.meta.env?.VITE_RELAY_URL
-) {
-	console.warn(
-		'[room] VITE_RELAY_URL is not set; falling back to ws://localhost:1234. This will fail in production.'
+	typeof import.meta !== 'undefined' ? import.meta.env?.VITE_RELAY_URL : undefined;
+if (!RELAY_URL) {
+	throw new Error(
+		'VITE_RELAY_URL is not set. Add it to .env (dev) or your deploy target (prod).'
 	);
 }
 

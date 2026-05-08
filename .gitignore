@@ -11,10 +11,9 @@ dist/
 .cloudflare/
 .wrangler/
 
-# Env / secrets
-.env
-.env.*
-!.env.example
+# Env / secrets — commit shared defaults; ignore local-only overrides
+.env.local
+.env.*.local
 
 # Logs
 npm-debug.log*
