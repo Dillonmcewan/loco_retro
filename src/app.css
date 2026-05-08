@@ -19,6 +19,9 @@
 	--color-primary-hover: #e5594a; /* darker coral on hover */
 	--color-primary-soft: #ffe1db; /* pale peach — focus rings, highlights */
 	--color-danger: #c2362f; /* muted red */
+	--color-danger-soft: #fce4e1; /* pale red — error toast bg */
+	--color-success: #1f7a4d; /* warm green — success */
+	--color-success-soft: #e0f2e6; /* pale green — success toast bg */
 
 	/* Effects */
 	--shadow-card: 0 1px 2px rgba(42, 36, 32, 0.05), 0 12px 32px -8px rgba(42, 36, 32, 0.12);
@@ -60,4 +63,18 @@ input,
 select,
 textarea {
 	font: inherit;
+}
+
+.tooltip {
+	position: fixed;
+	z-index: 1000;
+	background: var(--color-text);
+	color: var(--color-bg);
+	font-size: 0.75rem;
+	font-weight: 500;
+	padding: 0.25rem 0.5rem;
+	border-radius: var(--radius-sm);
+	white-space: nowrap;
+	pointer-events: none;
+	box-shadow: var(--shadow-card-sm);
 }

@@ -17,6 +17,8 @@
 		type RoomMetaSnapshot
 	} from '$lib/room';
 	import { getDisplayName, setDisplayName, getAuthorId } from '$lib/displayName';
+	import { tooltip } from '$lib/tooltip';
+	import { colorForName } from '$lib/participantColor';
 	import CardView from '$lib/Card.svelte';
 	import CardForm from '$lib/CardForm.svelte';
 	import type { Column } from '$lib/templates';
@@ -26,7 +28,17 @@
 
 	let displayName = $state<string | null>(null);
 	let nameInput = $state('');
-	let copied = $state(false);
+	let toast = $state<{ kind: 'success' | 'error'; message: string } | null>(null);
+	let toastTimer: ReturnType<typeof setTimeout> | null = null;
+
+	function showToast(kind: 'success' | 'error', message: string) {
+		if (toastTimer) clearTimeout(toastTimer);
+		toast = { kind, message };
+		toastTimer = setTimeout(() => {
+			toast = null;
+			toastTimer = null;
+		}, 2500);
+	}
 
 	let meta = $state<RoomMetaSnapshot | null>(null);
 	let cols = $state<Column[]>([]);
@@ -105,13 +117,15 @@
 	}
 
 	async function copyUrl() {
-		if (typeof navigator === 'undefined' || !navigator.clipboard) return;
+		if (typeof navigator === 'undefined' || !navigator.clipboard) {
+			showToast('error', "Couldn't copy link — clipboard unavailable");
+			return;
+		}
 		try {
 			await navigator.clipboard.writeText(window.location.href);
-			copied = true;
-			setTimeout(() => (copied = false), 2000);
+			showToast('success', 'Link copied to clipboard');
 		} catch {
-			// Clipboard write can fail in restricted contexts; ignore for now.
+			showToast('error', "Couldn't copy link to clipboard");
 		}
 	}
 </script>
@@ -131,40 +145,88 @@
 {:else}
 	<main class="room">
 		<header>
-			<h1>{meta?.name ?? 'Untitled retro'}</h1>
-			<button type="button" onclick={copyUrl}>
-				{copied ? 'Copied!' : 'Copy invite URL'}
-			</button>
-		</header>
-
-		<section aria-label="Participants" class="participants">
-			<h2>Participants ({people.length})</h2>
-			<ul>
+			<div class="title">
+				<h1>{meta?.name ?? 'Untitled retro'}</h1>
+				<button
+					type="button"
+					class="link"
+					onclick={copyUrl}
+					aria-label="Copy invite link"
+					use:tooltip={'Copy invite link'}
+				>
+					<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+						<g
+							fill="none"
+							stroke="currentColor"
+							stroke-width="1.8"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						>
+							<circle cx="18" cy="5" r="3" />
+							<circle cx="6" cy="12" r="3" />
+							<circle cx="18" cy="19" r="3" />
+							<line x1="8.6" y1="10.6" x2="15.4" y2="6.4" />
+							<line x1="8.6" y1="13.4" x2="15.4" y2="17.6" />
+						</g>
+					</svg>
+				</button>
+			</div>
+			<ul class="participants" aria-label="Participants">
 				{#each people as p (p.clientId)}
-					<li>{p.name}</li>
+					{@const color = colorForName(p.name)}
+					<li style:background-color={color.bg} style:color={color.fg}>{p.name}</li>
 				{/each}
 			</ul>
-		</section>
+		</header>
+
+		{#if toast}
+			<div class="toast toast-{toast.kind}" role="status">
+				<svg class="toast-icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+					{#if toast.kind === 'success'}
+						<path
+							d="M4 10.5l3.5 3.5L16 6"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2.2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/>
+					{:else}
+						<path
+							d="M10 5v6M10 14v0.5"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2.2"
+							stroke-linecap="round"
+						/>
+						<circle cx="10" cy="10" r="7.5" fill="none" stroke="currentColor" stroke-width="1.6" />
+					{/if}
+				</svg>
+				<span>{toast.message}</span>
+			</div>
+		{/if}
 
 		<section aria-label="Columns" class="columns">
 			{#each cols as column (column.id)}
 				<article class="column">
 					<h3>{column.title}</h3>
-					<ul class="card-list">
-						{#each cardsFor(column.id) as card (card.id)}
-							<li>
-								<CardView
-									{card}
-									currentAuthorId={authorId}
-									onEdit={(text) => handleEditCard(column.id, card.id, text)}
-									onDelete={() => handleDeleteCard(column.id, card.id)}
-								/>
-							</li>
-						{/each}
-					</ul>
-					{#if cardsFor(column.id).length === 0}
-						<p class="empty">No cards yet.</p>
-					{/if}
+					<div class="column-scroll">
+						<ul class="card-list">
+							{#each cardsFor(column.id) as card (card.id)}
+								<li>
+									<CardView
+										{card}
+										currentAuthorId={authorId}
+										onEdit={(text) => handleEditCard(column.id, card.id, text)}
+										onDelete={() => handleDeleteCard(column.id, card.id)}
+									/>
+								</li>
+							{/each}
+						</ul>
+						{#if cardsFor(column.id).length === 0}
+							<p class="empty">No cards yet.</p>
+						{/if}
+					</div>
 					<CardForm onSubmit={(text) => handleAddCard(column.id, text)} />
 				</article>
 			{/each}
@@ -177,6 +239,17 @@
 		max-width: 80rem;
 		margin: 2rem auto;
 		padding: 0 1.5rem;
+	}
+
+	main.room {
+		max-width: none;
+		height: 100vh;
+		margin: 0;
+		padding: 1rem 3rem;
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		min-height: 0;
 	}
 
 	main.gate {
@@ -195,55 +268,111 @@
 		justify-content: space-between;
 		gap: 1rem;
 		margin-bottom: 2rem;
+		flex: none;
+	}
+
+	main.room header {
+		margin-bottom: 0;
 	}
 
 	h1 {
 		margin: 0;
 	}
 
-	header button {
-		padding: 0.5rem 1rem;
-		background: var(--color-surface);
-		color: var(--color-text);
-		border: 1px solid var(--color-border-strong);
-		border-radius: var(--radius-sm);
-		font-weight: 500;
-		transition:
-			background 0.15s ease,
-			border-color 0.15s ease;
+	.title {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		flex: none;
 	}
 
-	header button:hover {
-		border-color: var(--color-primary);
+	button.link {
+		display: inline-flex;
+		align-items: center;
+		padding: 0;
+		border: none;
+		background: transparent;
+		color: var(--color-muted);
+		cursor: pointer;
+		line-height: 0;
+	}
+
+	button.link:hover {
 		color: var(--color-primary);
 	}
 
-	.participants {
-		margin-bottom: 2rem;
+	button.link:focus-visible {
+		outline: 2px solid var(--color-primary);
+		outline-offset: 2px;
+		border-radius: 2px;
 	}
 
-	.participants h2 {
+	button.link svg {
+		width: 1.375rem;
+		height: 1.375rem;
+	}
+
+	.toast {
+		position: fixed;
+		bottom: 1.5rem;
+		left: 50%;
+		transform: translateX(-50%);
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.625rem 1rem;
+		border-radius: var(--radius-md);
 		font-size: 0.875rem;
-		font-weight: 600;
-		margin: 0 0 0.625rem;
-		color: var(--color-muted);
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
+		font-weight: 500;
+		box-shadow: var(--shadow-card);
+		border: 1px solid;
+		z-index: 1000;
+		animation: toast-in 0.18s ease-out;
 	}
 
-	.participants ul {
+	.toast-icon {
+		width: 1.125rem;
+		height: 1.125rem;
+		flex: none;
+	}
+
+	.toast-success {
+		background: var(--color-success-soft);
+		color: var(--color-success);
+		border-color: var(--color-success);
+	}
+
+	.toast-error {
+		background: var(--color-danger-soft);
+		color: var(--color-danger);
+		border-color: var(--color-danger);
+	}
+
+	@keyframes toast-in {
+		from {
+			opacity: 0;
+			transform: translate(-50%, 0.5rem);
+		}
+		to {
+			opacity: 1;
+			transform: translate(-50%, 0);
+		}
+	}
+
+	.participants {
+		flex: 0 1 auto;
+		min-width: 0;
 		list-style: none;
 		padding: 0;
-		margin: 0;
+		margin: 0 0 0 auto;
 		display: flex;
 		flex-wrap: wrap;
+		justify-content: flex-end;
 		gap: 0.5rem;
 	}
 
 	.participants li {
 		padding: 0.25rem 0.75rem;
-		background: var(--color-surface-soft);
-		color: var(--color-text);
 		border-radius: 1rem;
 		font-size: 0.875rem;
 		font-weight: 500;
@@ -253,20 +382,33 @@
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
 		gap: 1rem;
+		flex: 1 1 auto;
+		min-height: 0;
 	}
 
 	.column {
-		background: var(--color-surface);
+		background: var(--color-surface-soft);
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-md);
 		padding: 1.125rem;
-		min-height: 18rem;
-		box-shadow: var(--shadow-card-sm);
+		display: flex;
+		flex-direction: column;
+		min-height: 0;
+		overflow: hidden;
+	}
+
+	.column-scroll {
+		flex: 1 1 auto;
+		min-height: 0;
+		overflow-y: auto;
+		margin: 0 -0.375rem;
+		padding: 0 0.375rem;
 	}
 
 	.column h3 {
 		margin: 0 0 0.75rem;
 		font-size: 1rem;
+		flex: none;
 	}
 
 	.empty {
