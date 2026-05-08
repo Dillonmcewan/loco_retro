@@ -29,6 +29,10 @@ function hash(str: string): number {
 }
 
 export function colorForName(name: string): { bg: string; fg: string } {
+	// How likely are hash collisions here? I wonder if a better strategy would be to deterministically
+	// sort all users in the channel and then assign colors based on that order. That would guarantee no collisions
+	// until we hit PALETTE.length + 1 users. New users joining the channel might cause the assigned colors to shift
+	// (unless we sort on the join time), but that is a minor issue
 	const idx = hash(name) % PALETTE.length;
 	return PALETTE[idx];
 }
