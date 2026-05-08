@@ -51,6 +51,43 @@ export type AddCardParams = {
 	authorId: string;
 };
 
+// ─── Yjs typed schemas ─────────────────────────────────────────────────────
+//
+// Yjs's Y.Map<T> takes one uniform value type for every key — see
+// yjs#490, where keyed-typing was proposed and never merged. So we
+// declare each map's logical shape here and run all gets/sets through
+// a tiny typed accessor that owns the casts. Read sites become
+// `colAcc.get(m, 'title')` instead of `m.get('title') as string`.
+
+type ColumnShape = {
+	id: string;
+	title: string;
+	cards: Y.Array<Y.Map<unknown>>;
+};
+
+type CardShape = {
+	id: string;
+	text: string;
+	author: string;
+	authorId: string;
+	createdAt: number;
+	editedAt?: number;
+};
+
+function makeAccess<Shape>() {
+	return {
+		get<K extends keyof Shape>(m: Y.Map<unknown>, k: K): Shape[K] {
+			return m.get(k as string) as Shape[K];
+		},
+		set<K extends keyof Shape>(m: Y.Map<unknown>, k: K, v: Shape[K]): void {
+			m.set(k as string, v);
+		}
+	};
+}
+
+const colAcc = makeAccess<ColumnShape>();
+const cardAcc = makeAccess<CardShape>();
+
 // ─── Room id ───────────────────────────────────────────────────────────────
 
 const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -114,9 +151,9 @@ export function seedRoom(doc: Y.Doc, params: SeedParams): boolean {
 		columns.push(
 			template.columns.map((c) => {
 				const col = new Y.Map<unknown>();
-				col.set('id', c.id);
-				col.set('title', c.title);
-				col.set('cards', new Y.Array<Y.Map<unknown>>());
+				colAcc.set(col, 'id', c.id);
+				colAcc.set(col, 'title', c.title);
+				colAcc.set(col, 'cards', new Y.Array<Y.Map<unknown>>());
 				return col;
 			})
 		);
@@ -138,30 +175,30 @@ export function readColumns(doc: Y.Doc): Column[] {
 }
 
 function columnFromMap(m: Y.Map<unknown>): Column {
-	return { id: m.get('id') as string, title: m.get('title') as string };
+	return { id: colAcc.get(m, 'id'), title: colAcc.get(m, 'title') };
 }
 
 function findColumn(doc: Y.Doc, columnId: string): Y.Map<unknown> | null {
 	const cols = doc.getArray<Y.Map<unknown>>('columns');
 	for (const col of cols) {
-		if (col.get('id') === columnId) return col;
+		if (colAcc.get(col, 'id') === columnId) return col;
 	}
 	return null;
 }
 
 function cardsArray(col: Y.Map<unknown>): Y.Array<Y.Map<unknown>> {
-	return col.get('cards') as Y.Array<Y.Map<unknown>>;
+	return colAcc.get(col, 'cards');
 }
 
 function cardFromMap(m: Y.Map<unknown>): Card {
-	const editedAt = m.get('editedAt');
 	const card: Card = {
-		id: m.get('id') as string,
-		text: m.get('text') as string,
-		author: m.get('author') as string,
-		authorId: m.get('authorId') as string,
-		createdAt: m.get('createdAt') as number
+		id: cardAcc.get(m, 'id'),
+		text: cardAcc.get(m, 'text'),
+		author: cardAcc.get(m, 'author'),
+		authorId: cardAcc.get(m, 'authorId'),
+		createdAt: cardAcc.get(m, 'createdAt')
 	};
+	const editedAt = cardAcc.get(m, 'editedAt');
 	if (typeof editedAt === 'number') card.editedAt = editedAt;
 	return card;
 }
@@ -178,11 +215,11 @@ export function addCard(doc: Y.Doc, params: AddCardParams): Card | null {
 	};
 	doc.transact(() => {
 		const m = new Y.Map<unknown>();
-		m.set('id', card.id);
-		m.set('text', card.text);
-		m.set('author', card.author);
-		m.set('authorId', card.authorId);
-		m.set('createdAt', card.createdAt);
+		cardAcc.set(m, 'id', card.id);
+		cardAcc.set(m, 'text', card.text);
+		cardAcc.set(m, 'author', card.author);
+		cardAcc.set(m, 'authorId', card.authorId);
+		cardAcc.set(m, 'createdAt', card.createdAt);
 		cardsArray(col).push([m]);
 	});
 	return card;
@@ -193,10 +230,10 @@ export function editCard(doc: Y.Doc, columnId: string, cardId: string, text: str
 	if (!col) return false;
 	const cards = cardsArray(col);
 	for (const card of cards) {
-		if (card.get('id') === cardId) {
+		if (cardAcc.get(card, 'id') === cardId) {
 			doc.transact(() => {
-				card.set('text', text);
-				card.set('editedAt', Date.now());
+				cardAcc.set(card, 'text', text);
+				cardAcc.set(card, 'editedAt', Date.now());
 			});
 			return true;
 		}
@@ -209,7 +246,7 @@ export function deleteCard(doc: Y.Doc, columnId: string, cardId: string): boolea
 	if (!col) return false;
 	const cards = cardsArray(col);
 	for (let i = 0; i < cards.length; i++) {
-		if (cards.get(i).get('id') === cardId) {
+		if (cardAcc.get(cards.get(i), 'id') === cardId) {
 			doc.transact(() => cards.delete(i, 1));
 			return true;
 		}
@@ -220,7 +257,7 @@ export function deleteCard(doc: Y.Doc, columnId: string, cardId: string): boolea
 export function readCards(doc: Y.Doc): CardsByColumn {
 	const out: CardsByColumn = {};
 	for (const col of doc.getArray<Y.Map<unknown>>('columns')) {
-		const id = col.get('id') as string;
+		const id = colAcc.get(col, 'id');
 		out[id] = cardsArray(col).toArray().map(cardFromMap);
 	}
 	return out;
