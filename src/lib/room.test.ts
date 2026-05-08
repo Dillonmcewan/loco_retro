@@ -148,6 +148,27 @@ describe('addCard', () => {
 		expect(result).toBeNull();
 	});
 
+	it('rejects empty / whitespace-only text', () => {
+		const doc = seededDoc();
+		const colId = firstColumnId(doc);
+		expect(addCard(doc, { columnId: colId, text: '', author: 'D', authorId: 'a' })).toBeNull();
+		expect(addCard(doc, { columnId: colId, text: '   ', author: 'D', authorId: 'a' })).toBeNull();
+		expect(addCard(doc, { columnId: colId, text: '\n\t ', author: 'D', authorId: 'a' })).toBeNull();
+		expect(readCards(doc)[colId]).toEqual([]);
+	});
+
+	it('trims surrounding whitespace from text', () => {
+		const doc = seededDoc();
+		const colId = firstColumnId(doc);
+		const card = addCard(doc, {
+			columnId: colId,
+			text: '  hello  ',
+			author: 'D',
+			authorId: 'a'
+		})!;
+		expect(card.text).toBe('hello');
+	});
+
 	it('keeps cards isolated to their own column', () => {
 		const doc = seededDoc();
 		const cols = readColumns(doc);
@@ -179,6 +200,24 @@ describe('editCard', () => {
 	it('returns false for an unknown card id', () => {
 		const doc = seededDoc();
 		expect(editCard(doc, firstColumnId(doc), 'nope', 'x')).toBe(false);
+	});
+
+	it('rejects empty / whitespace-only text', () => {
+		const doc = seededDoc();
+		const colId = firstColumnId(doc);
+		const card = addCard(doc, { columnId: colId, text: 'old', author: 'D', authorId: 'a' })!;
+		expect(editCard(doc, colId, card.id, '')).toBe(false);
+		expect(editCard(doc, colId, card.id, '   ')).toBe(false);
+		expect(readCards(doc)[colId][0].text).toBe('old');
+	});
+
+	it('is a no-op write when the new (trimmed) text matches the current text', () => {
+		const doc = seededDoc();
+		const colId = firstColumnId(doc);
+		const card = addCard(doc, { columnId: colId, text: 'same', author: 'D', authorId: 'a' })!;
+		expect(editCard(doc, colId, card.id, '  same  ')).toBe(true);
+		// editedAt stays absent because no transact ran.
+		expect(readCards(doc)[colId][0].editedAt).toBeUndefined();
 	});
 });
 

@@ -204,11 +204,13 @@ function cardFromMap(m: Y.Map<unknown>): Card {
 }
 
 export function addCard(doc: Y.Doc, params: AddCardParams): Card | null {
+	const text = params.text.trim();
+	if (!text) return null;
 	const col = findColumn(doc, params.columnId);
 	if (!col) return null;
 	const card: Card = {
 		id: crypto.randomUUID(),
-		text: params.text,
+		text,
 		author: params.author,
 		authorId: params.authorId,
 		createdAt: Date.now()
@@ -226,13 +228,16 @@ export function addCard(doc: Y.Doc, params: AddCardParams): Card | null {
 }
 
 export function editCard(doc: Y.Doc, columnId: string, cardId: string, text: string): boolean {
+	const trimmed = text.trim();
+	if (!trimmed) return false;
 	const col = findColumn(doc, columnId);
 	if (!col) return false;
 	const cards = cardsArray(col);
 	for (const card of cards) {
 		if (cardAcc.get(card, 'id') === cardId) {
+			if (cardAcc.get(card, 'text') === trimmed) return true;
 			doc.transact(() => {
-				cardAcc.set(card, 'text', text);
+				cardAcc.set(card, 'text', trimmed);
 				cardAcc.set(card, 'editedAt', Date.now());
 			});
 			return true;
