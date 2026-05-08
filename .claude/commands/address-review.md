@@ -91,13 +91,22 @@ auto-resolve step.
 
 ## Verify clean exit
 
-1. Run `git diff`. It should be empty if every group was answered. If
-   anything remains, list it for the user so they know what's still
-   pending.
+1. Run `git diff`.
+   - **If empty**: success. Continue to step 2.
+   - **If non-empty**: the run is **incomplete**. List every remaining
+     comment (file:line + text). Do not declare success — say
+     explicitly: "review-pass incomplete; <N> group(s) still pending,"
+     then stop. The user resumes by re-invoking `/address-review`
+     after answering, or by manually clearing the comment if they've
+     decided not to act on it.
 2. Run `pnpm check` and `pnpm lint` once over the whole project as a
    final guard. (Don't run tests — the user batches those.)
 3. Print a summary: groups auto-resolved, groups deferred-and-answered,
    groups still open, files touched, commits made.
+
+The contract is **no review comment survives a successful run**.
+Step 1's branch on a non-empty diff is what enforces it — never
+declare success while comments remain.
 
 ## Rules
 
