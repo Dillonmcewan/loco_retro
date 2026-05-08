@@ -9,6 +9,18 @@ import { getTemplate, type Column } from './templates';
 const RELAY_URL =
 	(typeof import.meta !== 'undefined' && import.meta.env?.VITE_RELAY_URL) ?? 'ws://localhost:1234';
 
+// Warn loudly if a prod build ships without VITE_RELAY_URL — the localhost
+// fallback is a dev convenience that would silently break a deployed client.
+if (
+	typeof import.meta !== 'undefined' &&
+	import.meta.env?.PROD &&
+	!import.meta.env?.VITE_RELAY_URL
+) {
+	console.warn(
+		'[room] VITE_RELAY_URL is not set; falling back to ws://localhost:1234. This will fail in production.'
+	);
+}
+
 // ─── Types ─────────────────────────────────────────────────────────────────
 
 export type RoomId = string;
