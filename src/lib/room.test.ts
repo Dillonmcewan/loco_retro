@@ -249,6 +249,44 @@ describe('deleteCard', () => {
 	});
 });
 
+describe('mutation gating by phase', () => {
+	it('addCard returns null and is a no-op outside collect', () => {
+		const doc = seededDoc();
+		const colId = firstColumnId(doc);
+		advancePhase(doc); // → vote
+		const result = addCard(doc, { columnId: colId, text: 'x', author: 'D', authorId: 'a' });
+		expect(result).toBeNull();
+		expect(readCards(doc)[colId]).toEqual([]);
+	});
+
+	it('editCard returns false and is a no-op outside collect', () => {
+		const doc = seededDoc();
+		const colId = firstColumnId(doc);
+		const card = addCard(doc, { columnId: colId, text: 'old', author: 'D', authorId: 'a' })!;
+		advancePhase(doc); // → vote
+		expect(editCard(doc, colId, card.id, 'new')).toBe(false);
+		expect(readCards(doc)[colId][0].text).toBe('old');
+	});
+
+	it('deleteCard returns false and is a no-op outside collect', () => {
+		const doc = seededDoc();
+		const colId = firstColumnId(doc);
+		const card = addCard(doc, { columnId: colId, text: 'A', author: 'D', authorId: 'a' })!;
+		advancePhase(doc); // → vote
+		expect(deleteCard(doc, colId, card.id)).toBe(false);
+		expect(readCards(doc)[colId]).toHaveLength(1);
+	});
+
+	it('returning to collect re-enables mutations', () => {
+		const doc = seededDoc();
+		const colId = firstColumnId(doc);
+		advancePhase(doc);
+		stepBackPhase(doc);
+		const card = addCard(doc, { columnId: colId, text: 'x', author: 'D', authorId: 'a' });
+		expect(card).not.toBeNull();
+	});
+});
+
 describe('phase machine', () => {
 	it('seeded doc starts in collect', () => {
 		const doc = seededDoc();

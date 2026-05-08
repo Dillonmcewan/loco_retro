@@ -254,6 +254,7 @@ function cardFromMap(m: Y.Map<unknown>): Card {
 }
 
 export function addCard(doc: Y.Doc, params: AddCardParams): Card | null {
+	if (getPhase(doc) !== 'collect') return null;
 	const text = params.text.trim();
 	if (!text) return null;
 	const col = findColumn(doc, params.columnId);
@@ -278,6 +279,7 @@ export function addCard(doc: Y.Doc, params: AddCardParams): Card | null {
 }
 
 export function editCard(doc: Y.Doc, columnId: string, cardId: string, text: string): boolean {
+	if (getPhase(doc) !== 'collect') return false;
 	const trimmed = text.trim();
 	if (!trimmed) return false;
 	const col = findColumn(doc, columnId);
@@ -297,6 +299,7 @@ export function editCard(doc: Y.Doc, columnId: string, cardId: string, text: str
 }
 
 export function deleteCard(doc: Y.Doc, columnId: string, cardId: string): boolean {
+	if (getPhase(doc) !== 'collect') return false;
 	const col = findColumn(doc, columnId);
 	if (!col) return false;
 	const cards = cardsArray(col);
