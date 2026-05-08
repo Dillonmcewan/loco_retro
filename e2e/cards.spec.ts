@@ -56,7 +56,7 @@ test('two clients can add, edit, and delete cards with ownership gating', async 
 		.click();
 	const editor = pageA.getByRole('textbox', { name: /edit card/i });
 	await editor.fill('pair more often (every PR)');
-	await pageA.getByRole('button', { name: /^save$/i }).click();
+	await pageA.getByRole('button', { name: /save changes/i }).click();
 	await expect(pageB.getByText('pair more often (every PR)')).toBeVisible();
 
 	// A deletes their card; B sees it disappear.

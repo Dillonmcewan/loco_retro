@@ -34,8 +34,8 @@ test('two clients can create and join the same room', async ({ browser }) => {
 	await expect(pageB.getByRole('heading', { name: 'Start' })).toBeVisible();
 
 	// Both clients eventually see both participants via Yjs awareness.
-	const participantsA = pageA.getByRole('region', { name: 'Participants' });
-	const participantsB = pageB.getByRole('region', { name: 'Participants' });
+	const participantsA = pageA.getByRole('list', { name: 'Participants' });
+	const participantsB = pageB.getByRole('list', { name: 'Participants' });
 	await expect(participantsA).toContainText('Alice');
 	await expect(participantsA).toContainText('Bob');
 	await expect(participantsB).toContainText('Alice');

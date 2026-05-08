@@ -60,7 +60,7 @@ describe('Card.svelte', () => {
 		const textarea = screen.getByRole('textbox', { name: /edit card/i });
 		await user.clear(textarea);
 		await user.type(textarea, '  updated  ');
-		await user.click(screen.getByRole('button', { name: /^save$/i }));
+		await user.click(screen.getByRole('button', { name: /save changes/i }));
 
 		expect(onEdit).toHaveBeenCalledWith('updated');
 		expect(screen.queryByRole('textbox', { name: /edit card/i })).not.toBeInTheDocument();
@@ -74,7 +74,7 @@ describe('Card.svelte', () => {
 		const textarea = screen.getByRole('textbox', { name: /edit card/i });
 		await user.clear(textarea);
 		await user.type(textarea, 'never saved');
-		await user.click(screen.getByRole('button', { name: /^cancel$/i }));
+		await user.click(screen.getByRole('button', { name: /cancel edit/i }));
 
 		expect(onEdit).not.toHaveBeenCalled();
 		expect(screen.getByText('hello world')).toBeInTheDocument();
