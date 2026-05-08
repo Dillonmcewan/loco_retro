@@ -13,6 +13,12 @@ export default [
 	{
 		languageOptions: {
 			globals: { ...globals.browser, ...globals.node }
+		},
+		rules: {
+			'@typescript-eslint/no-unused-vars': [
+				'error',
+				{ argsIgnorePattern: '^_', varsIgnorePattern: '^_' }
+			]
 		}
 	},
 	{

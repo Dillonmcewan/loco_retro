@@ -4,7 +4,6 @@
  * field after submit shrinks it back). Pair with `resize: none` in CSS so
  * users can't drag.
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function autosize(node: HTMLTextAreaElement, _value?: string) {
 	const resize = () => {
 		node.style.height = 'auto';
