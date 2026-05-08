@@ -9,12 +9,9 @@ import { getTemplate, type Column } from './templates';
 // VITE_RELAY_URL is required. The committed `.env` carries the dev default
 // (ws://localhost:1234); prod builds get it from the deploy target. Fail
 // fast at module load rather than silently connecting to the wrong place.
-const RELAY_URL =
-	typeof import.meta !== 'undefined' ? import.meta.env?.VITE_RELAY_URL : undefined;
+const RELAY_URL = typeof import.meta !== 'undefined' ? import.meta.env?.VITE_RELAY_URL : undefined;
 if (!RELAY_URL) {
-	throw new Error(
-		'VITE_RELAY_URL is not set. Add it to .env (dev) or your deploy target (prod).'
-	);
+	throw new Error('VITE_RELAY_URL is not set. Add it to .env (dev) or your deploy target (prod).');
 }
 
 // ─── Types ─────────────────────────────────────────────────────────────────
