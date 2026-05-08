@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Plus from 'lucide-svelte/icons/plus';
 	import { autosize } from './autosize';
 	import { tooltip } from './tooltip';
 
@@ -46,9 +47,7 @@
 		use:tooltip={'Add card'}
 		disabled={text.trim() === ''}
 	>
-		<svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
-			<path d="M10 4v12M4 10h12" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-		</svg>
+		<Plus />
 	</button>
 </form>
 
@@ -95,7 +94,7 @@
 		cursor: pointer;
 	}
 
-	button svg {
+	button :global(svg) {
 		width: 1rem;
 		height: 1rem;
 	}

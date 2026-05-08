@@ -1,4 +1,7 @@
 <script lang="ts">
+	import Check from 'lucide-svelte/icons/check';
+	import CircleAlert from 'lucide-svelte/icons/circle-alert';
+
 	type Props = {
 		kind: 'success' | 'error';
 		message: string;
@@ -8,27 +11,11 @@
 </script>
 
 <div class="toast toast-{kind}" role="status">
-	<svg class="toast-icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
-		{#if kind === 'success'}
-			<path
-				d="M4 10.5l3.5 3.5L16 6"
-				fill="none"
-				stroke="currentColor"
-				stroke-width="2.2"
-				stroke-linecap="round"
-				stroke-linejoin="round"
-			/>
-		{:else}
-			<path
-				d="M10 5v6M10 14v0.5"
-				fill="none"
-				stroke="currentColor"
-				stroke-width="2.2"
-				stroke-linecap="round"
-			/>
-			<circle cx="10" cy="10" r="7.5" fill="none" stroke="currentColor" stroke-width="1.6" />
-		{/if}
-	</svg>
+	{#if kind === 'success'}
+		<Check class="toast-icon" />
+	{:else}
+		<CircleAlert class="toast-icon" />
+	{/if}
 	<span>{message}</span>
 </div>
 
@@ -51,7 +38,7 @@
 		animation: toast-in 0.18s ease-out;
 	}
 
-	.toast-icon {
+	.toast :global(.toast-icon) {
 		width: 1.125rem;
 		height: 1.125rem;
 		flex: none;

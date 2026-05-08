@@ -1,4 +1,8 @@
 <script lang="ts">
+	import Check from 'lucide-svelte/icons/check';
+	import Pencil from 'lucide-svelte/icons/pencil';
+	import Trash2 from 'lucide-svelte/icons/trash-2';
+	import X from 'lucide-svelte/icons/x';
 	import type { Card } from './room';
 	import { autosize } from './autosize';
 	import { tooltip } from './tooltip';
@@ -88,16 +92,7 @@
 				aria-label="Save changes"
 				use:tooltip={'Save changes'}
 			>
-				<svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
-					<path
-						d="M4 10.5l3.5 3.5L16 6"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2.2"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					/>
-				</svg>
+				<Check />
 			</button>
 			<button
 				type="button"
@@ -107,15 +102,7 @@
 				aria-label="Cancel edit"
 				use:tooltip={'Cancel edit'}
 			>
-				<svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
-					<path
-						d="M5 5l10 10M15 5L5 15"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="2.2"
-						stroke-linecap="round"
-					/>
-				</svg>
+				<X />
 			</button>
 		</div>
 	{:else}
@@ -133,16 +120,7 @@
 						aria-label="Edit card"
 						use:tooltip={'Edit card'}
 					>
-						<svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
-							<path
-								d="M3 17l4-1 9-9-3-3-9 9-1 4zM12 5l3 3"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="1.6"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							/>
-						</svg>
+						<Pencil />
 					</button>
 					<button
 						type="button"
@@ -151,16 +129,7 @@
 						aria-label="Delete card"
 						use:tooltip={'Delete card'}
 					>
-						<svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
-							<path
-								d="M5 6h10M8 6V4h4v2M6 6l1 10h6l1-10M9 9v5M11 9v5"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="1.6"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							/>
-						</svg>
+						<Trash2 />
 					</button>
 				</div>
 			{/if}
@@ -253,7 +222,7 @@
 		border-radius: 2px;
 	}
 
-	button.icon svg {
+	button.icon :global(svg) {
 		width: 1.375rem;
 		height: 1.375rem;
 	}

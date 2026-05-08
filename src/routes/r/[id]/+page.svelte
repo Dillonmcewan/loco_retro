@@ -17,6 +17,7 @@
 		type RoomMetaSnapshot
 	} from '$lib/room';
 	import { getDisplayName, setDisplayName, getAuthorId } from '$lib/displayName';
+	import Share2 from 'lucide-svelte/icons/share-2';
 	import { tooltip } from '$lib/tooltip';
 	import { colorsByParticipant } from '$lib/participantColor';
 	import CardView from '$lib/Card.svelte';
@@ -157,22 +158,7 @@
 					aria-label="Copy invite link"
 					use:tooltip={'Copy invite link'}
 				>
-					<!-- Another hardcoded icon -->
-					<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-						<g
-							fill="none"
-							stroke="currentColor"
-							stroke-width="1.8"
-							stroke-linecap="round"
-							stroke-linejoin="round"
-						>
-							<circle cx="18" cy="5" r="3" />
-							<circle cx="6" cy="12" r="3" />
-							<circle cx="18" cy="19" r="3" />
-							<line x1="8.6" y1="10.6" x2="15.4" y2="6.4" />
-							<line x1="8.6" y1="13.4" x2="15.4" y2="17.6" />
-						</g>
-					</svg>
+					<Share2 />
 				</button>
 			</div>
 			<ul class="participants" aria-label="Participants">
@@ -288,7 +274,7 @@
 		border-radius: 2px;
 	}
 
-	button.link svg {
+	button.link :global(svg) {
 		width: 1.375rem;
 		height: 1.375rem;
 	}
