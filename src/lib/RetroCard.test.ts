@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import RetroCard from './RetroCard.svelte';
-import type { Card as CardType } from './room';
+import type { Card as CardType, Phase } from './room';
 
 const baseCard: CardType = {
 	id: 'card-1',
@@ -12,12 +12,15 @@ const baseCard: CardType = {
 	createdAt: 0
 };
 
-function setup(overrides: Partial<{ card: CardType; currentAuthorId: string }> = {}) {
+function setup(
+	overrides: Partial<{ card: CardType; currentAuthorId: string; phase: Phase }> = {}
+) {
 	const onEdit = vi.fn();
 	const onDelete = vi.fn();
 	const props = {
 		card: overrides.card ?? baseCard,
 		currentAuthorId: overrides.currentAuthorId ?? 'author-1',
+		phase: overrides.phase ?? ('collect' as Phase),
 		onEdit,
 		onDelete
 	};
@@ -78,6 +81,18 @@ describe('RetroCard.svelte', () => {
 
 		expect(onEdit).not.toHaveBeenCalled();
 		expect(screen.getByText('hello world')).toBeInTheDocument();
+	});
+
+	it('hides edit and delete outside collect even for the author', () => {
+		setup({ phase: 'vote' });
+		expect(screen.queryByRole('button', { name: /edit card/i })).not.toBeInTheDocument();
+		expect(screen.queryByRole('button', { name: /delete card/i })).not.toBeInTheDocument();
+	});
+
+	it('hides edit and delete on closed', () => {
+		setup({ phase: 'closed' });
+		expect(screen.queryByRole('button', { name: /edit card/i })).not.toBeInTheDocument();
+		expect(screen.queryByRole('button', { name: /delete card/i })).not.toBeInTheDocument();
 	});
 
 	it('clicking delete fires onDelete', async () => {

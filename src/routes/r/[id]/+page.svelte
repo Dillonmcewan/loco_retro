@@ -10,10 +10,13 @@
 		addCard,
 		editCard,
 		deleteCard,
+		advancePhase,
+		stepBackPhase,
 		type Card,
 		type CardsByColumn,
 		type Participant,
 		type OpenRoom,
+		type Phase,
 		type RoomMetaSnapshot
 	} from '$lib/room';
 	import { getDisplayName, setDisplayName, getAuthorId } from '$lib/displayName';
@@ -22,6 +25,7 @@
 	import { colorsByParticipant } from '$lib/participantColor';
 	import RetroCard from '$lib/RetroCard.svelte';
 	import CardForm from '$lib/CardForm.svelte';
+	import PhaseControls from '$lib/PhaseControls.svelte';
 	import Toast from '$lib/Toast.svelte';
 	import type { Column } from '$lib/templates';
 	import type { PageData } from './$types';
@@ -49,6 +53,7 @@
 	let authorId = $state('');
 
 	const participantColors = $derived(colorsByParticipant(people));
+	const phase = $derived<Phase>(meta?.phase ?? 'collect');
 
 	let room: OpenRoom | null = null;
 
@@ -116,6 +121,16 @@
 		deleteCard(room.doc, columnId, cardId);
 	}
 
+	function handleAdvancePhase() {
+		if (!room) return;
+		advancePhase(room.doc);
+	}
+
+	function handleBackPhase() {
+		if (!room) return;
+		stepBackPhase(room.doc);
+	}
+
 	function cardsFor(columnId: string): Card[] {
 		return cards[columnId] ?? [];
 	}
@@ -161,6 +176,7 @@
 					<Share2 />
 				</button>
 			</div>
+			<PhaseControls {phase} onAdvance={handleAdvancePhase} onBack={handleBackPhase} />
 			<ul class="participants" aria-label="Participants">
 				{#each people as p (p.clientId)}
 					{@const color = participantColors.get(p.clientId)}
@@ -184,6 +200,7 @@
 									<RetroCard
 										{card}
 										currentAuthorId={authorId}
+										{phase}
 										onEdit={(text) => handleEditCard(column.id, card.id, text)}
 										onDelete={() => handleDeleteCard(column.id, card.id)}
 									/>
@@ -194,7 +211,9 @@
 							<p class="empty">No cards yet.</p>
 						{/if}
 					</div>
-					<CardForm onSubmit={(text) => handleAddCard(column.id, text)} />
+					{#if phase === 'collect'}
+						<CardForm onSubmit={(text) => handleAddCard(column.id, text)} />
+					{/if}
 				</article>
 			{/each}
 		</section>

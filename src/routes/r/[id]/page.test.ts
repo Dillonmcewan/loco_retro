@@ -30,6 +30,22 @@ const mockCards = {
 	didnt: []
 };
 
+const PHASE_ORDER_MOCK = ['collect', 'vote', 'discuss', 'closed'] as const;
+type MockPhase = (typeof PHASE_ORDER_MOCK)[number];
+type MetaSnap = { name: string; templateId: string; phase: MockPhase };
+
+let metaSetter: ((v: MetaSnap) => void) | null = null;
+let currentPhase: MockPhase = 'collect';
+
+function nextPhase(p: MockPhase): MockPhase {
+	const i = PHASE_ORDER_MOCK.indexOf(p);
+	return i < PHASE_ORDER_MOCK.length - 1 ? PHASE_ORDER_MOCK[i + 1] : p;
+}
+function prevPhase(p: MockPhase): MockPhase {
+	const i = PHASE_ORDER_MOCK.indexOf(p);
+	return i > 0 ? PHASE_ORDER_MOCK[i - 1] : p;
+}
+
 vi.mock('$lib/room', async () => {
 	const { readable } = await import('svelte/store');
 	const actual = await vi.importActual<typeof import('$lib/room')>('$lib/room');
@@ -43,7 +59,17 @@ vi.mock('$lib/room', async () => {
 			destroy: vi.fn()
 		})),
 		leaveRoom: vi.fn(),
-		roomMetaStore: vi.fn(() => readable({ name: 'Sprint 42', templateId: 'wwd-actions' })),
+		roomMetaStore: vi.fn(() =>
+			readable<MetaSnap>(
+				{ name: 'Sprint 42', templateId: 'wwd-actions', phase: currentPhase },
+				(set) => {
+					metaSetter = set;
+					return () => {
+						metaSetter = null;
+					};
+				}
+			)
+		),
 		columnsStore: vi.fn(() =>
 			readable([
 				{ id: 'went-well', title: 'Went well' },
@@ -54,7 +80,17 @@ vi.mock('$lib/room', async () => {
 		participantsStore: vi.fn(() => readable([{ clientId: 1, name: 'Dillon' }])),
 		addCard: vi.fn(),
 		editCard: vi.fn(),
-		deleteCard: vi.fn()
+		deleteCard: vi.fn(),
+		advancePhase: vi.fn(() => {
+			currentPhase = nextPhase(currentPhase);
+			metaSetter?.({ name: 'Sprint 42', templateId: 'wwd-actions', phase: currentPhase });
+			return currentPhase;
+		}),
+		stepBackPhase: vi.fn(() => {
+			currentPhase = prevPhase(currentPhase);
+			metaSetter?.({ name: 'Sprint 42', templateId: 'wwd-actions', phase: currentPhase });
+			return currentPhase;
+		})
 	};
 });
 
@@ -75,6 +111,8 @@ describe('Room page', () => {
 	beforeEach(() => {
 		localStorage.clear();
 		vi.clearAllMocks();
+		currentPhase = 'collect';
+		metaSetter = null;
 	});
 
 	it('shows the display-name gate when no name is saved', async () => {
@@ -110,6 +148,53 @@ describe('Room page', () => {
 		// Owner sees one Edit + one Delete (for their own card only).
 		expect(screen.getAllByRole('button', { name: /edit card/i })).toHaveLength(1);
 		expect(screen.getAllByRole('button', { name: /delete card/i })).toHaveLength(1);
+	});
+
+	it('renders PhaseControls in the seeded Collect state', async () => {
+		setDisplayName('Dillon');
+		render(RoomPage, { props: { data: { id: VALID_ID } } });
+		await tick();
+
+		expect(screen.getByLabelText(/current phase/i)).toHaveTextContent(/Collect/);
+		expect(screen.getByLabelText(/current phase/i)).toHaveTextContent('1 of 4');
+		expect(screen.getByRole('button', { name: /back to previous phase/i })).toBeDisabled();
+	});
+
+	it('shows CardForm in Collect and hides it after Advance', async () => {
+		const user = userEvent.setup();
+		setDisplayName('Dillon');
+		render(RoomPage, { props: { data: { id: VALID_ID } } });
+		await tick();
+
+		expect(screen.getAllByLabelText(/new card text/i).length).toBeGreaterThan(0);
+
+		await user.click(screen.getByRole('button', { name: 'Advance' }));
+		await tick();
+
+		expect(screen.queryByLabelText(/new card text/i)).not.toBeInTheDocument();
+		expect(screen.getByLabelText(/current phase/i)).toHaveTextContent(/Vote/);
+	});
+
+	it('Advance walks through Vote → Discuss → Closed and hides Advance at the end', async () => {
+		const user = userEvent.setup();
+		setDisplayName('Dillon');
+		render(RoomPage, { props: { data: { id: VALID_ID } } });
+		await tick();
+
+		await user.click(screen.getByRole('button', { name: 'Advance' }));
+		await tick();
+		expect(screen.getByLabelText(/current phase/i)).toHaveTextContent(/Vote/);
+
+		await user.click(screen.getByRole('button', { name: 'Advance' }));
+		await tick();
+		expect(screen.getByLabelText(/current phase/i)).toHaveTextContent(/Discuss/);
+		expect(screen.getByRole('button', { name: 'Close room' })).toBeInTheDocument();
+
+		await user.click(screen.getByRole('button', { name: 'Close room' }));
+		await tick();
+		expect(screen.getByLabelText(/current phase/i)).toHaveTextContent(/Closed/);
+		expect(screen.queryByRole('button', { name: /advance/i })).not.toBeInTheDocument();
+		expect(screen.queryByRole('button', { name: /close room/i })).not.toBeInTheDocument();
 	});
 
 	it('persists the name on gate submit and reveals the room', async () => {

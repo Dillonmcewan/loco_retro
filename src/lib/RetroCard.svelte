@@ -3,7 +3,7 @@
 	import Pencil from 'lucide-svelte/icons/pencil';
 	import Trash2 from 'lucide-svelte/icons/trash-2';
 	import X from 'lucide-svelte/icons/x';
-	import type { Card as CardType } from './room';
+	import type { Card as CardType, Phase } from './room';
 	import Card from './Card.svelte';
 	import { autosize } from './autosize';
 	import { tooltip } from './tooltip';
@@ -11,17 +11,18 @@
 	type Props = {
 		card: CardType;
 		currentAuthorId: string;
+		phase: Phase;
 		onEdit: (text: string) => void;
 		onDelete: () => void;
 	};
 
-	let { card, currentAuthorId, onEdit, onDelete }: Props = $props();
+	let { card, currentAuthorId, phase, onEdit, onDelete }: Props = $props();
 
 	let editing = $state(false);
 	let draft = $state('');
 	let textareaEl: HTMLTextAreaElement | undefined = $state();
 
-	const isOwner = $derived(card.authorId === currentAuthorId);
+	const canMutate = $derived(card.authorId === currentAuthorId && phase === 'collect');
 
 	$effect(() => {
 		if (editing && textareaEl) {
@@ -117,12 +118,12 @@
 			</button>
 		</div>
 	{:else}
-		<p class="text" class:editable={isOwner} ondblclick={isOwner ? startEdit : undefined}>
+		<p class="text" class:editable={canMutate} ondblclick={canMutate ? startEdit : undefined}>
 			{card.text}
 		</p>
 		<footer>
 			<span class="author">{card.author}</span>
-			{#if isOwner}
+			{#if canMutate}
 				<div class="owner-actions">
 					<button
 						type="button"
