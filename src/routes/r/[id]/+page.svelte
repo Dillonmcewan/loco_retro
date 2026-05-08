@@ -20,7 +20,7 @@
 	import Share2 from 'lucide-svelte/icons/share-2';
 	import { tooltip } from '$lib/tooltip';
 	import { colorsByParticipant } from '$lib/participantColor';
-	import CardView from '$lib/Card.svelte';
+	import RetroCard from '$lib/RetroCard.svelte';
 	import CardForm from '$lib/CardForm.svelte';
 	import Toast from '$lib/Toast.svelte';
 	import type { Column } from '$lib/templates';
@@ -181,7 +181,7 @@
 						<ul class="card-list">
 							{#each cardsFor(column.id) as card (card.id)}
 								<li>
-									<CardView
+									<RetroCard
 										{card}
 										currentAuthorId={authorId}
 										onEdit={(text) => handleEditCard(column.id, card.id, text)}

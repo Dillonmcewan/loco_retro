@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
-import Card from './Card.svelte';
+import RetroCard from './RetroCard.svelte';
 import type { Card as CardType } from './room';
 
 const baseCard: CardType = {
@@ -21,10 +21,10 @@ function setup(overrides: Partial<{ card: CardType; currentAuthorId: string }> =
 		onEdit,
 		onDelete
 	};
-	return { ...render(Card, { props }), onEdit, onDelete };
+	return { ...render(RetroCard, { props }), onEdit, onDelete };
 }
 
-describe('Card.svelte', () => {
+describe('RetroCard.svelte', () => {
 	it('renders card text and author', () => {
 		setup();
 		expect(screen.getByText('hello world')).toBeInTheDocument();
