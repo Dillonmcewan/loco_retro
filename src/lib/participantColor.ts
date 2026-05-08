@@ -1,11 +1,17 @@
 /**
- * Deterministic, per-name pill colors. Same display name always produces the
- * same color in this browser session, so participants stay visually stable as
- * the awareness list reorders. Two browsers may render the same name with
- * different colors — that's fine since the mapping is local-only.
+ * Per-participant pill colors. Sorts participants by clientId ascending and
+ * assigns palette colors by position, so two participants in the same room
+ * never share a color until the room exceeds PALETTE.length. Two browsers
+ * may render the same name with different colors — that's fine since the
+ * mapping is local-only.
+ *
+ * Trade-off: a participant's color can shift if an earlier-clientId
+ * participant disconnects and the room re-sorts. Acceptable for v1.
  */
 
-const PALETTE: ReadonlyArray<{ bg: string; fg: string }> = [
+export type ParticipantColor = { bg: string; fg: string };
+
+const PALETTE: ReadonlyArray<ParticipantColor> = [
 	{ bg: '#ffd9c2', fg: '#7a3a1d' }, // peach
 	{ bg: '#ffe2b8', fg: '#7a4f1d' }, // amber
 	{ bg: '#fef3b7', fg: '#6e591a' }, // butter
@@ -18,21 +24,16 @@ const PALETTE: ReadonlyArray<{ bg: string; fg: string }> = [
 	{ bg: '#e6dac7', fg: '#5a4a30' } // sand
 ];
 
-function hash(str: string): number {
-	// FNV-1a, 32-bit. Tiny, distributes single-character changes well.
-	let h = 0x811c9dc5;
-	for (let i = 0; i < str.length; i++) {
-		h ^= str.charCodeAt(i);
-		h = Math.imul(h, 0x01000193);
-	}
-	return h >>> 0;
-}
-
-export function colorForName(name: string): { bg: string; fg: string } {
-	// How likely are hash collisions here? I wonder if a better strategy would be to deterministically
-	// sort all users in the channel and then assign colors based on that order. That would guarantee no collisions
-	// until we hit PALETTE.length + 1 users. New users joining the channel might cause the assigned colors to shift
-	// (unless we sort on the join time), but that is a minor issue
-	const idx = hash(name) % PALETTE.length;
-	return PALETTE[idx];
+/**
+ * Build a clientId → color lookup for the given participant set. Sort by
+ * clientId ascending; collisions only happen past PALETTE.length, where we
+ * wrap.
+ */
+export function colorsByParticipant<T extends { clientId: number }>(
+	people: ReadonlyArray<T>
+): Map<number, ParticipantColor> {
+	const sorted = [...people].sort((a, b) => a.clientId - b.clientId);
+	const map = new Map<number, ParticipantColor>();
+	sorted.forEach((p, i) => map.set(p.clientId, PALETTE[i % PALETTE.length]));
+	return map;
 }

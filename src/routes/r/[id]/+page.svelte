@@ -18,7 +18,7 @@
 	} from '$lib/room';
 	import { getDisplayName, setDisplayName, getAuthorId } from '$lib/displayName';
 	import { tooltip } from '$lib/tooltip';
-	import { colorForName } from '$lib/participantColor';
+	import { colorsByParticipant } from '$lib/participantColor';
 	import CardView from '$lib/Card.svelte';
 	import CardForm from '$lib/CardForm.svelte';
 	import Toast from '$lib/Toast.svelte';
@@ -46,6 +46,8 @@
 	let cards = $state<CardsByColumn>({});
 	let people = $state<Participant[]>([]);
 	let authorId = $state('');
+
+	const participantColors = $derived(colorsByParticipant(people));
 
 	let room: OpenRoom | null = null;
 
@@ -175,8 +177,8 @@
 			</div>
 			<ul class="participants" aria-label="Participants">
 				{#each people as p (p.clientId)}
-					{@const color = colorForName(p.name)}
-					<li style:background-color={color.bg} style:color={color.fg}>{p.name}</li>
+					{@const color = participantColors.get(p.clientId)}
+					<li style:background-color={color?.bg} style:color={color?.fg}>{p.name}</li>
 				{/each}
 			</ul>
 		</header>

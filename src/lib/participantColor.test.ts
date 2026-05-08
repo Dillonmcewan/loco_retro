@@ -1,39 +1,51 @@
 import { describe, it, expect } from 'vitest';
-import { colorForName } from './participantColor';
+import { colorsByParticipant } from './participantColor';
 
-describe('colorForName', () => {
-	it('returns the same color for the same name across calls', () => {
-		const a = colorForName('Dillon');
-		const b = colorForName('Dillon');
-		expect(a).toEqual(b);
+describe('colorsByParticipant', () => {
+	it('assigns the first palette color to the lowest clientId', () => {
+		const map = colorsByParticipant([{ clientId: 50 }, { clientId: 10 }, { clientId: 30 }]);
+		// Sorted ascending: 10, 30, 50 — so 10 gets the first palette entry.
+		const ten = map.get(10)!;
+		const thirty = map.get(30)!;
+		const fifty = map.get(50)!;
+		expect(ten).toBeDefined();
+		expect(thirty).toBeDefined();
+		expect(fifty).toBeDefined();
+		expect(ten).not.toEqual(thirty);
+		expect(thirty).not.toEqual(fifty);
+		expect(ten).not.toEqual(fifty);
 	});
 
-	it('returns case- and whitespace-sensitive results', () => {
-		// Documents current behavior: hashing is exact-string. If we ever want
-		// to fold case/whitespace, this assertion will need to flip.
-		expect(colorForName('Dillon')).not.toEqual(colorForName('dillon'));
-		expect(colorForName('Dillon')).not.toEqual(colorForName(' Dillon'));
+	it('does not collide for any participant set within palette size', () => {
+		const people = Array.from({ length: 10 }, (_, i) => ({ clientId: i }));
+		const map = colorsByParticipant(people);
+		const distinctBgs = new Set(Array.from(map.values()).map((c) => c.bg));
+		expect(distinctBgs.size).toBe(10);
 	});
 
-	it('returns one of the palette entries (matching bg/fg shape)', () => {
-		const c = colorForName('Anyone');
-		expect(typeof c.bg).toBe('string');
-		expect(typeof c.fg).toBe('string');
+	it('wraps around past the palette size', () => {
+		const people = Array.from({ length: 12 }, (_, i) => ({ clientId: i }));
+		const map = colorsByParticipant(people);
+		// 11th and 12th wrap to the first two palette entries.
+		expect(map.get(0)).toEqual(map.get(10));
+		expect(map.get(1)).toEqual(map.get(11));
+	});
+
+	it('is deterministic for the same input set', () => {
+		const a = colorsByParticipant([{ clientId: 7 }, { clientId: 3 }]);
+		const b = colorsByParticipant([{ clientId: 3 }, { clientId: 7 }]);
+		expect(a.get(3)).toEqual(b.get(3));
+		expect(a.get(7)).toEqual(b.get(7));
+	});
+
+	it('returns an empty map for no participants', () => {
+		expect(colorsByParticipant([])).toEqual(new Map());
+	});
+
+	it('returns palette-shape entries (hex bg/fg)', () => {
+		const map = colorsByParticipant([{ clientId: 1 }]);
+		const c = map.get(1)!;
 		expect(c.bg).toMatch(/^#[0-9a-f]{6}$/i);
 		expect(c.fg).toMatch(/^#[0-9a-f]{6}$/i);
-	});
-
-	it('distributes across multiple palette entries for varied inputs', () => {
-		const names = ['Alice', 'Bob', 'Charlie', 'Dillon', 'Eve', 'Frank', 'Grace', 'Heidi'];
-		const distinct = new Set(names.map((n) => colorForName(n).bg));
-		// Not asserting all-distinct (collisions are allowed), but the hash
-		// should produce more than one bucket for a small varied sample.
-		expect(distinct.size).toBeGreaterThan(1);
-	});
-
-	it('handles the empty string without throwing', () => {
-		expect(() => colorForName('')).not.toThrow();
-		const c = colorForName('');
-		expect(c.bg).toMatch(/^#[0-9a-f]{6}$/i);
 	});
 });
