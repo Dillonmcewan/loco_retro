@@ -29,7 +29,10 @@ export type OpenRoom = {
 export type SeedParams = {
 	name: string;
 	templateId: string;
+	votesPerParticipant?: number;
 };
+
+export const DEFAULT_VOTES_PER_PARTICIPANT = 5;
 
 export const PHASE_ORDER = ['collect', 'vote', 'discuss', 'closed'] as const;
 export type Phase = (typeof PHASE_ORDER)[number];
@@ -42,6 +45,7 @@ export type RoomMetaSnapshot = {
 	name: string;
 	templateId: string;
 	phase: Phase;
+	votesPerParticipant: number;
 };
 
 export type Participant = { clientId: number; name: string };
@@ -148,12 +152,17 @@ export function openRoomDoc(id: RoomId): OpenRoom {
  * @returns true if seeding actually happened.
  */
 export function seedRoom(doc: Y.Doc, params: SeedParams): boolean {
-	const meta = doc.getMap<string>('meta');
+	const meta = doc.getMap<unknown>('meta');
 	if (meta.get('name')) return false;
 
 	const template = getTemplate(params.templateId);
 	if (!template) {
 		throw new Error(`Unknown template: ${params.templateId}`);
+	}
+
+	const requested = params.votesPerParticipant ?? DEFAULT_VOTES_PER_PARTICIPANT;
+	if (!Number.isInteger(requested) || requested < 1) {
+		throw new Error(`votesPerParticipant must be a positive integer (got ${requested})`);
 	}
 
 	const columns = doc.getArray<Y.Map<unknown>>('columns');
@@ -162,6 +171,7 @@ export function seedRoom(doc: Y.Doc, params: SeedParams): boolean {
 		meta.set('name', params.name);
 		meta.set('templateId', params.templateId);
 		meta.set('phase', 'collect');
+		meta.set('votesPerParticipant', requested);
 		columns.push(
 			template.columns.map((c) => {
 				const col = new Y.Map<unknown>();
@@ -177,19 +187,26 @@ export function seedRoom(doc: Y.Doc, params: SeedParams): boolean {
 }
 
 export function readRoomMeta(doc: Y.Doc): RoomMetaSnapshot | null {
-	const meta = doc.getMap<string>('meta');
+	const meta = doc.getMap<unknown>('meta');
 	const name = meta.get('name');
 	const templateId = meta.get('templateId');
-	if (!name || !templateId) return null;
+	if (typeof name !== 'string' || !name || typeof templateId !== 'string' || !templateId) {
+		return null;
+	}
 	const rawPhase = meta.get('phase');
 	const phase: Phase = isPhase(rawPhase) ? rawPhase : 'collect';
-	return { name, templateId, phase };
+	const rawVotes = meta.get('votesPerParticipant');
+	const votesPerParticipant =
+		typeof rawVotes === 'number' && Number.isInteger(rawVotes) && rawVotes >= 1
+			? rawVotes
+			: DEFAULT_VOTES_PER_PARTICIPANT;
+	return { name, templateId, phase, votesPerParticipant };
 }
 
 // ─── Phase machine ─────────────────────────────────────────────────────────
 
 export function getPhase(doc: Y.Doc): Phase {
-	const raw = doc.getMap<string>('meta').get('phase');
+	const raw = doc.getMap<unknown>('meta').get('phase');
 	return isPhase(raw) ? raw : 'collect';
 }
 
@@ -198,7 +215,7 @@ export function setPhase(doc: Y.Doc, phase: Phase): void {
 		throw new Error(`Unknown phase: ${String(phase)}`);
 	}
 	doc.transact(() => {
-		doc.getMap<string>('meta').set('phase', phase);
+		doc.getMap<unknown>('meta').set('phase', phase);
 	});
 }
 
@@ -351,7 +368,7 @@ export function leaveRoom(): void {
 // to `observeDeep`.
 export function roomMetaStore(doc: Y.Doc): Readable<RoomMetaSnapshot | null> {
 	return readable<RoomMetaSnapshot | null>(readRoomMeta(doc), (set) => {
-		const meta = doc.getMap<string>('meta');
+		const meta = doc.getMap<unknown>('meta');
 		const handler = () => set(readRoomMeta(doc));
 		meta.observe(handler);
 		return () => meta.unobserve(handler);

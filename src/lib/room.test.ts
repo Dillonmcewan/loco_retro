@@ -74,7 +74,8 @@ describe('seedRoom', () => {
 		expect(readRoomMeta(doc)).toEqual({
 			name: 'Sprint 42',
 			templateId: DEFAULT_TEMPLATE_ID,
-			phase: 'collect'
+			phase: 'collect',
+			votesPerParticipant: 5
 		});
 		expect(readColumns(doc)).toEqual(getTemplate(DEFAULT_TEMPLATE_ID)?.columns);
 	});
@@ -88,9 +89,29 @@ describe('seedRoom', () => {
 		expect(readRoomMeta(doc)).toEqual({
 			name: 'Sprint 42',
 			templateId: DEFAULT_TEMPLATE_ID,
-			phase: 'collect'
+			phase: 'collect',
+			votesPerParticipant: 5
 		});
 		expect(readColumns(doc)).toEqual(getTemplate(DEFAULT_TEMPLATE_ID)?.columns);
+	});
+
+	it('honors an explicit votesPerParticipant value', () => {
+		const doc = new Y.Doc();
+		seedRoom(doc, { name: 'r', templateId: DEFAULT_TEMPLATE_ID, votesPerParticipant: 12 });
+		expect(readRoomMeta(doc)?.votesPerParticipant).toBe(12);
+	});
+
+	it('rejects non-positive / non-integer votesPerParticipant', () => {
+		const doc = new Y.Doc();
+		expect(() =>
+			seedRoom(doc, { name: 'r', templateId: DEFAULT_TEMPLATE_ID, votesPerParticipant: 0 })
+		).toThrow(/votesPerParticipant/);
+		expect(() =>
+			seedRoom(doc, { name: 'r', templateId: DEFAULT_TEMPLATE_ID, votesPerParticipant: -1 })
+		).toThrow(/votesPerParticipant/);
+		expect(() =>
+			seedRoom(doc, { name: 'r', templateId: DEFAULT_TEMPLATE_ID, votesPerParticipant: 1.5 })
+		).toThrow(/votesPerParticipant/);
 	});
 
 	it('throws on an unknown template id', () => {
