@@ -2,98 +2,57 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
+import * as Y from 'yjs';
 
-const mockAwareness = {
-	setLocalStateField: vi.fn(),
-	getStates: () => new Map(),
-	on: vi.fn(),
-	off: vi.fn()
+/**
+ * These tests drive the room route against a real `Y.Doc` seeded by `seedRoom`
+ * and the real `$lib/room` store helpers / mutation functions. Only the
+ * provider/persistence side is replaced — `ensureRoom` returns a hand-built
+ * `OpenRoom` whose `doc` is real and whose `awareness` is a tiny in-memory
+ * fake that satisfies the participants store contract. Everything else
+ * (CRDT reads/writes, store subscriptions, phase advancement) exercises
+ * production code.
+ */
+
+type FakeAwareness = {
+	setLocalStateField: (key: string, value: unknown) => void;
+	getStates: () => Map<number, Record<string, unknown>>;
+	on: (event: 'change', handler: () => void) => void;
+	off: (event: 'change', handler: () => void) => void;
 };
 
-const mockCards = {
-	'went-well': [
-		{
-			id: 'card-mine',
-			text: 'mine',
-			author: 'Dillon',
-			authorId: 'me',
-			createdAt: 0
+function makeFakeAwareness(clientId: number): FakeAwareness {
+	let state: Record<string, unknown> = {};
+	const listeners = new Set<() => void>();
+	return {
+		setLocalStateField(key, value) {
+			state = { ...state, [key]: value };
+			listeners.forEach((l) => l());
 		},
-		{
-			id: 'card-foreign',
-			text: 'theirs',
-			author: 'Other',
-			authorId: 'someone-else',
-			createdAt: 0
+		getStates() {
+			return new Map([[clientId, state]]);
+		},
+		on(_event, handler) {
+			listeners.add(handler);
+		},
+		off(_event, handler) {
+			listeners.delete(handler);
 		}
-	],
-	didnt: []
-};
-
-const PHASE_ORDER_MOCK = ['collect', 'vote', 'discuss', 'closed'] as const;
-type MockPhase = (typeof PHASE_ORDER_MOCK)[number];
-type MetaSnap = { name: string; templateId: string; phase: MockPhase };
-
-let metaSetter: ((v: MetaSnap) => void) | null = null;
-let currentPhase: MockPhase = 'collect';
-
-function nextPhase(p: MockPhase): MockPhase {
-	const i = PHASE_ORDER_MOCK.indexOf(p);
-	return i < PHASE_ORDER_MOCK.length - 1 ? PHASE_ORDER_MOCK[i + 1] : p;
-}
-function prevPhase(p: MockPhase): MockPhase {
-	const i = PHASE_ORDER_MOCK.indexOf(p);
-	return i > 0 ? PHASE_ORDER_MOCK[i - 1] : p;
+	};
 }
 
-// This mock is getting pretty crazy. I don't know much about Svelte stores,
-// but in Vue there is first class support for loading real stores and injecting mock data.
-// Is there a more idiomatic way to do this in Svelte without these brittle mocks?
+// Hoisted holder so the vi.mock factory (which is itself hoisted) can read
+// the room built fresh per test in beforeEach.
+const { roomHolder } = vi.hoisted(() => ({
+	roomHolder: { room: null as unknown }
+}));
+
 vi.mock('$lib/room', async () => {
-	const { readable } = await import('svelte/store');
 	const actual = await vi.importActual<typeof import('$lib/room')>('$lib/room');
 	return {
 		...actual,
-		ensureRoom: vi.fn(() => ({
-			doc: {},
-			awareness: mockAwareness,
-			provider: {},
-			persistence: {},
-			destroy: vi.fn()
-		})),
-		leaveRoom: vi.fn(),
-		roomMetaStore: vi.fn(() =>
-			readable<MetaSnap>(
-				{ name: 'Sprint 42', templateId: 'wwd-actions', phase: currentPhase },
-				(set) => {
-					metaSetter = set;
-					return () => {
-						metaSetter = null;
-					};
-				}
-			)
-		),
-		columnsStore: vi.fn(() =>
-			readable([
-				{ id: 'went-well', title: 'Went well' },
-				{ id: 'didnt', title: "Didn't go well" }
-			])
-		),
-		cardsStore: vi.fn(() => readable(mockCards)),
-		participantsStore: vi.fn(() => readable([{ clientId: 1, name: 'Dillon' }])),
-		addCard: vi.fn(),
-		editCard: vi.fn(),
-		deleteCard: vi.fn(),
-		advancePhase: vi.fn(() => {
-			currentPhase = nextPhase(currentPhase);
-			metaSetter?.({ name: 'Sprint 42', templateId: 'wwd-actions', phase: currentPhase });
-			return currentPhase;
-		}),
-		stepBackPhase: vi.fn(() => {
-			currentPhase = prevPhase(currentPhase);
-			metaSetter?.({ name: 'Sprint 42', templateId: 'wwd-actions', phase: currentPhase });
-			return currentPhase;
-		})
+		ensureRoom: vi.fn(() => roomHolder.room),
+		leaveRoom: vi.fn()
 	};
 });
 
@@ -107,15 +66,39 @@ vi.mock('$lib/displayName', async () => {
 
 import RoomPage from './+page.svelte';
 import { setDisplayName } from '$lib/displayName';
+import { seedRoom, addCard, type OpenRoom } from '$lib/room';
 
 const VALID_ID = '11111111-1111-4111-8111-111111111111';
+
+let awareness: FakeAwareness;
+
+function buildRoom(): { doc: Y.Doc; awareness: FakeAwareness } {
+	const doc = new Y.Doc();
+	seedRoom(doc, { name: 'Sprint 42', templateId: 'wwd-actions' });
+	addCard(doc, { columnId: 'went-well', text: 'mine', author: 'Dillon', authorId: 'me' });
+	addCard(doc, {
+		columnId: 'went-well',
+		text: 'theirs',
+		author: 'Other',
+		authorId: 'someone-else'
+	});
+	const aw = makeFakeAwareness(1);
+	const room: OpenRoom = {
+		doc,
+		awareness: aw as unknown as OpenRoom['awareness'],
+		provider: {} as OpenRoom['provider'],
+		persistence: {} as OpenRoom['persistence'],
+		destroy: vi.fn()
+	};
+	roomHolder.room = room;
+	return { doc, awareness: aw };
+}
 
 describe('Room page', () => {
 	beforeEach(() => {
 		localStorage.clear();
 		vi.clearAllMocks();
-		currentPhase = 'collect';
-		metaSetter = null;
+		({ awareness } = buildRoom());
 	});
 
 	it('shows the display-name gate when no name is saved', async () => {
@@ -133,9 +116,7 @@ describe('Room page', () => {
 
 		expect(screen.getByRole('heading', { name: /sprint 42/i })).toBeInTheDocument();
 		expect(screen.queryByRole('heading', { name: /join the retro/i })).not.toBeInTheDocument();
-		expect(mockAwareness.setLocalStateField).toHaveBeenCalledWith('user', { name: 'Dillon' });
-
-		// Columns from the mocked store render.
+		expect(awareness.getStates().get(1)?.user).toEqual({ name: 'Dillon' });
 		expect(screen.getByRole('heading', { name: /went well/i })).toBeInTheDocument();
 	});
 
@@ -144,11 +125,10 @@ describe('Room page', () => {
 		render(RoomPage, { props: { data: { id: VALID_ID } } });
 		await tick();
 
-		// Both cards render.
 		expect(screen.getByText('mine')).toBeInTheDocument();
 		expect(screen.getByText('theirs')).toBeInTheDocument();
 
-		// Owner sees one Edit + one Delete (for their own card only).
+		// Owner sees Edit + Delete only on their own card.
 		expect(screen.getAllByRole('button', { name: /edit card/i })).toHaveLength(1);
 		expect(screen.getAllByRole('button', { name: /delete card/i })).toHaveLength(1);
 	});
@@ -208,7 +188,7 @@ describe('Room page', () => {
 		await user.click(screen.getByRole('button', { name: /join/i }));
 
 		expect(localStorage.getItem('loco_retro:displayName')).toBe('Dillon');
-		expect(mockAwareness.setLocalStateField).toHaveBeenCalledWith('user', { name: 'Dillon' });
+		expect(awareness.getStates().get(1)?.user).toEqual({ name: 'Dillon' });
 		expect(screen.getByRole('heading', { name: /sprint 42/i })).toBeInTheDocument();
 	});
 });
