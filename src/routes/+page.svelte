@@ -5,7 +5,8 @@
 		ensureRoom,
 		leaveRoom,
 		seedRoom,
-		DEFAULT_VOTES_PER_PARTICIPANT
+		DEFAULT_VOTES_PER_PARTICIPANT,
+		isValidVoteCount
 	} from '$lib/room';
 	import { PRESET_TEMPLATES, DEFAULT_TEMPLATE_ID } from '$lib/templates';
 
@@ -23,7 +24,7 @@
 			fieldErrors = { roomName: 'Room name is required.' };
 			return;
 		}
-		if (!Number.isInteger(votesPerParticipant) || votesPerParticipant < 1) {
+		if (!isValidVoteCount(votesPerParticipant)) {
 			fieldErrors = { votes: 'Votes per participant must be a positive integer.' };
 			return;
 		}

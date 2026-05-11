@@ -34,6 +34,10 @@ export type SeedParams = {
 
 export const DEFAULT_VOTES_PER_PARTICIPANT = 5;
 
+export function isValidVoteCount(value: unknown): value is number {
+	return typeof value === 'number' && Number.isInteger(value) && value >= 1;
+}
+
 export const PHASE_ORDER = ['collect', 'vote', 'discuss', 'closed'] as const;
 export type Phase = (typeof PHASE_ORDER)[number];
 
@@ -161,7 +165,7 @@ export function seedRoom(doc: Y.Doc, params: SeedParams): boolean {
 	}
 
 	const requested = params.votesPerParticipant ?? DEFAULT_VOTES_PER_PARTICIPANT;
-	if (!Number.isInteger(requested) || requested < 1) {
+	if (!isValidVoteCount(requested)) {
 		throw new Error(`votesPerParticipant must be a positive integer (got ${requested})`);
 	}
 
@@ -199,10 +203,9 @@ export function readRoomMeta(doc: Y.Doc): RoomMetaSnapshot | null {
 	const rawPhase = meta.get('phase');
 	const phase: Phase = isPhase(rawPhase) ? rawPhase : 'collect';
 	const rawVotes = meta.get('votesPerParticipant');
-	const votesPerParticipant =
-		typeof rawVotes === 'number' && Number.isInteger(rawVotes) && rawVotes >= 1
-			? rawVotes
-			: DEFAULT_VOTES_PER_PARTICIPANT;
+	const votesPerParticipant = isValidVoteCount(rawVotes)
+		? rawVotes
+		: DEFAULT_VOTES_PER_PARTICIPANT;
 	return { name, templateId, phase, votesPerParticipant };
 }
 
@@ -371,9 +374,7 @@ function ballotSpent(b: Y.Map<number>): number {
 
 function readVotesPerParticipant(doc: Y.Doc): number {
 	const raw = doc.getMap<unknown>('meta').get('votesPerParticipant');
-	return typeof raw === 'number' && Number.isInteger(raw) && raw >= 1
-		? raw
-		: DEFAULT_VOTES_PER_PARTICIPANT;
+	return isValidVoteCount(raw) ? raw : DEFAULT_VOTES_PER_PARTICIPANT;
 }
 
 export function castVote(doc: Y.Doc, authorId: string, cardId: string): boolean {
