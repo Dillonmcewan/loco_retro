@@ -16,6 +16,7 @@
 		stepBackPhase,
 		castVote,
 		retractVote,
+		toggleDiscussed,
 		type Ballot,
 		type Card,
 		type CardsByColumn,
@@ -68,6 +69,22 @@
 	const votesSpent = $derived(Object.values(myBallot).reduce((acc, n) => acc + n, 0));
 	const votesRemaining = $derived(Math.max(votesTotal - votesSpent, 0));
 	const canCastVote = $derived(phase === 'vote' && votesRemaining > 0);
+
+	// During Discuss/Closed, sort each column's cards by vote total descending,
+	// tie-broken by createdAt ascending. Other phases keep insertion order.
+	const displayedCards = $derived.by(() => {
+		if (phase !== 'discuss' && phase !== 'closed') return cards;
+		const out: CardsByColumn = {};
+		for (const [colId, list] of Object.entries(cards)) {
+			out[colId] = [...list].sort((a, b) => {
+				const va = voteTotals[a.id] ?? 0;
+				const vb = voteTotals[b.id] ?? 0;
+				if (vb !== va) return vb - va;
+				return a.createdAt - b.createdAt;
+			});
+		}
+		return out;
+	});
 
 	let room: OpenRoom | null = null;
 
@@ -164,8 +181,13 @@
 		retractVote(room.doc, authorId, cardId);
 	}
 
+	function handleToggleDiscussed(columnId: string, cardId: string) {
+		if (!room) return;
+		toggleDiscussed(room.doc, columnId, cardId);
+	}
+
 	function cardsFor(columnId: string): Card[] {
-		return cards[columnId] ?? [];
+		return displayedCards[columnId] ?? [];
 	}
 
 	async function copyUrl() {
@@ -240,8 +262,10 @@
 										currentAuthorId={authorId}
 										{phase}
 										voteTotal={voteTotals[card.id] ?? 0}
+										discussed={card.discussed ?? false}
 										onEdit={(text) => handleEditCard(column.id, card.id, text)}
 										onDelete={() => handleDeleteCard(column.id, card.id)}
+										onToggleDiscussed={() => handleToggleDiscussed(column.id, card.id)}
 									>
 										{#snippet votingSlot()}
 											{#if phase === 'vote'}

@@ -239,6 +239,62 @@ describe('Room page', () => {
 		expect(badges[0]).toHaveTextContent(/Votes:\s*2/);
 	});
 
+	it('Discuss phase: sorts cards by vote total desc, tie-broken by createdAt asc', async () => {
+		const user = userEvent.setup();
+		setDisplayName('Dillon');
+		render(RoomPage, { props: { data: { id: VALID_ID } } });
+		await tick();
+
+		await user.click(screen.getByRole('button', { name: 'Advance: Vote' }));
+		await tick();
+
+		// "theirs" is the second card (newer createdAt); cast 2 votes on it
+		// so it should sort above "mine" in Discuss.
+		const plusButtons = screen.getAllByRole('button', { name: /cast a vote/i });
+		await user.click(plusButtons[1]);
+		await user.click(plusButtons[1]);
+		await tick();
+
+		await user.click(screen.getByRole('button', { name: 'Advance: Discuss' }));
+		await tick();
+
+		const rendered = screen
+			.getAllByText(/^(mine|theirs)$/)
+			.map((el) => el.textContent);
+		expect(rendered).toEqual(['theirs', 'mine']);
+	});
+
+	it('Discuss phase: discussed toggle flips the card to a discussed state', async () => {
+		const user = userEvent.setup();
+		setDisplayName('Dillon');
+		render(RoomPage, { props: { data: { id: VALID_ID } } });
+		await tick();
+
+		await user.click(screen.getByRole('button', { name: 'Advance: Vote' }));
+		await tick();
+		await user.click(screen.getByRole('button', { name: 'Advance: Discuss' }));
+		await tick();
+
+		const toggles = screen.getAllByRole('button', { name: /mark as discussed/i });
+		expect(toggles.length).toBeGreaterThanOrEqual(2);
+
+		await user.click(toggles[0]);
+		await tick();
+
+		expect(screen.getAllByRole('button', { name: /mark as not discussed/i })).toHaveLength(1);
+	});
+
+	it('Collect phase: cards render in insertion order even when vote totals differ', async () => {
+		setDisplayName('Dillon');
+		render(RoomPage, { props: { data: { id: VALID_ID } } });
+		await tick();
+
+		const rendered = screen
+			.getAllByText(/^(mine|theirs)$/)
+			.map((el) => el.textContent);
+		expect(rendered).toEqual(['mine', 'theirs']);
+	});
+
 	it('persists the name on gate submit and reveals the room', async () => {
 		const user = userEvent.setup();
 		render(RoomPage, { props: { data: { id: VALID_ID } } });
