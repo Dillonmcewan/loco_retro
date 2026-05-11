@@ -6,7 +6,10 @@ export default defineConfig({
 	webServer: [
 		{
 			command: 'pnpm party:dev',
-			url: 'http://localhost:1999',
+			// PartyKit returns 404 on `/`, so use a TCP port-listen check
+			// rather than the URL-based one (which only accepts 2xx/3xx/4xx
+			// in a narrow range).
+			port: 1999,
 			reuseExistingServer: !process.env.CI,
 			timeout: 120_000
 		},

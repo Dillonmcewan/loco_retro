@@ -10,6 +10,7 @@ dist/
 .netlify/
 .cloudflare/
 .wrangler/
+.partykit/
 
 # Env / secrets — commit shared defaults; ignore local-only overrides
 .env.local
