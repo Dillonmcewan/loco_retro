@@ -95,6 +95,13 @@ type CardShape = {
 	editedAt?: number;
 };
 
+type MetaShape = {
+	name: string;
+	templateId: string;
+	phase: Phase;
+	votesPerParticipant: number;
+};
+
 function makeAccess<Shape>() {
 	return {
 		get<K extends keyof Shape>(m: Y.Map<unknown>, k: K): Shape[K] {
@@ -108,6 +115,11 @@ function makeAccess<Shape>() {
 
 const colAcc = makeAccess<ColumnShape>();
 const cardAcc = makeAccess<CardShape>();
+const metaAcc = makeAccess<MetaShape>();
+
+function metaMap(doc: Y.Doc): Y.Map<unknown> {
+	return doc.getMap<unknown>('meta');
+}
 
 // ─── Room id ───────────────────────────────────────────────────────────────
 
@@ -156,8 +168,8 @@ export function openRoomDoc(id: RoomId): OpenRoom {
  * @returns true if seeding actually happened.
  */
 export function seedRoom(doc: Y.Doc, params: SeedParams): boolean {
-	const meta = doc.getMap<unknown>('meta');
-	if (meta.get('name')) return false;
+	const meta = metaMap(doc);
+	if (metaAcc.get(meta, 'name')) return false;
 
 	const template = getTemplate(params.templateId);
 	if (!template) {
@@ -175,10 +187,10 @@ export function seedRoom(doc: Y.Doc, params: SeedParams): boolean {
 	ballotsMap(doc);
 
 	doc.transact(() => {
-		meta.set('name', params.name);
-		meta.set('templateId', params.templateId);
-		meta.set('phase', 'collect');
-		meta.set('votesPerParticipant', requested);
+		metaAcc.set(meta, 'name', params.name);
+		metaAcc.set(meta, 'templateId', params.templateId);
+		metaAcc.set(meta, 'phase', 'collect');
+		metaAcc.set(meta, 'votesPerParticipant', requested);
 		columns.push(
 			template.columns.map((c) => {
 				const col = new Y.Map<unknown>();
@@ -194,15 +206,15 @@ export function seedRoom(doc: Y.Doc, params: SeedParams): boolean {
 }
 
 export function readRoomMeta(doc: Y.Doc): RoomMetaSnapshot | null {
-	const meta = doc.getMap<unknown>('meta');
-	const name = meta.get('name');
-	const templateId = meta.get('templateId');
+	const meta = metaMap(doc);
+	const name = metaAcc.get(meta, 'name');
+	const templateId = metaAcc.get(meta, 'templateId');
 	if (typeof name !== 'string' || !name || typeof templateId !== 'string' || !templateId) {
 		return null;
 	}
-	const rawPhase = meta.get('phase');
+	const rawPhase = metaAcc.get(meta, 'phase');
 	const phase: Phase = isPhase(rawPhase) ? rawPhase : 'collect';
-	const rawVotes = meta.get('votesPerParticipant');
+	const rawVotes = metaAcc.get(meta, 'votesPerParticipant');
 	const votesPerParticipant = isValidVoteCount(rawVotes)
 		? rawVotes
 		: DEFAULT_VOTES_PER_PARTICIPANT;
@@ -212,7 +224,7 @@ export function readRoomMeta(doc: Y.Doc): RoomMetaSnapshot | null {
 // ─── Phase machine ─────────────────────────────────────────────────────────
 
 export function getPhase(doc: Y.Doc): Phase {
-	const raw = doc.getMap<unknown>('meta').get('phase');
+	const raw = metaAcc.get(metaMap(doc), 'phase');
 	return isPhase(raw) ? raw : 'collect';
 }
 
@@ -221,7 +233,7 @@ export function setPhase(doc: Y.Doc, phase: Phase): void {
 		throw new Error(`Unknown phase: ${String(phase)}`);
 	}
 	doc.transact(() => {
-		doc.getMap<unknown>('meta').set('phase', phase);
+		metaAcc.set(metaMap(doc), 'phase', phase);
 	});
 }
 
@@ -373,7 +385,7 @@ function ballotSpent(b: Y.Map<number>): number {
 }
 
 function readVotesPerParticipant(doc: Y.Doc): number {
-	const raw = doc.getMap<unknown>('meta').get('votesPerParticipant');
+	const raw = metaAcc.get(metaMap(doc), 'votesPerParticipant');
 	return isValidVoteCount(raw) ? raw : DEFAULT_VOTES_PER_PARTICIPANT;
 }
 
