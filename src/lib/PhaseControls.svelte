@@ -19,19 +19,19 @@
 		closed: 'Closed'
 	};
 
-	const stepNumber = $derived(PHASE_ORDER.indexOf(phase) + 1);
 	const totalSteps = PHASE_ORDER.length;
+	const stepIndex = $derived(PHASE_ORDER.indexOf(phase));
+	const stepNumber = $derived(stepIndex + 1);
 	const isAtStart = $derived(phase === 'collect');
 	const isClosed = $derived(phase === 'closed');
 
-	// Could use a clarifying comment here and/or pull some of these intermediate values into vars
-	// with useful names (i.e. `stepIndex`)
-	const nextPhaseLabel = $derived(
-		PHASE_ORDER[Math.min(PHASE_ORDER.indexOf(phase) + 1, PHASE_ORDER.length - 1)]
-	);
-	const prevPhaseLabel = $derived(PHASE_ORDER[Math.max(PHASE_ORDER.indexOf(phase) - 1, 0)]);
-	const advanceTooltip = $derived(`Advance: ${PHASE_LABEL[nextPhaseLabel]}`);
-	const backTooltip = $derived(`Go back: ${PHASE_LABEL[prevPhaseLabel]}`);
+	// Clamp to the ends — at Collect the previous phase is itself, at Closed
+	// the next phase is itself. The buttons are disabled in those positions, so
+	// these only feed the aria-label / tooltip text.
+	const nextIndex = $derived(Math.min(stepIndex + 1, totalSteps - 1));
+	const prevIndex = $derived(Math.max(stepIndex - 1, 0));
+	const advanceTooltip = $derived(`Advance: ${PHASE_LABEL[PHASE_ORDER[nextIndex]]}`);
+	const backTooltip = $derived(`Go back: ${PHASE_LABEL[PHASE_ORDER[prevIndex]]}`);
 </script>
 
 <div class="phase-controls" data-phase={phase}>
