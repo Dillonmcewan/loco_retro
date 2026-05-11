@@ -422,17 +422,6 @@ export function retractVote(doc: Y.Doc, authorId: string, cardId: string): boole
 	return true;
 }
 
-export function clearVote(doc: Y.Doc, authorId: string): boolean {
-	if (getPhase(doc) !== 'vote') return false;
-	const ballots = ballotsMap(doc);
-	const b = ballots.get(authorId);
-	if (!b || b.size === 0) return false;
-	doc.transact(() => {
-		for (const key of Array.from(b.keys())) b.delete(key);
-	});
-	return true;
-}
-
 export function readMyBallot(doc: Y.Doc, authorId: string): Ballot {
 	const b = ballotsMap(doc).get(authorId);
 	if (!b) return {};
