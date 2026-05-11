@@ -22,7 +22,11 @@ import {
 	clearVote,
 	readMyBallot,
 	readVoteTotals,
-	type Phase
+	myBallotStore,
+	voteTotalsStore,
+	type Phase,
+	type Ballot,
+	type VoteTotals
 } from './room';
 import { getTemplate, DEFAULT_TEMPLATE_ID } from './templates';
 
@@ -561,5 +565,63 @@ describe('ballots: seed + helpers', () => {
 		stepBackPhase(doc);
 		expect(deleteCard(doc, colId, card.id)).toBe(true);
 		expect(readVoteTotals(doc)).toEqual({ [other.id]: 1 });
+	});
+});
+
+describe('vote stores', () => {
+	function seededVotingDoc(): { doc: Y.Doc; cardId: string } {
+		const doc = new Y.Doc();
+		seedRoom(doc, { name: 'r', templateId: DEFAULT_TEMPLATE_ID });
+		const colId = readColumns(doc)[0].id;
+		const card = addCard(doc, { columnId: colId, text: '1', author: 'A', authorId: 'a' })!;
+		advancePhase(doc);
+		return { doc, cardId: card.id };
+	}
+
+	it('myBallotStore emits on local writes', () => {
+		const { doc, cardId } = seededVotingDoc();
+		const store = myBallotStore(doc, 'a');
+		const seen: Ballot[] = [];
+		const unsub = store.subscribe((v) => seen.push(v));
+		castVote(doc, 'a', cardId);
+		castVote(doc, 'a', cardId);
+		retractVote(doc, 'a', cardId);
+		unsub();
+		expect(seen[0]).toEqual({});
+		expect(seen[seen.length - 1]).toEqual({ [cardId]: 1 });
+		expect(get(store)).toEqual({ [cardId]: 1 });
+	});
+
+	it("myBallotStore ignores remote authors' writes by value", () => {
+		const { doc, cardId } = seededVotingDoc();
+		const store = myBallotStore(doc, 'a');
+		const seen: Ballot[] = [];
+		const unsub = store.subscribe((v) => seen.push(v));
+		castVote(doc, 'b', cardId);
+		castVote(doc, 'b', cardId);
+		unsub();
+		// All emissions should be {} since only 'b' wrote.
+		for (const s of seen) expect(s).toEqual({});
+	});
+
+	it('voteTotalsStore emits on remote-author updates via Y.applyUpdate', () => {
+		const docA = new Y.Doc();
+		seedRoom(docA, { name: 'r', templateId: DEFAULT_TEMPLATE_ID });
+		const colId = readColumns(docA)[0].id;
+		const card = addCard(docA, { columnId: colId, text: '1', author: 'A', authorId: 'a' })!;
+		advancePhase(docA);
+
+		const docB = new Y.Doc();
+		Y.applyUpdate(docB, Y.encodeStateAsUpdate(docA));
+
+		const store = voteTotalsStore(docB);
+		const seen: VoteTotals[] = [];
+		const unsub = store.subscribe((v) => seen.push(v));
+
+		castVote(docA, 'remote', card.id);
+		Y.applyUpdate(docB, Y.encodeStateAsUpdate(docA));
+
+		unsub();
+		expect(seen[seen.length - 1]).toEqual({ [card.id]: 1 });
 	});
 });

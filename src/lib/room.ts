@@ -497,6 +497,24 @@ export function cardsStore(doc: Y.Doc): Readable<CardsByColumn> {
 	});
 }
 
+export function myBallotStore(doc: Y.Doc, authorId: string): Readable<Ballot> {
+	const ballots = ballotsMap(doc);
+	return readable<Ballot>(readMyBallot(doc, authorId), (set) => {
+		const handler = () => set(readMyBallot(doc, authorId));
+		ballots.observeDeep(handler);
+		return () => ballots.unobserveDeep(handler);
+	});
+}
+
+export function voteTotalsStore(doc: Y.Doc): Readable<VoteTotals> {
+	const ballots = ballotsMap(doc);
+	return readable<VoteTotals>(readVoteTotals(doc), (set) => {
+		const handler = () => set(readVoteTotals(doc));
+		ballots.observeDeep(handler);
+		return () => ballots.unobserveDeep(handler);
+	});
+}
+
 export function participantsStore(awareness: OpenRoom['awareness']): Readable<Participant[]> {
 	function snapshot(): Participant[] {
 		const list: Participant[] = [];
