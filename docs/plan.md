@@ -34,6 +34,7 @@ Routes that touch CRDT state are client-rendered (`ssr=false`) — Yjs and Index
 - **Tests live next to code** (`*.test.ts` for unit, `*.spec.ts` under `e2e/` for Playwright) — concrete layout TBD when the SvelteKit app is initialized.
 - **TypeScript strict mode** on from day one.
 - **Flat `src/lib/` structure.** `.ts` utilities and `.svelte` components live alongside each other in `src/lib/`, prefix-disambiguated (`Card.svelte` vs `RetroCard.svelte`). Matches the SvelteKit reference apps (sveltejs/realworld, PocketBase admin) and the dominant community advice — keep `$lib` small, colocate to routes when possible. Promote a group to its own subfolder (e.g. `lib/voting/`) only when it has its own internal structure (5+ files); never split by *type* (`components/`, `utils/`, `stores/`) because that fragments cohesive features.
+- **Design tokens.** All component CSS uses CSS variables from `src/app.css` for colors, radii, shadows, **spacing (4px scale: `--space-1`…`--space-24`)**, and **font sizes (`--font-size-xs`…`--font-size-xl`)**. Raw `rem`/`px` literals in `padding` / `margin` / `gap` / `font-size` belong only to dimensions of fixed-size primitives (icon buttons, SVG glyphs, container `max-width` / `height`). Add new tokens at the `:root` block before introducing a new literal value.
 
 ## Standard commands
 

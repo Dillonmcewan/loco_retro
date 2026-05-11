@@ -20,7 +20,7 @@
 		background: var(--color-surface);
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-sm);
-		padding: 0.75rem 0.875rem;
+		padding: var(--space-3) var(--space-4);
 		box-shadow: var(--shadow-card-sm);
 	}
 </style>

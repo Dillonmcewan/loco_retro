@@ -22,15 +22,15 @@
 <style>
 	.toast {
 		position: fixed;
-		bottom: 1.5rem;
+		bottom: var(--space-6);
 		left: 50%;
 		transform: translateX(-50%);
 		display: inline-flex;
 		align-items: center;
-		gap: 0.5rem;
-		padding: 0.625rem 1rem;
+		gap: var(--space-2);
+		padding: var(--space-3) var(--space-4);
 		border-radius: var(--radius-md);
-		font-size: 0.875rem;
+		font-size: var(--font-size-sm);
 		font-weight: 500;
 		box-shadow: var(--shadow-card);
 		border: 1px solid;
@@ -59,7 +59,7 @@
 	@keyframes toast-in {
 		from {
 			opacity: 0;
-			transform: translate(-50%, 0.5rem);
+			transform: translate(-50%, var(--space-2));
 		}
 		to {
 			opacity: 1;

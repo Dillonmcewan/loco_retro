@@ -223,26 +223,26 @@
 <style>
 	main {
 		max-width: 80rem;
-		margin: 2rem auto;
-		padding: 0 1.5rem;
+		margin: var(--space-8) auto;
+		padding: 0 var(--space-6);
 	}
 
 	main.room {
 		max-width: none;
 		height: 100vh;
 		margin: 0;
-		padding: 1rem 3rem;
+		padding: var(--space-4) var(--space-12);
 		display: flex;
 		flex-direction: column;
-		gap: 1rem;
+		gap: var(--space-4);
 		min-height: 0;
 	}
 
 	main.gate {
 		max-width: 24rem;
-		margin: 6rem auto;
+		margin: var(--space-24) auto;
 		background: var(--color-surface);
-		padding: 2.25rem 2.5rem 2.5rem;
+		padding: var(--space-8) var(--space-10) var(--space-10);
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-lg);
 		box-shadow: var(--shadow-card);
@@ -252,14 +252,14 @@
 		display: grid;
 		grid-template-columns: 1fr auto 1fr;
 		align-items: center;
-		gap: 1rem;
-		margin-bottom: 2rem;
+		gap: var(--space-4);
+		margin-bottom: var(--space-8);
 		flex: none;
 	}
 
 	header :global(.phase-controls) {
 		justify-self: center;
-		padding: 0.375rem 0.625rem;
+		padding: var(--space-2) var(--space-3);
 		background: var(--color-surface);
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-md);
@@ -277,7 +277,7 @@
 	.title {
 		display: flex;
 		align-items: center;
-		gap: 1rem;
+		gap: var(--space-4);
 		flex: none;
 	}
 
@@ -315,20 +315,20 @@
 		display: flex;
 		flex-wrap: wrap;
 		justify-content: flex-end;
-		gap: 0.5rem;
+		gap: var(--space-2);
 	}
 
 	.participants li {
-		padding: 0.25rem 0.75rem;
+		padding: var(--space-1) var(--space-3);
 		border-radius: 1rem;
-		font-size: 0.875rem;
+		font-size: var(--font-size-sm);
 		font-weight: 500;
 	}
 
 	.columns {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
-		gap: 1rem;
+		gap: var(--space-4);
 		flex: 1 1 auto;
 		min-height: 0;
 	}
@@ -337,7 +337,7 @@
 		background: var(--color-surface-soft);
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-md);
-		padding: 1.125rem;
+		padding: var(--space-5);
 		display: flex;
 		flex-direction: column;
 		min-height: 0;
@@ -348,57 +348,57 @@
 		flex: 1 1 auto;
 		min-height: 0;
 		overflow-y: auto;
-		margin: 0 -0.375rem;
-		padding: 0 0.375rem;
+		margin: 0 calc(-1 * var(--space-2));
+		padding: 0 var(--space-2);
 	}
 
 	.column h3 {
-		margin: 0 0 0.75rem;
-		font-size: 1rem;
+		margin: 0 0 var(--space-3);
+		font-size: var(--font-size-md);
 		flex: none;
 	}
 
 	.empty {
 		color: var(--color-muted);
-		font-size: 0.875rem;
+		font-size: var(--font-size-sm);
 		margin: 0;
 	}
 
 	.card-list {
 		list-style: none;
 		padding: 0;
-		margin: 0 0 0.5rem;
+		margin: 0 0 var(--space-2);
 		display: flex;
 		flex-direction: column;
-		gap: 0.5rem;
+		gap: var(--space-2);
 	}
 
 	.gate h1 {
-		margin: 0 0 0.5rem;
-		font-size: 1.5rem;
+		margin: 0 0 var(--space-2);
+		font-size: var(--font-size-xl);
 	}
 
 	.gate p {
-		margin: 0 0 1.25rem;
+		margin: 0 0 var(--space-5);
 		color: var(--color-muted);
 	}
 
 	.gate form {
 		display: flex;
 		flex-direction: column;
-		gap: 1rem;
+		gap: var(--space-4);
 	}
 
 	.gate label {
 		display: flex;
 		flex-direction: column;
-		gap: 0.375rem;
+		gap: var(--space-2);
 		font-weight: 500;
-		font-size: 0.875rem;
+		font-size: var(--font-size-sm);
 	}
 
 	.gate input {
-		padding: 0.625rem 0.75rem;
+		padding: var(--space-3) var(--space-3);
 		border: 1px solid var(--color-border-strong);
 		border-radius: var(--radius-sm);
 		background: var(--color-surface);
@@ -416,7 +416,7 @@
 
 	.gate button {
 		align-self: stretch;
-		padding: 0.75rem 1.25rem;
+		padding: var(--space-3) var(--space-5);
 		background: var(--color-primary);
 		color: white;
 		border: none;

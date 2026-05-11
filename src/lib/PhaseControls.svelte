@@ -67,40 +67,38 @@
 	.phase-controls {
 		display: inline-flex;
 		align-items: center;
-		/* A lot of reused spacing values. Should be pulled into theme */
-		gap: 0.5rem;
+		gap: var(--space-2);
 	}
 
 	.phase {
 		display: inline-flex;
 		flex-direction: column;
 		align-items: center;
-		padding: 0 0.5rem;
+		padding: 0 var(--space-2);
 		line-height: 1.1;
 	}
 
 	.label {
-		/* Fonts should also be part of theme */
 		font-weight: 600;
-		font-size: 0.875rem;
+		font-size: var(--font-size-sm);
 	}
 
 	.count {
-		font-size: 0.6875rem;
+		font-size: var(--font-size-xs);
 		color: var(--color-muted);
 	}
 
 	button.step {
 		display: inline-flex;
 		align-items: center;
-		gap: 0.25rem;
-		padding: 0.375rem 0.625rem;
+		gap: var(--space-1);
+		padding: var(--space-2) var(--space-3);
 		border: 1px solid var(--color-border-strong);
 		border-radius: var(--radius-sm);
 		background: var(--color-surface);
 		color: var(--color-text);
 		cursor: pointer;
-		font-size: 0.875rem;
+		font-size: var(--font-size-sm);
 		font-weight: 500;
 	}
 

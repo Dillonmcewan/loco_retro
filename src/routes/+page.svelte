@@ -90,53 +90,53 @@
 <style>
 	main {
 		max-width: 32rem;
-		margin: 5rem auto;
-		padding: 0 1.5rem;
+		margin: var(--space-20) auto;
+		padding: 0 var(--space-6);
 	}
 
 	.wordmark {
 		text-align: center;
 		font-weight: 600;
-		font-size: 0.875rem;
+		font-size: var(--font-size-sm);
 		letter-spacing: 0.08em;
 		text-transform: lowercase;
 		color: var(--color-muted);
-		margin: 0 0 1.25rem;
+		margin: 0 0 var(--space-5);
 	}
 
 	.card {
 		background: var(--color-surface);
-		padding: 2.25rem 2.5rem 2.5rem;
+		padding: var(--space-8) var(--space-10) var(--space-10);
 		border-radius: var(--radius-lg);
 		border: 1px solid var(--color-border);
 		box-shadow: var(--shadow-card);
 	}
 
 	h1 {
-		margin: 0 0 1.5rem;
-		font-size: 1.5rem;
+		margin: 0 0 var(--space-6);
+		font-size: var(--font-size-xl);
 	}
 
 	form {
 		display: flex;
 		flex-direction: column;
-		gap: 1.125rem;
+		gap: var(--space-5);
 	}
 
 	label {
 		display: flex;
 		flex-direction: column;
-		gap: 0.375rem;
+		gap: var(--space-2);
 		font-weight: 500;
-		font-size: 0.875rem;
+		font-size: var(--font-size-sm);
 	}
 
 	input[type='text'] {
-		padding: 0.625rem 0.75rem;
+		padding: var(--space-3) var(--space-3);
 		border: 1px solid var(--color-border-strong);
 		border-radius: var(--radius-sm);
 		font-weight: 400;
-		font-size: 1rem;
+		font-size: var(--font-size-md);
 		background: var(--color-surface);
 		color: var(--color-text);
 		transition:
@@ -166,22 +166,22 @@
 
 	.template-picker legend {
 		font-weight: 500;
-		font-size: 0.875rem;
-		margin-bottom: 0.5rem;
+		font-size: var(--font-size-sm);
+		margin-bottom: var(--space-2);
 		padding: 0;
 	}
 
 	.template-grid {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
-		gap: 0.625rem;
+		gap: var(--space-3);
 	}
 
 	.template-card {
 		display: flex;
 		flex-direction: column;
-		gap: 0.625rem;
-		padding: 0.875rem 1rem;
+		gap: var(--space-3);
+		padding: var(--space-4) var(--space-4);
 		background: var(--color-surface);
 		border: 1.5px solid var(--color-border-strong);
 		border-radius: var(--radius-md);
@@ -226,22 +226,22 @@
 
 	.template-name {
 		font-weight: 600;
-		font-size: 0.95rem;
+		font-size: var(--font-size-md);
 		line-height: 1.3;
 	}
 
 	.template-cols {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.25rem;
+		gap: var(--space-1);
 	}
 
 	.col-chip {
-		padding: 0.125rem 0.5rem;
+		padding: var(--space-1) var(--space-2);
 		background: var(--color-surface-soft);
 		color: var(--color-muted);
 		border-radius: 1rem;
-		font-size: 0.75rem;
+		font-size: var(--font-size-xs);
 		font-weight: 500;
 	}
 
@@ -252,14 +252,14 @@
 
 	button {
 		align-self: stretch;
-		padding: 0.75rem 1.25rem;
+		padding: var(--space-3) var(--space-5);
 		background: var(--color-primary);
 		color: white;
 		border: none;
 		border-radius: var(--radius-md);
 		font-weight: 600;
-		font-size: 0.95rem;
-		margin-top: 0.5rem;
+		font-size: var(--font-size-md);
+		margin-top: var(--space-2);
 		box-shadow: var(--shadow-button);
 		transition:
 			background 0.15s ease,
@@ -281,7 +281,7 @@
 
 	.error {
 		color: var(--color-danger);
-		font-size: 0.8125rem;
-		margin-top: 0.125rem;
+		font-size: var(--font-size-sm);
+		margin-top: var(--space-1);
 	}
 </style>

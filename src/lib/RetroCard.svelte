@@ -151,7 +151,7 @@
 
 <style>
 	.text {
-		margin: 0 0 0.5rem;
+		margin: 0 0 var(--space-2);
 		white-space: pre-wrap;
 		word-break: break-word;
 	}
@@ -164,8 +164,8 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		gap: 0.5rem;
-		font-size: 0.75rem;
+		gap: var(--space-2);
+		font-size: var(--font-size-xs);
 	}
 
 	.author {
@@ -175,7 +175,7 @@
 
 	.owner-actions {
 		display: flex;
-		gap: 0.5rem;
+		gap: var(--space-2);
 		opacity: 0;
 		transition: opacity 0.1s ease;
 	}
@@ -236,7 +236,7 @@
 	textarea {
 		width: 100%;
 		box-sizing: border-box;
-		padding: 0.5rem;
+		padding: var(--space-2);
 		border: 1px solid var(--color-border-strong);
 		border-radius: var(--radius-sm);
 		font: inherit;
@@ -247,7 +247,7 @@
 	.actions {
 		display: flex;
 		justify-content: flex-end;
-		gap: 0.375rem;
-		margin-top: 0.5rem;
+		gap: var(--space-2);
+		margin-top: var(--space-2);
 	}
 </style>

@@ -56,15 +56,15 @@
 		display: flex;
 		flex-direction: row;
 		align-items: flex-end;
-		gap: 0.375rem;
-		margin-top: 0.5rem;
+		gap: var(--space-2);
+		margin-top: var(--space-2);
 	}
 
 	textarea {
 		flex: 1 1 auto;
 		min-width: 0;
 		box-sizing: border-box;
-		padding: 0.5rem;
+		padding: var(--space-2);
 		background: var(--color-surface);
 		border: 1px solid var(--color-border-strong);
 		border-radius: var(--radius-sm);
