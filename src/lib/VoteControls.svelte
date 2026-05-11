@@ -21,7 +21,7 @@
 		class="step"
 		onclick={onDecrement}
 		disabled={!canDecrement}
-		aria-label="Retract a vote from this card"
+		aria-label="Retract a vote"
 		use:tooltip={canDecrement ? 'Retract a vote' : undefined}
 	>
 		<Minus />
@@ -32,7 +32,7 @@
 		class="step"
 		onclick={onIncrement}
 		disabled={!canIncrement}
-		aria-label="Cast a vote on this card"
+		aria-label="Cast a vote"
 		use:tooltip={canIncrement ? 'Cast a vote' : 'No votes remaining'}
 	>
 		<Plus />
