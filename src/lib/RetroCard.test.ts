@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
+import { createRawSnippet } from 'svelte';
 import RetroCard from './RetroCard.svelte';
 import type { Card as CardType, Phase } from './room';
 
@@ -12,7 +13,14 @@ const baseCard: CardType = {
 	createdAt: 0
 };
 
-function setup(overrides: Partial<{ card: CardType; currentAuthorId: string; phase: Phase }> = {}) {
+function setup(
+	overrides: Partial<{
+		card: CardType;
+		currentAuthorId: string;
+		phase: Phase;
+		voteTotal: number;
+	}> = {}
+) {
 	const onEdit = vi.fn();
 	const onDelete = vi.fn();
 	const props = {
@@ -20,7 +28,8 @@ function setup(overrides: Partial<{ card: CardType; currentAuthorId: string; pha
 		currentAuthorId: overrides.currentAuthorId ?? 'author-1',
 		phase: overrides.phase ?? ('collect' as Phase),
 		onEdit,
-		onDelete
+		onDelete,
+		voteTotal: overrides.voteTotal ?? 0
 	};
 	return { ...render(RetroCard, { props }), onEdit, onDelete };
 }
@@ -98,5 +107,46 @@ describe('RetroCard.svelte', () => {
 		const { onDelete } = setup();
 		await user.click(screen.getByRole('button', { name: /delete card/i }));
 		expect(onDelete).toHaveBeenCalledOnce();
+	});
+
+	it('hides the aggregate vote badge during collect and vote', () => {
+		const { unmount } = setup({ phase: 'collect', voteTotal: 4 });
+		expect(screen.queryByLabelText(/total votes/i)).not.toBeInTheDocument();
+		unmount();
+
+		setup({ phase: 'vote', voteTotal: 4 });
+		expect(screen.queryByLabelText(/total votes/i)).not.toBeInTheDocument();
+	});
+
+	it('shows the aggregate vote badge in discuss and closed when voteTotal > 0', () => {
+		const { unmount } = setup({ phase: 'discuss', voteTotal: 3 });
+		expect(screen.getByLabelText(/total votes/i)).toHaveTextContent(/Votes:\s*3/);
+		unmount();
+
+		setup({ phase: 'closed', voteTotal: 7 });
+		expect(screen.getByLabelText(/total votes/i)).toHaveTextContent(/Votes:\s*7/);
+	});
+
+	it('hides the aggregate vote badge when voteTotal is 0 even in discuss', () => {
+		setup({ phase: 'discuss', voteTotal: 0 });
+		expect(screen.queryByLabelText(/total votes/i)).not.toBeInTheDocument();
+	});
+
+	it('renders the votingSlot snippet when provided', () => {
+		const votingSlot = createRawSnippet(() => ({
+			render: () => '<span data-testid="voting-slot">slot</span>'
+		}));
+		render(RetroCard, {
+			props: {
+				card: baseCard,
+				currentAuthorId: 'author-1',
+				phase: 'vote' as Phase,
+				onEdit: vi.fn(),
+				onDelete: vi.fn(),
+				voteTotal: 0,
+				votingSlot
+			}
+		});
+		expect(screen.getByTestId('voting-slot')).toBeInTheDocument();
 	});
 });

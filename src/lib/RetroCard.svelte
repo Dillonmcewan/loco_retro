@@ -3,6 +3,7 @@
 	import Pencil from 'lucide-svelte/icons/pencil';
 	import Trash2 from 'lucide-svelte/icons/trash-2';
 	import X from 'lucide-svelte/icons/x';
+	import type { Snippet } from 'svelte';
 	import type { Card as CardType, Phase } from './room';
 	import Card from './Card.svelte';
 	import { autosize } from './autosize';
@@ -14,9 +15,25 @@
 		phase: Phase;
 		onEdit: (text: string) => void;
 		onDelete: () => void;
+		voteTotal?: number;
+		votingSlot?: Snippet;
 	};
 
-	let { card, currentAuthorId, phase, onEdit, onDelete }: Props = $props();
+	let {
+		card,
+		currentAuthorId,
+		phase,
+		onEdit,
+		onDelete,
+		voteTotal = 0,
+		votingSlot
+	}: Props = $props();
+
+	// Aggregate totals are hidden during Vote to keep running tallies from
+	// biasing voters; they only appear from Discuss onward.
+	const showAggregate = $derived(
+		voteTotal > 0 && (phase === 'discuss' || phase === 'closed')
+	);
 
 	let editing = $state(false);
 	let draft = $state('');
@@ -123,28 +140,38 @@
 		</p>
 		<footer>
 			<span class="author">{card.author}</span>
-			{#if canMutate}
-				<div class="owner-actions">
-					<button
-						type="button"
-						class="icon"
-						onclick={startEdit}
-						aria-label="Edit card"
-						use:tooltip={'Edit card'}
-					>
-						<Pencil />
-					</button>
-					<button
-						type="button"
-						class="icon danger"
-						onclick={onDelete}
-						aria-label="Delete card"
-						use:tooltip={'Delete card'}
-					>
-						<Trash2 />
-					</button>
-				</div>
-			{/if}
+			<div class="footer-right">
+				{#if showAggregate}
+					<span class="vote-total" aria-label="Total votes on this card">
+						Votes: {voteTotal}
+					</span>
+				{/if}
+				{#if votingSlot}
+					{@render votingSlot()}
+				{/if}
+				{#if canMutate}
+					<div class="owner-actions">
+						<button
+							type="button"
+							class="icon"
+							onclick={startEdit}
+							aria-label="Edit card"
+							use:tooltip={'Edit card'}
+						>
+							<Pencil />
+						</button>
+						<button
+							type="button"
+							class="icon danger"
+							onclick={onDelete}
+							aria-label="Delete card"
+							use:tooltip={'Delete card'}
+						>
+							<Trash2 />
+						</button>
+					</div>
+				{/if}
+			</div>
 		</footer>
 	{/if}
 </Card>
@@ -171,6 +198,21 @@
 	.author {
 		color: var(--color-muted);
 		font-weight: 500;
+	}
+
+	.footer-right {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+	}
+
+	.vote-total {
+		padding: var(--space-1) var(--space-2);
+		background: var(--color-surface-soft);
+		color: var(--color-text);
+		border-radius: var(--radius-sm);
+		font-weight: 600;
+		font-size: var(--font-size-xs);
 	}
 
 	.owner-actions {
