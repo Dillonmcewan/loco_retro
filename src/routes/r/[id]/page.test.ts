@@ -258,9 +258,7 @@ describe('Room page', () => {
 		await user.click(screen.getByRole('button', { name: 'Advance: Discuss' }));
 		await tick();
 
-		const rendered = screen
-			.getAllByText(/^(mine|theirs)$/)
-			.map((el) => el.textContent);
+		const rendered = screen.getAllByText(/^(mine|theirs)$/).map((el) => el.textContent);
 		expect(rendered).toEqual(['theirs', 'mine']);
 	});
 
@@ -289,9 +287,7 @@ describe('Room page', () => {
 		render(RoomPage, { props: { data: { id: VALID_ID } } });
 		await tick();
 
-		const rendered = screen
-			.getAllByText(/^(mine|theirs)$/)
-			.map((el) => el.textContent);
+		const rendered = screen.getAllByText(/^(mine|theirs)$/).map((el) => el.textContent);
 		expect(rendered).toEqual(['mine', 'theirs']);
 	});
 
