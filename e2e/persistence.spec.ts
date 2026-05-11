@@ -1,9 +1,10 @@
 import { test, expect } from '@playwright/test';
 
 // Weaker than the planned "offline-reload" — Playwright 1.47 doesn't ship
-// page.routeWebSocket, so we can't cleanly disable the relay mid-test. This
-// still verifies that a reload restores the room shell (state comes from
-// IndexedDB, the relay, or both — either way: it doesn't get lost).
+// page.routeWebSocket, so we can't cleanly disable the PartyKit WebSocket
+// mid-test. This still verifies that a reload restores the room shell
+// (state comes from IndexedDB, the DO, or both — either way: it doesn't
+// get lost).
 test('room state survives a reload', async ({ page }) => {
 	await page.goto('/');
 	await page.getByLabel('Room name').fill('Persistence check');

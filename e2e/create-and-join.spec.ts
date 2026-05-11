@@ -29,7 +29,7 @@ test('two clients can create and join the same room', async ({ browser }) => {
 	await pageB.getByLabel('Display name').fill('Bob');
 	await pageB.getByRole('button', { name: 'Join' }).click();
 
-	// B sees the same room name + columns synced via the relay.
+	// B sees the same room name + columns synced via the PartyKit DO.
 	await expect(pageB.getByRole('heading', { name: 'Sprint 42' })).toBeVisible();
 	await expect(pageB.getByRole('heading', { name: 'Start' })).toBeVisible();
 
