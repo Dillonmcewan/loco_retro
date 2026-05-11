@@ -494,7 +494,7 @@ describe('ballots: seed + helpers', () => {
 		expect(readMyBallot(doc, 'a')[cid]).toBe(1);
 	});
 
-it('readVoteTotals sums across authors, omits zero', () => {
+	it('readVoteTotals sums across authors, omits zero', () => {
 		const { doc, colId } = seededVotingDoc();
 		const card1 = addCard(doc, { columnId: colId, text: '1', author: 'A', authorId: 'a' })!;
 		const card2 = addCard(doc, { columnId: colId, text: '2', author: 'A', authorId: 'a' })!;

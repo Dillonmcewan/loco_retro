@@ -215,9 +215,7 @@ export function readRoomMeta(doc: Y.Doc): RoomMetaSnapshot | null {
 	const rawPhase = metaAcc.get(meta, 'phase');
 	const phase: Phase = isPhase(rawPhase) ? rawPhase : 'collect';
 	const rawVotes = metaAcc.get(meta, 'votesPerParticipant');
-	const votesPerParticipant = isValidVoteCount(rawVotes)
-		? rawVotes
-		: DEFAULT_VOTES_PER_PARTICIPANT;
+	const votesPerParticipant = isValidVoteCount(rawVotes) ? rawVotes : DEFAULT_VOTES_PER_PARTICIPANT;
 	return { name, templateId, phase, votesPerParticipant };
 }
 
