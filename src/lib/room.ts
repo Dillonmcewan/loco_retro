@@ -167,6 +167,9 @@ export function seedRoom(doc: Y.Doc, params: SeedParams): boolean {
 
 	const columns = doc.getArray<Y.Map<unknown>>('columns');
 
+	// Materialize ballots so consumers can rely on its presence post-seed.
+	ballotsMap(doc);
+
 	doc.transact(() => {
 		meta.set('name', params.name);
 		meta.set('templateId', params.templateId);
@@ -322,7 +325,15 @@ export function deleteCard(doc: Y.Doc, columnId: string, cardId: string): boolea
 	const cards = cardsArray(col);
 	for (let i = 0; i < cards.length; i++) {
 		if (cardAcc.get(cards.get(i), 'id') === cardId) {
-			doc.transact(() => cards.delete(i, 1));
+			doc.transact(() => {
+				cards.delete(i, 1);
+				// Refund any votes spent on this card: strip the cardId key
+				// from every author's ballot in the same transaction.
+				const ballots = ballotsMap(doc);
+				for (const b of ballots.values()) {
+					if (b.has(cardId)) b.delete(cardId);
+				}
+			});
 			return true;
 		}
 	}
@@ -334,6 +345,97 @@ export function readCards(doc: Y.Doc): CardsByColumn {
 	for (const col of doc.getArray<Y.Map<unknown>>('columns')) {
 		const id = colAcc.get(col, 'id');
 		out[id] = cardsArray(col).toArray().map(cardFromMap);
+	}
+	return out;
+}
+
+// ─── Ballots ───────────────────────────────────────────────────────────────
+//
+// `ballots` is a top-level Y.Map<authorId, Y.Map<cardId, number>>. Storing
+// each author's ballot in their own keyed entry avoids the "shared counter"
+// race on +1 / −1: concurrent offline mutations from different authors
+// merge cleanly because they touch different keys.
+
+export type Ballot = Record<string, number>;
+export type VoteTotals = Record<string, number>;
+
+function ballotsMap(doc: Y.Doc): Y.Map<Y.Map<number>> {
+	return doc.getMap<Y.Map<number>>('ballots');
+}
+
+function ballotSpent(b: Y.Map<number>): number {
+	let n = 0;
+	for (const v of b.values()) n += v;
+	return n;
+}
+
+function readVotesPerParticipant(doc: Y.Doc): number {
+	const raw = doc.getMap<unknown>('meta').get('votesPerParticipant');
+	return typeof raw === 'number' && Number.isInteger(raw) && raw >= 1
+		? raw
+		: DEFAULT_VOTES_PER_PARTICIPANT;
+}
+
+export function castVote(doc: Y.Doc, authorId: string, cardId: string): boolean {
+	if (getPhase(doc) !== 'vote') return false;
+	const budget = readVotesPerParticipant(doc);
+	const ballots = ballotsMap(doc);
+	const existing = ballots.get(authorId);
+	const spent = existing ? ballotSpent(existing) : 0;
+	if (spent >= budget) return false;
+	doc.transact(() => {
+		let b = ballots.get(authorId);
+		if (!b) {
+			b = new Y.Map<number>();
+			ballots.set(authorId, b);
+		}
+		b.set(cardId, (b.get(cardId) ?? 0) + 1);
+	});
+	return true;
+}
+
+export function retractVote(doc: Y.Doc, authorId: string, cardId: string): boolean {
+	if (getPhase(doc) !== 'vote') return false;
+	const ballots = ballotsMap(doc);
+	const b = ballots.get(authorId);
+	if (!b) return false;
+	const cur = b.get(cardId) ?? 0;
+	if (cur <= 0) return false;
+	doc.transact(() => {
+		const next = cur - 1;
+		if (next === 0) b.delete(cardId);
+		else b.set(cardId, next);
+	});
+	return true;
+}
+
+export function clearVote(doc: Y.Doc, authorId: string): boolean {
+	if (getPhase(doc) !== 'vote') return false;
+	const ballots = ballotsMap(doc);
+	const b = ballots.get(authorId);
+	if (!b || b.size === 0) return false;
+	doc.transact(() => {
+		for (const key of Array.from(b.keys())) b.delete(key);
+	});
+	return true;
+}
+
+export function readMyBallot(doc: Y.Doc, authorId: string): Ballot {
+	const b = ballotsMap(doc).get(authorId);
+	if (!b) return {};
+	const out: Ballot = {};
+	for (const [cardId, count] of b) {
+		if (count > 0) out[cardId] = count;
+	}
+	return out;
+}
+
+export function readVoteTotals(doc: Y.Doc): VoteTotals {
+	const out: VoteTotals = {};
+	for (const b of ballotsMap(doc).values()) {
+		for (const [cardId, count] of b) {
+			if (count > 0) out[cardId] = (out[cardId] ?? 0) + count;
+		}
 	}
 	return out;
 }

@@ -17,6 +17,11 @@ import {
 	setPhase,
 	advancePhase,
 	stepBackPhase,
+	castVote,
+	retractVote,
+	clearVote,
+	readMyBallot,
+	readVoteTotals,
 	type Phase
 } from './room';
 import { getTemplate, DEFAULT_TEMPLATE_ID } from './templates';
@@ -402,5 +407,159 @@ describe('cardsStore', () => {
 		expect(snap[colId]).toHaveLength(1);
 		expect(snap[colId][0].text).toBe('remote');
 		expect(snap[colId][0].author).toBe('A');
+	});
+});
+
+describe('ballots: seed + helpers', () => {
+	function seededVotingDoc(votesPerParticipant = 5): { doc: Y.Doc; colId: string } {
+		const doc = new Y.Doc();
+		seedRoom(doc, { name: 'r', templateId: DEFAULT_TEMPLATE_ID, votesPerParticipant });
+		const colId = readColumns(doc)[0].id;
+		return { doc, colId };
+	}
+
+	function addAndVote(doc: Y.Doc, colId: string): string {
+		const card = addCard(doc, { columnId: colId, text: 'card', author: 'A', authorId: 'a' })!;
+		return card.id;
+	}
+
+	it('seedRoom initializes an empty ballots map; idempotent on resseed', () => {
+		const doc = new Y.Doc();
+		seedRoom(doc, { name: 'r', templateId: DEFAULT_TEMPLATE_ID });
+		expect(readVoteTotals(doc)).toEqual({});
+		expect(readMyBallot(doc, 'a')).toEqual({});
+		// Second seed is no-op (already asserted above), ballots stay empty.
+		seedRoom(doc, { name: 'r2', templateId: DEFAULT_TEMPLATE_ID });
+		expect(readVoteTotals(doc)).toEqual({});
+	});
+
+	it('castVote outside vote phase is a no-op', () => {
+		const { doc, colId } = seededVotingDoc();
+		const cid = addAndVote(doc, colId);
+		// still in collect
+		expect(castVote(doc, 'a', cid)).toBe(false);
+		expect(readMyBallot(doc, 'a')).toEqual({});
+		// advance to vote → works
+		advancePhase(doc);
+		expect(castVote(doc, 'a', cid)).toBe(true);
+		// advance again to discuss → no-op
+		advancePhase(doc);
+		expect(castVote(doc, 'a', cid)).toBe(false);
+	});
+
+	it('castVote increments and stacks', () => {
+		const { doc, colId } = seededVotingDoc();
+		const cid = addAndVote(doc, colId);
+		advancePhase(doc);
+		expect(castVote(doc, 'a', cid)).toBe(true);
+		expect(readMyBallot(doc, 'a')[cid]).toBe(1);
+		expect(castVote(doc, 'a', cid)).toBe(true);
+		expect(readMyBallot(doc, 'a')[cid]).toBe(2);
+	});
+
+	it('castVote refuses once budget is spent', () => {
+		const { doc, colId } = seededVotingDoc(3);
+		const cid = addAndVote(doc, colId);
+		advancePhase(doc);
+		expect(castVote(doc, 'a', cid)).toBe(true);
+		expect(castVote(doc, 'a', cid)).toBe(true);
+		expect(castVote(doc, 'a', cid)).toBe(true);
+		expect(castVote(doc, 'a', cid)).toBe(false);
+		expect(readVoteTotals(doc)[cid]).toBe(3);
+	});
+
+	it('retractVote decrements; clamps at 0; drops key at 0', () => {
+		const { doc, colId } = seededVotingDoc();
+		const cid = addAndVote(doc, colId);
+		advancePhase(doc);
+		castVote(doc, 'a', cid);
+		castVote(doc, 'a', cid);
+		expect(retractVote(doc, 'a', cid)).toBe(true);
+		expect(readMyBallot(doc, 'a')[cid]).toBe(1);
+		expect(retractVote(doc, 'a', cid)).toBe(true);
+		expect(readMyBallot(doc, 'a')[cid]).toBeUndefined();
+		expect(retractVote(doc, 'a', cid)).toBe(false);
+	});
+
+	it('retractVote outside vote phase is a no-op', () => {
+		const { doc, colId } = seededVotingDoc();
+		const cid = addAndVote(doc, colId);
+		advancePhase(doc);
+		castVote(doc, 'a', cid);
+		advancePhase(doc); // → discuss
+		expect(retractVote(doc, 'a', cid)).toBe(false);
+		expect(readMyBallot(doc, 'a')[cid]).toBe(1);
+	});
+
+	it('clearVote zeroes all entries for the author', () => {
+		const { doc, colId } = seededVotingDoc();
+		const cid = addAndVote(doc, colId);
+		advancePhase(doc);
+		castVote(doc, 'a', cid);
+		castVote(doc, 'a', cid);
+		expect(clearVote(doc, 'a')).toBe(true);
+		expect(readMyBallot(doc, 'a')).toEqual({});
+		expect(clearVote(doc, 'a')).toBe(false);
+	});
+
+	it('readVoteTotals sums across authors, omits zero', () => {
+		const { doc, colId } = seededVotingDoc();
+		const card1 = addCard(doc, { columnId: colId, text: '1', author: 'A', authorId: 'a' })!;
+		const card2 = addCard(doc, { columnId: colId, text: '2', author: 'A', authorId: 'a' })!;
+		advancePhase(doc);
+		castVote(doc, 'a', card1.id);
+		castVote(doc, 'a', card1.id);
+		castVote(doc, 'b', card1.id);
+		castVote(doc, 'b', card2.id);
+		expect(readVoteTotals(doc)).toEqual({ [card1.id]: 3, [card2.id]: 1 });
+	});
+
+	it('readMyBallot scopes to the requested author', () => {
+		const { doc, colId } = seededVotingDoc();
+		const cid = addAndVote(doc, colId);
+		advancePhase(doc);
+		castVote(doc, 'a', cid);
+		castVote(doc, 'b', cid);
+		castVote(doc, 'b', cid);
+		expect(readMyBallot(doc, 'a')).toEqual({ [cid]: 1 });
+		expect(readMyBallot(doc, 'b')).toEqual({ [cid]: 2 });
+	});
+
+	it('stepping back vote → collect leaves ballots untouched', () => {
+		const { doc, colId } = seededVotingDoc();
+		const cid = addAndVote(doc, colId);
+		advancePhase(doc);
+		castVote(doc, 'a', cid);
+		castVote(doc, 'a', cid);
+		stepBackPhase(doc);
+		expect(readMyBallot(doc, 'a')[cid]).toBe(2);
+		expect(readVoteTotals(doc)[cid]).toBe(2);
+	});
+
+	it('deleteCard refunds votes across all authors', () => {
+		const { doc, colId } = seededVotingDoc(5);
+		const card = addCard(doc, { columnId: colId, text: '1', author: 'A', authorId: 'a' })!;
+		const other = addCard(doc, { columnId: colId, text: '2', author: 'A', authorId: 'a' })!;
+		advancePhase(doc);
+		castVote(doc, 'a', card.id);
+		castVote(doc, 'a', card.id);
+		castVote(doc, 'b', card.id);
+		castVote(doc, 'b', other.id);
+		stepBackPhase(doc); // back to collect to delete
+		expect(deleteCard(doc, colId, card.id)).toBe(true);
+		expect(readVoteTotals(doc)).toEqual({ [other.id]: 1 });
+		expect(readMyBallot(doc, 'a')).toEqual({});
+		expect(readMyBallot(doc, 'b')).toEqual({ [other.id]: 1 });
+	});
+
+	it('deleteCard on a card with zero votes leaves ballots untouched', () => {
+		const { doc, colId } = seededVotingDoc();
+		const card = addCard(doc, { columnId: colId, text: '1', author: 'A', authorId: 'a' })!;
+		const other = addCard(doc, { columnId: colId, text: '2', author: 'A', authorId: 'a' })!;
+		advancePhase(doc);
+		castVote(doc, 'a', other.id);
+		stepBackPhase(doc);
+		expect(deleteCard(doc, colId, card.id)).toBe(true);
+		expect(readVoteTotals(doc)).toEqual({ [other.id]: 1 });
 	});
 });
