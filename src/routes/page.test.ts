@@ -51,7 +51,8 @@ describe('Create page', () => {
 		expect(seedRoom).toHaveBeenCalledTimes(1);
 		expect(seedRoom).toHaveBeenCalledWith(expect.anything(), {
 			name: 'Sprint 42',
-			templateId: 'start-stop-continue'
+			templateId: 'start-stop-continue',
+			votesPerParticipant: 5
 		});
 
 		expect(goto).toHaveBeenCalledTimes(1);
@@ -59,6 +60,55 @@ describe('Create page', () => {
 		expect(target).toMatch(
 			/^\/r\/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 		);
+	});
+
+	it('defaults the votes-per-participant input to 5 and forwards it to seedRoom', async () => {
+		const user = userEvent.setup();
+		render(CreatePage);
+
+		const votes = screen.getByLabelText(/votes per participant/i) as HTMLInputElement;
+		expect(votes.value).toBe('5');
+
+		await user.type(screen.getByLabelText(/room name/i), 'X');
+		await user.click(screen.getByRole('button', { name: /create/i }));
+
+		expect(seedRoom).toHaveBeenCalledWith(
+			expect.anything(),
+			expect.objectContaining({ votesPerParticipant: 5 })
+		);
+	});
+
+	it('forwards a custom votes value to seedRoom', async () => {
+		const user = userEvent.setup();
+		render(CreatePage);
+
+		const votes = screen.getByLabelText(/votes per participant/i) as HTMLInputElement;
+		await user.clear(votes);
+		await user.type(votes, '12');
+
+		await user.type(screen.getByLabelText(/room name/i), 'X');
+		await user.click(screen.getByRole('button', { name: /create/i }));
+
+		expect(seedRoom).toHaveBeenCalledWith(
+			expect.anything(),
+			expect.objectContaining({ votesPerParticipant: 12 })
+		);
+	});
+
+	it('rejects votes-per-participant < 1', async () => {
+		const user = userEvent.setup();
+		render(CreatePage);
+
+		const votes = screen.getByLabelText(/votes per participant/i) as HTMLInputElement;
+		await user.clear(votes);
+		await user.type(votes, '0');
+
+		await user.type(screen.getByLabelText(/room name/i), 'X');
+		await user.click(screen.getByRole('button', { name: /create/i }));
+
+		expect(seedRoom).not.toHaveBeenCalled();
+		expect(goto).not.toHaveBeenCalled();
+		expect(screen.getByRole('alert')).toHaveTextContent(/positive integer/i);
 	});
 
 	it('trims whitespace from the room name before seeding', async () => {

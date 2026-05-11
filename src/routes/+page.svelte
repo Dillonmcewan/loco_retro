@@ -1,12 +1,19 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { generateRoomId, ensureRoom, leaveRoom, seedRoom } from '$lib/room';
+	import {
+		generateRoomId,
+		ensureRoom,
+		leaveRoom,
+		seedRoom,
+		DEFAULT_VOTES_PER_PARTICIPANT
+	} from '$lib/room';
 	import { PRESET_TEMPLATES, DEFAULT_TEMPLATE_ID } from '$lib/templates';
 
 	let name = $state('');
 	let templateId = $state<string>(DEFAULT_TEMPLATE_ID);
+	let votesPerParticipant = $state<number>(DEFAULT_VOTES_PER_PARTICIPANT);
 	let submitting = $state(false);
-	let fieldErrors = $state<{ roomName?: string; templateId?: string }>({});
+	let fieldErrors = $state<{ roomName?: string; templateId?: string; votes?: string }>({});
 
 	async function handleSubmit(event: SubmitEvent) {
 		event.preventDefault();
@@ -16,12 +23,16 @@
 			fieldErrors = { roomName: 'Room name is required.' };
 			return;
 		}
+		if (!Number.isInteger(votesPerParticipant) || votesPerParticipant < 1) {
+			fieldErrors = { votes: 'Votes per participant must be a positive integer.' };
+			return;
+		}
 		if (submitting) return;
 		submitting = true;
 		const id = generateRoomId();
 		try {
 			const room = ensureRoom(id);
-			seedRoom(room.doc, { name: trimmed, templateId });
+			seedRoom(room.doc, { name: trimmed, templateId, votesPerParticipant });
 			await goto(`/r/${id}`);
 		} catch (err) {
 			// Seeding or navigation failed — close the doc we opened so the
@@ -80,6 +91,23 @@
 				{/if}
 			</fieldset>
 
+			<label>
+				<span>Votes per participant</span>
+				<input
+					type="number"
+					name="votes-per-participant"
+					min="1"
+					step="1"
+					bind:value={votesPerParticipant}
+					aria-invalid={!!fieldErrors.votes}
+					aria-describedby={fieldErrors.votes ? 'votes-error' : undefined}
+					required
+				/>
+				{#if fieldErrors.votes}
+					<span id="votes-error" class="error" role="alert">{fieldErrors.votes}</span>
+				{/if}
+			</label>
+
 			<button type="submit" disabled={submitting}>
 				{submitting ? 'Creating…' : 'Create retro'}
 			</button>
@@ -131,7 +159,8 @@
 		font-size: var(--font-size-sm);
 	}
 
-	input[type='text'] {
+	input[type='text'],
+	input[type='number'] {
 		padding: var(--space-3) var(--space-3);
 		border: 1px solid var(--color-border-strong);
 		border-radius: var(--radius-sm);
@@ -144,17 +173,20 @@
 			box-shadow 0.15s ease;
 	}
 
-	input[type='text']:focus {
+	input[type='text']:focus,
+	input[type='number']:focus {
 		outline: none;
 		border-color: var(--color-primary);
 		box-shadow: 0 0 0 3px var(--color-primary-soft);
 	}
 
-	input[type='text'][aria-invalid='true'] {
+	input[type='text'][aria-invalid='true'],
+	input[type='number'][aria-invalid='true'] {
 		border-color: var(--color-danger);
 	}
 
-	input[type='text'][aria-invalid='true']:focus {
+	input[type='text'][aria-invalid='true']:focus,
+	input[type='number'][aria-invalid='true']:focus {
 		box-shadow: 0 0 0 3px var(--color-danger-soft);
 	}
 
