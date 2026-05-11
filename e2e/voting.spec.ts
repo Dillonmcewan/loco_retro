@@ -17,11 +17,15 @@ function cardLocator(page: Page, text: string) {
 }
 
 async function castOn(page: Page, cardText: string) {
-	await cardLocator(page, cardText).getByRole('button', { name: /cast a vote/i }).click();
+	await cardLocator(page, cardText)
+		.getByRole('button', { name: /cast a vote/i })
+		.click();
 }
 
 async function retractOn(page: Page, cardText: string) {
-	await cardLocator(page, cardText).getByRole('button', { name: /retract a vote/i }).click();
+	await cardLocator(page, cardText)
+		.getByRole('button', { name: /retract a vote/i })
+		.click();
 }
 
 test('two-client dot voting flow with reclamation on delete', async ({ browser }) => {
@@ -67,7 +71,9 @@ test('two-client dot voting flow with reclamation on delete', async ({ browser }
 
 	// A's + buttons are now disabled (budget spent).
 	for (const text of ['pair more often', 'late standups']) {
-		await expect(cardLocator(pageA, text).getByRole('button', { name: /cast a vote/i })).toBeDisabled();
+		await expect(
+			cardLocator(pageA, text).getByRole('button', { name: /cast a vote/i })
+		).toBeDisabled();
 	}
 
 	// B casts 3 on "late standups".
@@ -121,7 +127,9 @@ test('deleting a voted card refunds the budget on the next Vote phase', async ({
 
 	// Step back to Collect and delete card one — votes should refund.
 	await pageA.getByRole('button', { name: 'Go back: Collect' }).click();
-	await cardLocator(pageA, 'card one').getByRole('button', { name: /delete card/i }).click();
+	await cardLocator(pageA, 'card one')
+		.getByRole('button', { name: /delete card/i })
+		.click();
 	await expect(pageA.getByText('card one')).toHaveCount(0);
 
 	await pageA.getByRole('button', { name: 'Advance: Vote' }).click();

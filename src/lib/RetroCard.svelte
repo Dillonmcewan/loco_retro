@@ -31,9 +31,7 @@
 
 	// Aggregate totals are hidden during Vote to keep running tallies from
 	// biasing voters; they only appear from Discuss onward.
-	const showAggregate = $derived(
-		voteTotal > 0 && (phase === 'discuss' || phase === 'closed')
-	);
+	const showAggregate = $derived(voteTotal > 0 && (phase === 'discuss' || phase === 'closed'));
 
 	let editing = $state(false);
 	let draft = $state('');

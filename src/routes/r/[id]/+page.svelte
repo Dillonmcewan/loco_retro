@@ -65,9 +65,7 @@
 	const participantColors = $derived(colorsByParticipant(people));
 	const phase = $derived<Phase>(meta?.phase ?? 'collect');
 	const votesTotal = $derived(meta?.votesPerParticipant ?? 5);
-	const votesSpent = $derived(
-		Object.values(myBallot).reduce((acc, n) => acc + n, 0)
-	);
+	const votesSpent = $derived(Object.values(myBallot).reduce((acc, n) => acc + n, 0));
 	const votesRemaining = $derived(Math.max(votesTotal - votesSpent, 0));
 	const canCastVote = $derived(phase === 'vote' && votesRemaining > 0);
 

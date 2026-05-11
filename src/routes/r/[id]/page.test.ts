@@ -193,7 +193,9 @@ describe('Room page', () => {
 
 		expect(screen.getByLabelText(/votes remaining/i)).toHaveTextContent('5 / 5');
 		// One pair of VoteControls per card.
-		expect(screen.getAllByRole('button', { name: /cast a vote/i }).length).toBeGreaterThanOrEqual(2);
+		expect(screen.getAllByRole('button', { name: /cast a vote/i }).length).toBeGreaterThanOrEqual(
+			2
+		);
 		// No aggregate badge during Vote.
 		expect(screen.queryAllByLabelText(/total votes/i)).toHaveLength(0);
 	});
