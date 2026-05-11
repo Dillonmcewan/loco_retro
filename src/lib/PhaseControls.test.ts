@@ -28,29 +28,42 @@ describe('PhaseControls.svelte', () => {
 
 	it('disables Back at collect and enables it elsewhere', () => {
 		const { unmount } = setup('collect');
-		expect(screen.getByRole('button', { name: /back to previous phase/i })).toBeDisabled();
+		expect(screen.getByRole('button', { name: /go back:/i })).toBeDisabled();
 		unmount();
 
 		setup('vote');
-		expect(screen.getByRole('button', { name: /back to previous phase/i })).toBeEnabled();
+		expect(screen.getByRole('button', { name: /go back:/i })).toBeEnabled();
 	});
 
-	it('Advance label is Advance on collect/vote and Close room on discuss', () => {
-		const { unmount: u1 } = setup('collect');
-		expect(screen.getByRole('button', { name: 'Advance' })).toBeInTheDocument();
-		u1();
+	it('advance aria-label names the destination phase', () => {
+		const cases: Array<[Phase, string]> = [
+			['collect', 'Advance: Vote'],
+			['vote', 'Advance: Discuss'],
+			['discuss', 'Advance: Closed']
+		];
+		for (const [phase, name] of cases) {
+			const { unmount } = setup(phase);
+			expect(screen.getByRole('button', { name })).toBeInTheDocument();
+			unmount();
+		}
+	});
 
-		const { unmount: u2 } = setup('vote');
-		expect(screen.getByRole('button', { name: 'Advance' })).toBeInTheDocument();
-		u2();
-
-		setup('discuss');
-		expect(screen.getByRole('button', { name: 'Close room' })).toBeInTheDocument();
+	it('back aria-label names the destination phase', () => {
+		const cases: Array<[Phase, string]> = [
+			['vote', 'Go back: Collect'],
+			['discuss', 'Go back: Vote'],
+			['closed', 'Go back: Discuss']
+		];
+		for (const [phase, name] of cases) {
+			const { unmount } = setup(phase);
+			expect(screen.getByRole('button', { name })).toBeInTheDocument();
+			unmount();
+		}
 	});
 
 	it('disables the Advance button on closed instead of hiding it', () => {
 		setup('closed');
-		const advance = screen.getByRole('button', { name: 'Advance' });
+		const advance = screen.getByRole('button', { name: /^advance:/i });
 		expect(advance).toBeInTheDocument();
 		expect(advance).toBeDisabled();
 	});
@@ -58,14 +71,14 @@ describe('PhaseControls.svelte', () => {
 	it('clicking Advance fires onAdvance', async () => {
 		const user = userEvent.setup();
 		const { onAdvance } = setup('collect');
-		await user.click(screen.getByRole('button', { name: 'Advance' }));
+		await user.click(screen.getByRole('button', { name: /^advance:/i }));
 		expect(onAdvance).toHaveBeenCalledOnce();
 	});
 
 	it('clicking Back fires onBack', async () => {
 		const user = userEvent.setup();
 		const { onBack } = setup('vote');
-		await user.click(screen.getByRole('button', { name: /back to previous phase/i }));
+		await user.click(screen.getByRole('button', { name: /^go back:/i }));
 		expect(onBack).toHaveBeenCalledOnce();
 	});
 });

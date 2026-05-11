@@ -46,6 +46,9 @@ function prevPhase(p: MockPhase): MockPhase {
 	return i > 0 ? PHASE_ORDER_MOCK[i - 1] : p;
 }
 
+// This mock is getting pretty crazy. I don't know much about Svelte stores,
+// but in Vue there is first class support for loading real stores and injecting mock data.
+// Is there a more idiomatic way to do this in Svelte without these brittle mocks?
 vi.mock('$lib/room', async () => {
 	const { readable } = await import('svelte/store');
 	const actual = await vi.importActual<typeof import('$lib/room')>('$lib/room');
@@ -157,7 +160,7 @@ describe('Room page', () => {
 
 		expect(screen.getByLabelText(/current phase/i)).toHaveTextContent(/Collect/);
 		expect(screen.getByLabelText(/current phase/i)).toHaveTextContent('1 of 4');
-		expect(screen.getByRole('button', { name: /back to previous phase/i })).toBeDisabled();
+		expect(screen.getByRole('button', { name: /^go back:/i })).toBeDisabled();
 	});
 
 	it('shows CardForm in Collect and hides it after Advance', async () => {
@@ -168,33 +171,31 @@ describe('Room page', () => {
 
 		expect(screen.getAllByLabelText(/new card text/i).length).toBeGreaterThan(0);
 
-		await user.click(screen.getByRole('button', { name: 'Advance' }));
+		await user.click(screen.getByRole('button', { name: 'Advance: Vote' }));
 		await tick();
 
 		expect(screen.queryByLabelText(/new card text/i)).not.toBeInTheDocument();
 		expect(screen.getByLabelText(/current phase/i)).toHaveTextContent(/Vote/);
 	});
 
-	it('Advance walks through Vote → Discuss → Closed and hides Advance at the end', async () => {
+	it('Advance walks through Vote → Discuss → Closed and disables Advance at the end', async () => {
 		const user = userEvent.setup();
 		setDisplayName('Dillon');
 		render(RoomPage, { props: { data: { id: VALID_ID } } });
 		await tick();
 
-		await user.click(screen.getByRole('button', { name: 'Advance' }));
+		await user.click(screen.getByRole('button', { name: 'Advance: Vote' }));
 		await tick();
 		expect(screen.getByLabelText(/current phase/i)).toHaveTextContent(/Vote/);
 
-		await user.click(screen.getByRole('button', { name: 'Advance' }));
+		await user.click(screen.getByRole('button', { name: 'Advance: Discuss' }));
 		await tick();
 		expect(screen.getByLabelText(/current phase/i)).toHaveTextContent(/Discuss/);
-		expect(screen.getByRole('button', { name: 'Close room' })).toBeInTheDocument();
 
-		await user.click(screen.getByRole('button', { name: 'Close room' }));
+		await user.click(screen.getByRole('button', { name: 'Advance: Closed' }));
 		await tick();
 		expect(screen.getByLabelText(/current phase/i)).toHaveTextContent(/Closed/);
-		expect(screen.getByRole('button', { name: 'Advance' })).toBeDisabled();
-		expect(screen.queryByRole('button', { name: /close room/i })).not.toBeInTheDocument();
+		expect(screen.getByRole('button', { name: 'Advance: Closed' })).toBeDisabled();
 	});
 
 	it('persists the name on gate submit and reveals the room', async () => {

@@ -38,7 +38,7 @@ test('phase advances sync across two clients and gate card mutations', async ({ 
 	await expect(pageB.getByLabel('New card text').first()).toBeVisible();
 
 	// A advances to Vote; B sees the change and the form vanishes for them too.
-	await pageA.getByRole('button', { name: 'Advance' }).click();
+	await pageA.getByRole('button', { name: 'Advance: Vote' }).click();
 	await expect(pageA.getByLabel(/current phase/i)).toContainText('Vote');
 	await expect(pageB.getByLabel(/current phase/i)).toContainText('Vote');
 	await expect(pageB.getByLabel('New card text')).toHaveCount(0);
@@ -50,24 +50,22 @@ test('phase advances sync across two clients and gate card mutations', async ({ 
 	await expect(aliceCardA.getByRole('button', { name: /delete card/i })).toHaveCount(0);
 
 	// Step back to Collect — affordances and form return on both sides.
-	await pageA.getByRole('button', { name: /back to previous phase/i }).click();
+	await pageA.getByRole('button', { name: 'Go back: Collect' }).click();
 	await expect(pageB.getByLabel(/current phase/i)).toContainText('Collect');
 	await expect(pageB.getByLabel('New card text').first()).toBeVisible();
 	await expect(aliceCardA.getByRole('button', { name: /edit card/i })).toHaveCount(1);
 
 	// Walk all the way to Closed.
-	await pageA.getByRole('button', { name: 'Advance' }).click(); // Vote
-	await pageA.getByRole('button', { name: 'Advance' }).click(); // Discuss
-	await expect(pageA.getByRole('button', { name: 'Close room' })).toBeVisible();
-	await pageA.getByRole('button', { name: 'Close room' }).click();
+	await pageA.getByRole('button', { name: 'Advance: Vote' }).click();
+	await pageA.getByRole('button', { name: 'Advance: Discuss' }).click();
+	await pageA.getByRole('button', { name: 'Advance: Closed' }).click();
 
 	await expect(pageA.getByLabel(/current phase/i)).toContainText('Closed');
 	await expect(pageB.getByLabel(/current phase/i)).toContainText('Closed');
 
 	// Closed: advance is disabled (kept for layout stability), no card form,
 	// no edit/delete on either side.
-	await expect(pageA.getByRole('button', { name: 'Advance' })).toBeDisabled();
-	await expect(pageA.getByRole('button', { name: /close room/i })).toHaveCount(0);
+	await expect(pageA.getByRole('button', { name: 'Advance: Closed' })).toBeDisabled();
 	await expect(pageB.getByLabel('New card text')).toHaveCount(0);
 	await expect(pageB.getByRole('button', { name: /edit card/i })).toHaveCount(0);
 	await expect(pageB.getByRole('button', { name: /delete card/i })).toHaveCount(0);

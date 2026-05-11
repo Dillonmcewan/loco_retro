@@ -23,8 +23,9 @@
 	const totalSteps = PHASE_ORDER.length;
 	const isAtStart = $derived(phase === 'collect');
 	const isClosed = $derived(phase === 'closed');
-	const advanceLabel = $derived(phase === 'discuss' ? 'Close room' : 'Advance');
 
+	// Could use a clarifying comment here and/or pull some of these intermediate values into vars
+	// with useful names (i.e. `stepIndex`)
 	const nextPhaseLabel = $derived(
 		PHASE_ORDER[Math.min(PHASE_ORDER.indexOf(phase) + 1, PHASE_ORDER.length - 1)]
 	);
@@ -39,7 +40,7 @@
 		class="step"
 		onclick={onBack}
 		disabled={isAtStart}
-		aria-label="Back to previous phase"
+		aria-label={backTooltip}
 		use:tooltip={isAtStart ? undefined : backTooltip}
 	>
 		<ChevronLeft />
@@ -55,7 +56,7 @@
 		class="step advance"
 		onclick={onAdvance}
 		disabled={isClosed}
-		aria-label={advanceLabel}
+		aria-label={advanceTooltip}
 		use:tooltip={isClosed ? undefined : advanceTooltip}
 	>
 		<ChevronRight />
@@ -66,6 +67,7 @@
 	.phase-controls {
 		display: inline-flex;
 		align-items: center;
+		/* A lot of reused spacing values. Should be pulled into theme */
 		gap: 0.5rem;
 	}
 
@@ -78,6 +80,7 @@
 	}
 
 	.label {
+		/* Fonts should also be part of theme */
 		font-weight: 600;
 		font-size: 0.875rem;
 	}
