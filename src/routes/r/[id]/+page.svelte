@@ -7,17 +7,23 @@
 		columnsStore,
 		cardsStore,
 		participantsStore,
+		myBallotStore,
+		voteTotalsStore,
 		addCard,
 		editCard,
 		deleteCard,
 		advancePhase,
 		stepBackPhase,
+		castVote,
+		retractVote,
+		type Ballot,
 		type Card,
 		type CardsByColumn,
 		type Participant,
 		type OpenRoom,
 		type Phase,
-		type RoomMetaSnapshot
+		type RoomMetaSnapshot,
+		type VoteTotals
 	} from '$lib/room';
 	import { getDisplayName, setDisplayName, getAuthorId } from '$lib/displayName';
 	import Share2 from 'lucide-svelte/icons/share-2';
@@ -26,6 +32,8 @@
 	import RetroCard from '$lib/RetroCard.svelte';
 	import CardForm from '$lib/CardForm.svelte';
 	import PhaseControls from '$lib/PhaseControls.svelte';
+	import VoteControls from '$lib/VoteControls.svelte';
+	import VoteBudget from '$lib/VoteBudget.svelte';
 	import Toast from '$lib/Toast.svelte';
 	import type { Column } from '$lib/templates';
 	import type { PageData } from './$types';
@@ -51,9 +59,17 @@
 	let cards = $state<CardsByColumn>({});
 	let people = $state<Participant[]>([]);
 	let authorId = $state('');
+	let myBallot = $state<Ballot>({});
+	let voteTotals = $state<VoteTotals>({});
 
 	const participantColors = $derived(colorsByParticipant(people));
 	const phase = $derived<Phase>(meta?.phase ?? 'collect');
+	const votesTotal = $derived(meta?.votesPerParticipant ?? 5);
+	const votesSpent = $derived(
+		Object.values(myBallot).reduce((acc, n) => acc + n, 0)
+	);
+	const votesRemaining = $derived(Math.max(votesTotal - votesSpent, 0));
+	const canCastVote = $derived(phase === 'vote' && votesRemaining > 0);
 
 	let room: OpenRoom | null = null;
 
@@ -68,6 +84,9 @@
 
 		authorId = getAuthorId();
 
+		const mb = myBallotStore(opened.doc, authorId);
+		const vt = voteTotalsStore(opened.doc);
+
 		const unsubs: Array<() => void> = [
 			m.subscribe((v) => {
 				meta = v;
@@ -80,6 +99,12 @@
 			}),
 			p.subscribe((v) => {
 				people = v;
+			}),
+			mb.subscribe((v) => {
+				myBallot = v;
+			}),
+			vt.subscribe((v) => {
+				voteTotals = v;
 			})
 		];
 
@@ -131,6 +156,16 @@
 		stepBackPhase(room.doc);
 	}
 
+	function handleCastVote(cardId: string) {
+		if (!room) return;
+		castVote(room.doc, authorId, cardId);
+	}
+
+	function handleRetractVote(cardId: string) {
+		if (!room) return;
+		retractVote(room.doc, authorId, cardId);
+	}
+
 	function cardsFor(columnId: string): Card[] {
 		return cards[columnId] ?? [];
 	}
@@ -176,7 +211,12 @@
 					<Share2 />
 				</button>
 			</div>
-			<PhaseControls {phase} onAdvance={handleAdvancePhase} onBack={handleBackPhase} />
+			<div class="phase-stack">
+				<PhaseControls {phase} onAdvance={handleAdvancePhase} onBack={handleBackPhase} />
+				{#if phase === 'vote'}
+					<VoteBudget remaining={votesRemaining} total={votesTotal} />
+				{/if}
+			</div>
 			<ul class="participants" aria-label="Participants">
 				{#each people as p (p.clientId)}
 					{@const color = participantColors.get(p.clientId)}
@@ -201,9 +241,21 @@
 										{card}
 										currentAuthorId={authorId}
 										{phase}
+										voteTotal={voteTotals[card.id] ?? 0}
 										onEdit={(text) => handleEditCard(column.id, card.id, text)}
 										onDelete={() => handleDeleteCard(column.id, card.id)}
-									/>
+									>
+										{#snippet votingSlot()}
+											{#if phase === 'vote'}
+												<VoteControls
+													myCount={myBallot[card.id] ?? 0}
+													canIncrement={canCastVote}
+													onIncrement={() => handleCastVote(card.id)}
+													onDecrement={() => handleRetractVote(card.id)}
+												/>
+											{/if}
+										{/snippet}
+									</RetroCard>
 								</li>
 							{/each}
 						</ul>
@@ -258,12 +310,19 @@
 	}
 
 	header :global(.phase-controls) {
-		justify-self: center;
 		padding: var(--space-2) var(--space-3);
 		background: var(--color-surface);
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-md);
 		box-shadow: var(--shadow-card, 0 1px 2px rgba(0, 0, 0, 0.04));
+	}
+
+	.phase-stack {
+		justify-self: center;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: var(--space-2);
 	}
 
 	main.room header {

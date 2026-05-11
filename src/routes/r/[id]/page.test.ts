@@ -178,6 +178,65 @@ describe('Room page', () => {
 		expect(screen.getByRole('button', { name: 'Advance: Closed' })).toBeDisabled();
 	});
 
+	it('Vote phase: shows VoteBudget and per-card VoteControls; no aggregate badges', async () => {
+		const user = userEvent.setup();
+		setDisplayName('Dillon');
+		render(RoomPage, { props: { data: { id: VALID_ID } } });
+		await tick();
+
+		// In Collect: no voting UI.
+		expect(screen.queryByLabelText(/votes remaining/i)).not.toBeInTheDocument();
+		expect(screen.queryAllByRole('button', { name: /cast a vote/i })).toHaveLength(0);
+
+		await user.click(screen.getByRole('button', { name: 'Advance: Vote' }));
+		await tick();
+
+		expect(screen.getByLabelText(/votes remaining/i)).toHaveTextContent('5 / 5');
+		// One pair of VoteControls per card.
+		expect(screen.getAllByRole('button', { name: /cast a vote/i }).length).toBeGreaterThanOrEqual(2);
+		// No aggregate badge during Vote.
+		expect(screen.queryAllByLabelText(/total votes/i)).toHaveLength(0);
+	});
+
+	it('Vote phase: casting a vote decrements the budget and bumps the per-card count', async () => {
+		const user = userEvent.setup();
+		setDisplayName('Dillon');
+		render(RoomPage, { props: { data: { id: VALID_ID } } });
+		await tick();
+		await user.click(screen.getByRole('button', { name: 'Advance: Vote' }));
+		await tick();
+
+		const plusButtons = screen.getAllByRole('button', { name: /cast a vote/i });
+		await user.click(plusButtons[0]);
+		await tick();
+
+		expect(screen.getByLabelText(/votes remaining/i)).toHaveTextContent('4 / 5');
+	});
+
+	it('Discuss phase: hides VoteBudget + controls; renders aggregate badges from non-zero totals', async () => {
+		const user = userEvent.setup();
+		setDisplayName('Dillon');
+		render(RoomPage, { props: { data: { id: VALID_ID } } });
+		await tick();
+
+		await user.click(screen.getByRole('button', { name: 'Advance: Vote' }));
+		await tick();
+		const plusButtons = screen.getAllByRole('button', { name: /cast a vote/i });
+		await user.click(plusButtons[0]);
+		await user.click(plusButtons[0]);
+		await tick();
+
+		await user.click(screen.getByRole('button', { name: 'Advance: Discuss' }));
+		await tick();
+
+		expect(screen.queryByLabelText(/votes remaining/i)).not.toBeInTheDocument();
+		expect(screen.queryAllByRole('button', { name: /cast a vote/i })).toHaveLength(0);
+
+		const badges = screen.getAllByLabelText(/total votes/i);
+		expect(badges).toHaveLength(1);
+		expect(badges[0]).toHaveTextContent(/Votes:\s*2/);
+	});
+
 	it('persists the name on gate submit and reveals the room', async () => {
 		const user = userEvent.setup();
 		render(RoomPage, { props: { data: { id: VALID_ID } } });
