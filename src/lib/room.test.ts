@@ -427,7 +427,7 @@ describe('ballots: seed + helpers', () => {
 		return card.id;
 	}
 
-	it('seedRoom initializes an empty ballots map; idempotent on resseed', () => {
+	it('seedRoom initializes an empty ballots map; idempotent on re-seed', () => {
 		const doc = new Y.Doc();
 		seedRoom(doc, { name: 'r', templateId: DEFAULT_TEMPLATE_ID });
 		expect(readVoteTotals(doc)).toEqual({});
