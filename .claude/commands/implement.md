@@ -40,10 +40,15 @@ Feature name: `$ARGUMENTS`
 
 Once the Done criteria are met:
 
-1. **Run the full guard once before offering merge.** In order: `pnpm check`, `pnpm lint`, `pnpm test:unit`, `pnpm test:e2e`. If anything fails, fix it (or surface why and stop) — do **not** proceed to the merge prompt with red tests.
-2. Print the final summary: commits made, tests added, files changed, anything deferred or surprising. Include the green pass status from step 1.
-3. **Invoke the `/review` slash command** to get an automated review of `feature/$ARGUMENTS` against `main`. Run it via the `Skill` tool (`skill: "review"`) and let it print its report. Read its trailing `REVIEW_VERDICT:` line: if it is `REQUEST_CHANGES`, default the next question to **Hold for review** and recommend the user address findings via `/address-review` before merging.
-4. Ask the user (via `AskUserQuestion`): **"Ready to merge `feature/$ARGUMENTS` into `main`, or hold for review?"** with two options:
+1. **Run the full guard once before review.** In order: `pnpm check`, `pnpm lint`, `pnpm test:unit`, `pnpm test:e2e`. If anything fails, fix it (or surface why and stop) — do **not** proceed with red tests.
+2. **Invoke the `/review` slash command** to get an automated review of `feature/$ARGUMENTS` against `main`. Run it via the `Skill` tool (`skill: "review"`) and let it print its report.
+3. **Auto-apply must-fix findings.** Read the review and triage each finding:
+   - **Must-fix** — defects, correctness bugs, security issues, broken/missing tests for shipped behavior, anything the review flags as blocking or high-priority. **Implement these now** as additional commits on `feature/$ARGUMENTS`. Re-run the guard after each fix; keep going until the guard is green and every must-fix item is resolved.
+   - **Nice-to-have** — optional refactors, style polish, speculative improvements, suggestions explicitly tagged as non-blocking. **Defer these.** List them in the final summary as deferred follow-ups; do not implement.
+   - If a finding is ambiguous (you can't tell whether it's must-fix or nice-to-have), default to must-fix unless the cost is clearly disproportionate; in that case ask the user.
+   - If the review surfaces zero must-fix items, skip straight to the summary.
+4. Print the final summary: commits made (including any review-fix commits), tests added, files changed, must-fix items resolved, and any nice-to-have items deferred (with one-line descriptions so the user can act on them later). Include the green pass status from the final guard run.
+5. Ask the user (via `AskUserQuestion`): **"Ready to merge `feature/$ARGUMENTS` into `main`, or hold for review?"** with two options:
    - **Merge now** — `git switch main && git merge feature/$ARGUMENTS` (fast-forward when possible; default git behavior falls back to `--no-ff` if main has moved). Then `git branch -d feature/$ARGUMENTS`. Do not push.
-   - **Hold for review** — stay on `feature/$ARGUMENTS`. Tell the user: "starting from this clean tree, add comments inline as you read the code (the pr-reviewer feedback above is a starting point); then run `/address-review` to resolve them; run `/merge` when you're ready to land it."
-5. Do not push. Do not open PRs.
+   - **Hold for review** — stay on `feature/$ARGUMENTS`. Tell the user: "starting from this clean tree, add comments inline as you read the code (the deferred items above are a starting point); then run `/address-review` to resolve them; run `/merge` when you're ready to land it."
+6. Do not push. Do not open PRs.
