@@ -61,6 +61,7 @@ export type Card = {
 	authorId: string;
 	createdAt: number;
 	editedAt?: number;
+	discussed?: boolean;
 };
 
 export type CardsByColumn = Record<string, Card[]>;
@@ -93,6 +94,7 @@ type CardShape = {
 	authorId: string;
 	createdAt: number;
 	editedAt?: number;
+	discussed?: boolean;
 };
 
 type MetaShape = {
@@ -283,6 +285,8 @@ function cardFromMap(m: Y.Map<unknown>): Card {
 	};
 	const editedAt = cardAcc.get(m, 'editedAt');
 	if (typeof editedAt === 'number') card.editedAt = editedAt;
+	const discussed = cardAcc.get(m, 'discussed');
+	if (discussed === true) card.discussed = true;
 	return card;
 }
 
@@ -346,6 +350,23 @@ export function deleteCard(doc: Y.Doc, columnId: string, cardId: string): boolea
 				for (const b of ballots.values()) {
 					if (b.has(cardId)) b.delete(cardId);
 				}
+			});
+			return true;
+		}
+	}
+	return false;
+}
+
+export function toggleDiscussed(doc: Y.Doc, columnId: string, cardId: string): boolean {
+	if (getPhase(doc) !== 'discuss') return false;
+	const col = findColumn(doc, columnId);
+	if (!col) return false;
+	const cards = cardsArray(col);
+	for (const card of cards) {
+		if (cardAcc.get(card, 'id') === cardId) {
+			doc.transact(() => {
+				const current = cardAcc.get(card, 'discussed') === true;
+				cardAcc.set(card, 'discussed', !current);
 			});
 			return true;
 		}

@@ -11,6 +11,7 @@ import {
 	addCard,
 	editCard,
 	deleteCard,
+	toggleDiscussed,
 	cardsStore,
 	roomMetaStore,
 	getPhase,
@@ -363,6 +364,74 @@ describe('phase machine', () => {
 		unsub();
 		expect(getPhase(docB)).toBe('vote');
 		expect(seen[seen.length - 1]).toBe('vote');
+	});
+});
+
+describe('toggleDiscussed', () => {
+	function discussDoc(): { doc: Y.Doc; colId: string; cardId: string } {
+		const doc = seededDoc();
+		const colId = firstColumnId(doc);
+		const card = addCard(doc, { columnId: colId, text: 'x', author: 'D', authorId: 'a' })!;
+		advancePhase(doc); // → vote
+		advancePhase(doc); // → discuss
+		return { doc, colId, cardId: card.id };
+	}
+
+	it('is a no-op outside discuss phase', () => {
+		const doc = seededDoc();
+		const colId = firstColumnId(doc);
+		const card = addCard(doc, { columnId: colId, text: 'x', author: 'D', authorId: 'a' })!;
+		// collect
+		expect(toggleDiscussed(doc, colId, card.id)).toBe(false);
+		expect(readCards(doc)[colId][0].discussed).toBeUndefined();
+		// vote
+		advancePhase(doc);
+		expect(toggleDiscussed(doc, colId, card.id)).toBe(false);
+		// closed
+		advancePhase(doc); // discuss
+		advancePhase(doc); // closed
+		expect(toggleDiscussed(doc, colId, card.id)).toBe(false);
+	});
+
+	it('flips the flag false → true → false', () => {
+		const { doc, colId, cardId } = discussDoc();
+		expect(readCards(doc)[colId][0].discussed).toBeUndefined();
+		expect(toggleDiscussed(doc, colId, cardId)).toBe(true);
+		expect(readCards(doc)[colId][0].discussed).toBe(true);
+		expect(toggleDiscussed(doc, colId, cardId)).toBe(true);
+		expect(readCards(doc)[colId][0].discussed).toBeUndefined();
+	});
+
+	it('returns false for unknown ids', () => {
+		const { doc, colId } = discussDoc();
+		expect(toggleDiscussed(doc, colId, 'nope')).toBe(false);
+		expect(toggleDiscussed(doc, 'no-col', 'nope')).toBe(false);
+	});
+
+	it('propagates via Y.applyUpdate to a second doc', () => {
+		const { doc: docA, colId, cardId } = discussDoc();
+		const docB = new Y.Doc();
+		Y.applyUpdate(docB, Y.encodeStateAsUpdate(docA));
+		toggleDiscussed(docA, colId, cardId);
+		Y.applyUpdate(docB, Y.encodeStateAsUpdate(docA));
+		expect(readCards(docB)[colId][0].discussed).toBe(true);
+	});
+
+	it('cardsStore re-emits when discussed flips', () => {
+		const { doc, colId, cardId } = discussDoc();
+		const store = cardsStore(doc);
+		const seen: Array<boolean | undefined> = [];
+		const unsub = store.subscribe((v) => seen.push(v[colId]?.[0]?.discussed));
+		toggleDiscussed(doc, colId, cardId);
+		unsub();
+		expect(seen[seen.length - 1]).toBe(true);
+	});
+
+	it('stepping discuss → vote leaves the discussed flag intact', () => {
+		const { doc, colId, cardId } = discussDoc();
+		toggleDiscussed(doc, colId, cardId);
+		stepBackPhase(doc); // → vote
+		expect(readCards(doc)[colId][0].discussed).toBe(true);
 	});
 });
 
