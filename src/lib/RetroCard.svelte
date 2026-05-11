@@ -1,5 +1,7 @@
 <script lang="ts">
 	import Check from 'lucide-svelte/icons/check';
+	import CheckCircle2 from 'lucide-svelte/icons/check-circle-2';
+	import Circle from 'lucide-svelte/icons/circle';
 	import Pencil from 'lucide-svelte/icons/pencil';
 	import Trash2 from 'lucide-svelte/icons/trash-2';
 	import X from 'lucide-svelte/icons/x';
@@ -17,6 +19,8 @@
 		onDelete: () => void;
 		voteTotal?: number;
 		votingSlot?: Snippet;
+		discussed?: boolean;
+		onToggleDiscussed?: () => void;
 	};
 
 	let {
@@ -26,8 +30,13 @@
 		onEdit,
 		onDelete,
 		voteTotal = 0,
-		votingSlot
+		votingSlot,
+		discussed = false,
+		onToggleDiscussed
 	}: Props = $props();
+
+	const showDiscussedToggle = $derived(phase === 'discuss' || phase === 'closed');
+	const discussedDisabled = $derived(phase === 'closed');
 
 	// Aggregate totals are hidden during Vote to keep running tallies from
 	// biasing voters; they only appear from Discuss onward.
@@ -99,7 +108,7 @@
 	}
 </script>
 
-<Card class="retro-card">
+<Card class={discussed ? 'retro-card discussed' : 'retro-card'}>
 	{#if editing}
 		<textarea
 			bind:this={textareaEl}
@@ -146,6 +155,24 @@
 				{/if}
 				{#if votingSlot}
 					{@render votingSlot()}
+				{/if}
+				{#if showDiscussedToggle}
+					<button
+						type="button"
+						class="icon discussed-toggle"
+						class:on={discussed}
+						aria-pressed={discussed}
+						aria-label={discussed ? 'Mark as not discussed' : 'Mark as discussed'}
+						disabled={discussedDisabled}
+						onclick={onToggleDiscussed}
+						use:tooltip={discussed ? 'Mark as not discussed' : 'Mark as discussed'}
+					>
+						{#if discussed}
+							<CheckCircle2 />
+						{:else}
+							<Circle />
+						{/if}
+					</button>
 				{/if}
 				{#if canMutate}
 					<div class="owner-actions">
@@ -202,6 +229,21 @@
 		display: flex;
 		align-items: center;
 		gap: var(--space-2);
+	}
+
+	:global(.retro-card.discussed) .text,
+	:global(.retro-card.discussed) .author {
+		color: var(--color-muted);
+		text-decoration: line-through;
+	}
+
+	button.icon.discussed-toggle.on {
+		color: var(--color-success);
+		opacity: 1;
+	}
+
+	button.icon.discussed-toggle:disabled {
+		cursor: default;
 	}
 
 	.vote-total {

@@ -19,19 +19,23 @@ function setup(
 		currentAuthorId: string;
 		phase: Phase;
 		voteTotal: number;
+		discussed: boolean;
 	}> = {}
 ) {
 	const onEdit = vi.fn();
 	const onDelete = vi.fn();
+	const onToggleDiscussed = vi.fn();
 	const props = {
 		card: overrides.card ?? baseCard,
 		currentAuthorId: overrides.currentAuthorId ?? 'author-1',
 		phase: overrides.phase ?? ('collect' as Phase),
 		onEdit,
 		onDelete,
-		voteTotal: overrides.voteTotal ?? 0
+		voteTotal: overrides.voteTotal ?? 0,
+		discussed: overrides.discussed ?? false,
+		onToggleDiscussed
 	};
-	return { ...render(RetroCard, { props }), onEdit, onDelete };
+	return { ...render(RetroCard, { props }), onEdit, onDelete, onToggleDiscussed };
 }
 
 describe('RetroCard.svelte', () => {
@@ -130,6 +134,43 @@ describe('RetroCard.svelte', () => {
 	it('hides the aggregate vote badge when voteTotal is 0 even in discuss', () => {
 		setup({ phase: 'discuss', voteTotal: 0 });
 		expect(screen.queryByLabelText(/total votes/i)).not.toBeInTheDocument();
+	});
+
+	it('does not render the discussed toggle during collect or vote', () => {
+		const { unmount } = setup({ phase: 'collect' });
+		expect(screen.queryByRole('button', { name: /mark as discussed/i })).not.toBeInTheDocument();
+		unmount();
+		setup({ phase: 'vote' });
+		expect(screen.queryByRole('button', { name: /mark as discussed/i })).not.toBeInTheDocument();
+	});
+
+	it('renders the discussed toggle in discuss and fires onToggleDiscussed on click', async () => {
+		const user = userEvent.setup();
+		const { onToggleDiscussed } = setup({ phase: 'discuss' });
+		const btn = screen.getByRole('button', { name: /mark as discussed/i });
+		expect(btn).toBeEnabled();
+		await user.click(btn);
+		expect(onToggleDiscussed).toHaveBeenCalledOnce();
+	});
+
+	it('toggle reflects discussed=true with aria-pressed and "not discussed" label', () => {
+		setup({ phase: 'discuss', discussed: true });
+		const btn = screen.getByRole('button', { name: /mark as not discussed/i });
+		expect(btn).toHaveAttribute('aria-pressed', 'true');
+	});
+
+	it('adds the discussed class hook on the outer card when discussed=true', () => {
+		const { container } = setup({ phase: 'discuss', discussed: true });
+		expect(container.querySelector('.retro-card.discussed')).not.toBeNull();
+	});
+
+	it('toggle is disabled in closed and does not fire on click', async () => {
+		const user = userEvent.setup();
+		const { onToggleDiscussed } = setup({ phase: 'closed', discussed: true });
+		const btn = screen.getByRole('button', { name: /mark as not discussed/i });
+		expect(btn).toBeDisabled();
+		await user.click(btn);
+		expect(onToggleDiscussed).not.toHaveBeenCalled();
 	});
 
 	it('renders the votingSlot snippet when provided', () => {
