@@ -42,7 +42,7 @@ _Numbered (R1, R2, …) so feature plans in `docs/features/` can trace back._
 - **R5 — Phase progression.** The room moves through phases: *Collect → Vote → Discuss → Closed*. The facilitator advances the phase; phase is shared state and UI affordances change accordingly.
 - **R6 — Dot voting.** During the *Vote* phase, each participant has N votes (default 5, configurable by the facilitator at room creation) to allocate across cards. Aggregate vote counts are visible to everyone; individual ballots are private.
 - **R7 — Discuss view.** During *Discuss*, cards are sorted by vote count (descending). The facilitator can mark a card as discussed; the indicator is visible to all.
-- **R8 — Local-first sync.** Each client holds full retro state locally via a CRDT and syncs through a lightweight relay. Edits made while offline appear locally immediately and merge on reconnect without data loss, for the duration of a single retro session.
+- **R8 — Local-first sync.** Each client holds full retro state locally via a CRDT and syncs through a managed Cloudflare Durable Object (via `y-partykit`). Edits made while offline appear locally immediately and merge on reconnect without data loss, for the duration of a single retro session.
 - **R9 — Room lifecycle.** The facilitator can close a room. Closed rooms are read-only but remain viewable by anyone with the join code as long as the state exists on at least one participant's device or the relay's best-effort cache.
 - **R10 — Custom columns.** As an alternative to picking a preset, the facilitator may define their own columns (1–6, with custom titles) at room creation.
 
@@ -51,7 +51,7 @@ _Numbered (R1, R2, …) so feature plans in `docs/features/` can trace back._
 _Deferred until a feature plan or implementation forces an answer._
 
 - Are cards hidden from other participants until a *reveal* sub-phase, or visible to everyone as they're written? (Independent vs. social brainstorm.)
-- Does the relay persist room state when no participants are connected, or is it pure pass-through?
+- ~~Does the relay persist room state when no participants are connected, or is it pure pass-through?~~ **Resolved (partykit-sync):** Cloudflare's Durable Object holds the latest Yjs snapshot in DO storage while the room is active. We (the team) don't operate or persist anything ourselves; Cloudflare manages both the DO and its storage.
 - What happens if the facilitator drops? (Auto-promote next participant? Allow any participant to advance phases?)
 - Are per-card reactions or threaded comments in scope for v1, or v2?
 - Concurrent-room limits and abuse considerations on the relay.

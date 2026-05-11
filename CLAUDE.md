@@ -23,7 +23,10 @@ If a request conflicts with the PRD or dev plan, surface the conflict before imp
 ## Standard commands
 
 - Install: `pnpm install`
-- Dev server: `pnpm dev`
+- Dev (app + PartyKit): `pnpm dev:all` (recommended)
+- Dev server (app only): `pnpm dev`
+- PartyKit dev server: `pnpm party:dev`
+- PartyKit deploy: `pnpm party:deploy`
 - Type-check: `pnpm check`
 - Lint: `pnpm lint`
 - Format: `pnpm format`
