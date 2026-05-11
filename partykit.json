@@ -1,0 +1,8 @@
+{
+	"$schema": "https://www.partykit.io/schema.json",
+	"name": "loco-retro",
+	"compatibility_date": "2025-01-01",
+	"parties": {
+		"main": "party/main.ts"
+	}
+}

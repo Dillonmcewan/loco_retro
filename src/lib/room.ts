@@ -1,17 +1,20 @@
 import { readable, type Readable } from 'svelte/store';
 import * as Y from 'yjs';
 import { IndexeddbPersistence } from 'y-indexeddb';
-import { WebsocketProvider } from 'y-websocket';
+import YPartyKitProvider from 'y-partykit/provider';
 import { getTemplate, type Column } from './templates';
 
 // ─── Config ────────────────────────────────────────────────────────────────
 
-// VITE_RELAY_URL is required. The committed `.env` carries the dev default
-// (ws://localhost:1234); prod builds get it from the deploy target. Fail
-// fast at module load rather than silently connecting to the wrong place.
-const RELAY_URL = typeof import.meta !== 'undefined' ? import.meta.env?.VITE_RELAY_URL : undefined;
-if (!RELAY_URL) {
-	throw new Error('VITE_RELAY_URL is not set. Add it to .env (dev) or your deploy target (prod).');
+// VITE_PARTYKIT_HOST is required. The committed `.env` carries the dev default
+// (localhost:1999); prod builds get it from the deploy target. Fail fast at
+// module load rather than silently connecting to the wrong place.
+const PARTYKIT_HOST =
+	typeof import.meta !== 'undefined' ? import.meta.env?.VITE_PARTYKIT_HOST : undefined;
+if (!PARTYKIT_HOST) {
+	throw new Error(
+		'VITE_PARTYKIT_HOST is not set. Add it to .env (dev) or your deploy target (prod).'
+	);
 }
 
 // ─── Types ─────────────────────────────────────────────────────────────────
@@ -20,8 +23,8 @@ export type RoomId = string;
 
 export type OpenRoom = {
 	doc: Y.Doc;
-	awareness: WebsocketProvider['awareness'];
-	provider: WebsocketProvider;
+	awareness: YPartyKitProvider['awareness'];
+	provider: YPartyKitProvider;
 	persistence: IndexeddbPersistence;
 	destroy: () => void;
 };
@@ -139,13 +142,14 @@ export function isRoomId(value: unknown): value is RoomId {
 
 /**
  * Open the Y.Doc for a room: wires up local IndexedDB persistence and a
- * y-websocket provider against the relay. Caller is responsible for invoking
- * destroy() when leaving the room (e.g. on Svelte component teardown).
+ * y-partykit provider against the Cloudflare Durable Object. Caller is
+ * responsible for invoking destroy() when leaving the room (e.g. on Svelte
+ * component teardown).
  */
 export function openRoomDoc(id: RoomId): OpenRoom {
 	const doc = new Y.Doc();
 	const persistence = new IndexeddbPersistence(`loco_retro:room:${id}`, doc);
-	const provider = new WebsocketProvider(RELAY_URL, id, doc);
+	const provider = new YPartyKitProvider(PARTYKIT_HOST, id, doc);
 
 	return {
 		doc,

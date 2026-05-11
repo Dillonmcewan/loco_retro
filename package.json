@@ -5,8 +5,9 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
-		"dev:all": "concurrently -n app,relay -c blue,green \"pnpm dev\" \"pnpm relay\"",
-		"relay": "HOST=0.0.0.0 pnpm --filter relay start",
+		"dev:all": "VITE_PARTYKIT_HOST=localhost:1999 concurrently -n app,party -c blue,green \"pnpm dev\" \"pnpm party:dev\"",
+		"party:dev": "partykit dev",
+		"party:deploy": "partykit deploy",
 		"build": "vite build",
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
@@ -32,6 +33,7 @@
 		"eslint-plugin-svelte": "^2.44.0",
 		"globals": "^15.9.0",
 		"jsdom": "^25.0.0",
+		"partykit": "^0.0.115",
 		"prettier": "^3.3.0",
 		"prettier-plugin-svelte": "^3.2.0",
 		"svelte": "^5.0.0",
@@ -44,6 +46,7 @@
 	"dependencies": {
 		"lucide-svelte": "^1.0.1",
 		"y-indexeddb": "^9.0.12",
+		"y-partykit": "^0.0.33",
 		"y-websocket": "^2.0.4",
 		"yjs": "^13.6.20"
 	}
