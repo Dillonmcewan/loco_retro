@@ -8,9 +8,10 @@
 		phase: Phase;
 		onAdvance: () => void;
 		onBack: () => void;
+		advanceReady?: boolean;
 	};
 
-	let { phase, onAdvance, onBack }: Props = $props();
+	let { phase, onAdvance, onBack, advanceReady = false }: Props = $props();
 
 	const PHASE_LABEL: Record<Phase, string> = {
 		collect: 'Collect',
@@ -54,6 +55,7 @@
 	<button
 		type="button"
 		class="step advance"
+		class:ready={advanceReady && !isClosed}
 		onclick={onAdvance}
 		disabled={isClosed}
 		aria-label={advanceTooltip}
@@ -120,5 +122,33 @@
 	button.step :global(svg) {
 		width: 1rem;
 		height: 1rem;
+	}
+
+	button.step.advance.ready {
+		border-color: var(--color-success);
+		background: var(--color-success-soft);
+		color: var(--color-success);
+		animation: advance-ready-glow 1.8s ease-in-out infinite;
+	}
+
+	button.step.advance.ready:hover {
+		border-color: var(--color-success);
+		color: var(--color-success);
+	}
+
+	@keyframes advance-ready-glow {
+		0%,
+		100% {
+			box-shadow: 0 0 0 0 rgba(31, 122, 77, 0);
+		}
+		50% {
+			box-shadow: 0 0 0 4px rgba(31, 122, 77, 0.18);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		button.step.advance.ready {
+			animation: none;
+		}
 	}
 </style>

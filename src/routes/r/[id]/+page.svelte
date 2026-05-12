@@ -76,6 +76,11 @@
 	const votesSpent = $derived(Object.values(myBallot).reduce((acc, n) => acc + n, 0));
 	const votesRemaining = $derived(Math.max(votesTotal - votesSpent, 0));
 	const canCastVote = $derived(phase === 'vote' && votesRemaining > 0);
+	const everyoneDoneVoting = $derived(
+		phase === 'vote' &&
+			people.length > 0 &&
+			people.every((p) => p.authorId !== '' && (votesSpentByAuthor[p.authorId] ?? 0) >= votesTotal)
+	);
 
 	// During Discuss/Closed, sort each column's cards by vote total descending,
 	// tie-broken by createdAt ascending. Other phases keep insertion order.
@@ -266,7 +271,12 @@
 				</button>
 			</div>
 			<div class="phase-stack">
-				<PhaseControls {phase} onAdvance={handleAdvancePhase} onBack={handleBackPhase} />
+				<PhaseControls
+					{phase}
+					onAdvance={handleAdvancePhase}
+					onBack={handleBackPhase}
+					advanceReady={everyoneDoneVoting}
+				/>
 				<div class="vote-budget-slot">
 					{#if phase === 'vote'}
 						<VoteBudget remaining={votesRemaining} total={votesTotal} />
