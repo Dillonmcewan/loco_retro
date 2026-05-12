@@ -43,6 +43,7 @@
 	import VoteBudget from '$lib/VoteBudget.svelte';
 	import CollectStatus from '$lib/CollectStatus.svelte';
 	import Toast from '$lib/Toast.svelte';
+	import ClosedCelebration from '$lib/ClosedCelebration.svelte';
 	import type { Column } from '$lib/templates';
 	import type { PageData } from './$types';
 
@@ -382,6 +383,8 @@
 				</article>
 			{/each}
 		</section>
+
+		<ClosedCelebration {phase} />
 	</main>
 {/if}
 
