@@ -29,7 +29,9 @@ describe('Dashboard', () => {
 	it('renders the empty state when no rooms are in the index', () => {
 		render(Dashboard);
 		expect(screen.getByRole('button', { name: /create a new retro/i })).toBeInTheDocument();
-		expect(screen.getByText(/show up here/i)).toBeInTheDocument();
+		// Empty state shows decorative placeholder tiles.
+		expect(screen.getByText(/your retros will appear here/i)).toBeInTheDocument();
+		expect(screen.getByText(/click \+ to start your first one/i)).toBeInTheDocument();
 	});
 
 	it('renders one tile per indexed room, newest first', () => {

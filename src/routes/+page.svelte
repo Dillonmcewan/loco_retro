@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import Plus from 'lucide-svelte/icons/plus';
+	import Sparkles from 'lucide-svelte/icons/sparkles';
 	import CreateRoomModal from '$lib/CreateRoomModal.svelte';
 	import RoomTile from '$lib/RoomTile.svelte';
+	import Wordmark from '$lib/Wordmark.svelte';
 	import { listRooms, type RoomIndexEntry } from '$lib/rooms';
 
 	let rooms = $state<RoomIndexEntry[]>([]);
@@ -22,11 +24,20 @@
 		modalOpen = false;
 		rooms = listRooms();
 	}
+
+	const isEmpty = $derived(mounted && rooms.length === 0);
 </script>
 
-<main class:empty={mounted && rooms.length === 0}>
+<svelte:head>
+	<title>LocoRetro</title>
+</svelte:head>
+
+<div class="topbar">
+	<Wordmark />
+</div>
+
+<main>
 	<header>
-		<p class="wordmark">loco_retro</p>
 		<h1>Your retros</h1>
 	</header>
 
@@ -39,37 +50,41 @@
 		{#each rooms as entry (entry.id)}
 			<RoomTile {entry} />
 		{/each}
-	</section>
 
-	{#if mounted && rooms.length === 0}
-		<p class="hint">Your retros will show up here once you create or join one.</p>
-	{/if}
+		{#if isEmpty}
+			<div class="placeholder-tile" aria-hidden="true">
+				<span class="placeholder-icon"><Sparkles /></span>
+				<span class="placeholder-name">Sprint 42 retro</span>
+				<span class="placeholder-hint">Your retros will appear here.</span>
+			</div>
+			<div class="placeholder-tile" aria-hidden="true">
+				<span class="placeholder-icon"><Sparkles /></span>
+				<span class="placeholder-name">Q4 team retro</span>
+				<span class="placeholder-hint">Click + to start your first one.</span>
+			</div>
+		{/if}
+	</section>
 </main>
 
 <CreateRoomModal open={modalOpen} onClose={closeModal} />
 
 <style>
+	.topbar {
+		display: flex;
+		align-items: center;
+		padding: var(--space-4) var(--space-6);
+		border-bottom: 1px solid var(--color-border);
+		background: var(--color-surface);
+	}
+
 	main {
 		max-width: 72rem;
 		margin: var(--space-12) auto;
 		padding: 0 var(--space-6);
 	}
 
-	main.empty {
-		max-width: 36rem;
-	}
-
 	header {
 		margin-bottom: var(--space-8);
-	}
-
-	.wordmark {
-		font-weight: 600;
-		font-size: var(--font-size-sm);
-		letter-spacing: 0.08em;
-		text-transform: lowercase;
-		color: var(--color-muted);
-		margin: 0 0 var(--space-2);
 	}
 
 	h1 {
@@ -103,14 +118,15 @@
 			color 0.12s ease,
 			background 0.12s ease,
 			box-shadow 0.12s ease,
-			transform 0.05s ease;
+			transform 0.1s ease;
 	}
 
 	.new-tile:hover {
 		border-color: var(--color-primary);
 		color: var(--color-primary);
 		background: var(--color-primary-soft);
-		transform: translateY(-1px);
+		transform: translateY(-2px);
+		box-shadow: var(--shadow-card);
 	}
 
 	.new-tile:focus-visible {
@@ -129,10 +145,38 @@
 		font-size: var(--font-size-sm);
 	}
 
-	.hint {
-		margin: var(--space-6) 0 0;
+	.placeholder-tile {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+		padding: var(--space-5);
+		min-height: 8rem;
+		background: transparent;
+		border: 1.5px dashed var(--color-border-strong);
+		border-radius: var(--radius-md);
 		color: var(--color-muted);
-		font-size: var(--font-size-sm);
-		text-align: center;
+		opacity: 0.6;
+	}
+
+	.placeholder-icon {
+		display: inline-flex;
+		color: var(--color-tertiary);
+	}
+
+	.placeholder-icon :global(svg) {
+		width: 1.25rem;
+		height: 1.25rem;
+	}
+
+	.placeholder-name {
+		font-weight: 600;
+		font-size: var(--font-size-md);
+		color: var(--color-text);
+		opacity: 0.55;
+	}
+
+	.placeholder-hint {
+		margin-top: auto;
+		font-size: var(--font-size-xs);
 	}
 </style>

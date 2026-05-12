@@ -1,3 +1,5 @@
+import { PHASE_ORDER, type Phase } from './room';
+
 const ROOMS_KEY = 'loco_retro:rooms';
 
 export type RoomIndexEntry = {
@@ -5,6 +7,7 @@ export type RoomIndexEntry = {
 	name: string;
 	templateId: string;
 	lastOpenedAt: number;
+	phase?: Phase;
 };
 
 function storage(): Storage | null {
@@ -14,14 +17,20 @@ function storage(): Storage | null {
 function isEntry(value: unknown): value is RoomIndexEntry {
 	if (!value || typeof value !== 'object') return false;
 	const v = value as Record<string, unknown>;
-	return (
-		typeof v.id === 'string' &&
-		v.id.length > 0 &&
-		typeof v.name === 'string' &&
-		typeof v.templateId === 'string' &&
-		typeof v.lastOpenedAt === 'number' &&
-		Number.isFinite(v.lastOpenedAt)
-	);
+	if (
+		typeof v.id !== 'string' ||
+		v.id.length === 0 ||
+		typeof v.name !== 'string' ||
+		typeof v.templateId !== 'string' ||
+		typeof v.lastOpenedAt !== 'number' ||
+		!Number.isFinite(v.lastOpenedAt)
+	) {
+		return false;
+	}
+	if (v.phase !== undefined && !(PHASE_ORDER as readonly string[]).includes(v.phase as string)) {
+		return false;
+	}
+	return true;
 }
 
 function readAll(): RoomIndexEntry[] {

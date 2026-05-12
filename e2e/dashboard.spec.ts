@@ -3,8 +3,8 @@ import { test, expect } from '@playwright/test';
 test('a created retro appears as a tile on the dashboard', async ({ page }) => {
 	await page.goto('/');
 
-	// Empty state: only the New Retro tile + hint, no room tiles.
-	await expect(page.getByText(/show up here/i)).toBeVisible();
+	// Empty state: only the New Retro tile + placeholder tiles, no room tiles.
+	await expect(page.getByText(/your retros will appear here/i)).toBeVisible();
 	await expect(page.getByRole('button', { name: /open retro/i })).toHaveCount(0);
 
 	// Create a retro through the modal.
