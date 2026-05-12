@@ -182,6 +182,34 @@ describe('Room page', () => {
 		expect(screen.getByRole('button', { name: 'Advance: Closed' })).toBeDisabled();
 	});
 
+	it("writes the current phase into the rooms sidecar on every advance (dashboard relies on it)", async () => {
+		const user = userEvent.setup();
+		setDisplayName('Dillon');
+		render(RoomPage, { props: { data: { id: VALID_ID } } });
+		await tick();
+
+		function indexedPhase(): string | undefined {
+			const raw = localStorage.getItem('loco_retro:rooms');
+			if (!raw) return undefined;
+			const entries = JSON.parse(raw) as Array<{ id: string; phase?: string }>;
+			return entries.find((e) => e.id === VALID_ID)?.phase;
+		}
+
+		expect(indexedPhase()).toBe('collect');
+
+		await user.click(screen.getByRole('button', { name: 'Advance: Vote' }));
+		await tick();
+		expect(indexedPhase()).toBe('vote');
+
+		await user.click(screen.getByRole('button', { name: 'Advance: Discuss' }));
+		await tick();
+		expect(indexedPhase()).toBe('discuss');
+
+		await user.click(screen.getByRole('button', { name: 'Advance: Closed' }));
+		await tick();
+		expect(indexedPhase()).toBe('closed');
+	});
+
 	it('Vote phase: shows VoteBudget and per-card VoteControls; no aggregate badges', async () => {
 		const user = userEvent.setup();
 		setDisplayName('Dillon');

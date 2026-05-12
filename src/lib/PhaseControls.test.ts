@@ -4,10 +4,14 @@ import userEvent from '@testing-library/user-event';
 import PhaseControls from './PhaseControls.svelte';
 import type { Phase } from './room';
 
-function setup(phase: Phase) {
+function setup(phase: Phase, advanceReady = false) {
 	const onAdvance = vi.fn();
 	const onBack = vi.fn();
-	return { ...render(PhaseControls, { props: { phase, onAdvance, onBack } }), onAdvance, onBack };
+	return {
+		...render(PhaseControls, { props: { phase, onAdvance, onBack, advanceReady } }),
+		onAdvance,
+		onBack
+	};
 }
 
 describe('PhaseControls.svelte', () => {
@@ -80,5 +84,20 @@ describe('PhaseControls.svelte', () => {
 		const { onBack } = setup('vote');
 		await user.click(screen.getByRole('button', { name: /^go back:/i }));
 		expect(onBack).toHaveBeenCalledOnce();
+	});
+
+	it('advanceReady adds the .ready glow class to the Advance button', () => {
+		const { container } = setup('collect', true);
+		expect(container.querySelector('button.advance.ready')).not.toBeNull();
+	});
+
+	it('omits the .ready glow when advanceReady is false', () => {
+		const { container } = setup('collect', false);
+		expect(container.querySelector('button.advance.ready')).toBeNull();
+	});
+
+	it('does not paint the .ready glow at the closed phase even when advanceReady is true', () => {
+		const { container } = setup('closed', true);
+		expect(container.querySelector('button.advance.ready')).toBeNull();
 	});
 });

@@ -9,6 +9,7 @@ vi.mock('$app/navigation', () => ({
 import RoomTile from './RoomTile.svelte';
 import { goto } from '$app/navigation';
 import type { RoomIndexEntry } from './rooms';
+import type { Phase } from './room';
 
 function makeEntry(overrides: Partial<RoomIndexEntry> = {}): RoomIndexEntry {
 	return {
@@ -39,6 +40,27 @@ describe('RoomTile', () => {
 	it('renders a relative timestamp', () => {
 		render(RoomTile, { entry: makeEntry({ lastOpenedAt: Date.now() - 5 * 60_000 }) });
 		expect(screen.getByText('5m ago')).toBeInTheDocument();
+	});
+
+	it('renders data-phase + label matching entry.phase for every phase', () => {
+		const cases: Array<[Phase, string]> = [
+			['collect', 'Collect'],
+			['vote', 'Vote'],
+			['discuss', 'Discuss'],
+			['closed', 'Closed']
+		];
+		for (const [phase, label] of cases) {
+			const { container, unmount } = render(RoomTile, { entry: makeEntry({ phase }) });
+			const tile = container.querySelector('.tile');
+			expect(tile?.getAttribute('data-phase')).toBe(phase);
+			expect(screen.getByText(label)).toBeInTheDocument();
+			unmount();
+		}
+	});
+
+	it('defaults phase to collect when entry.phase is missing', () => {
+		const { container } = render(RoomTile, { entry: makeEntry() });
+		expect(container.querySelector('.tile')?.getAttribute('data-phase')).toBe('collect');
 	});
 
 	it('navigates to /r/<id> on click', async () => {
