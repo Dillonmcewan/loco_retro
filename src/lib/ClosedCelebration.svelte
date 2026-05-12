@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onDestroy } from 'svelte';
 	import type { Phase } from '$lib/room';
 	import { celebrationFor, celebrationById, type Celebration } from '$lib/celebrations';
 
@@ -44,6 +45,10 @@
 		}
 		playing = null;
 	}
+
+	onDestroy(() => {
+		if (dismissTimer) clearTimeout(dismissTimer);
+	});
 </script>
 
 {#if playing}
