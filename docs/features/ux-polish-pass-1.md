@@ -72,7 +72,20 @@ Single polish pass, three groupings:
 
 ## Update to `docs/plan.md`
 
-No architectural changes. The dev plan's color-token / spacing-token rules already cover what's added. No update needed.
+The original plan items needed no architectural change. The addendum scope below introduced three reusable patterns (reduced-motion gating, `$effect.pre` transition gating, deterministic per-room registry pick) that have been captured under the Conventions section of `docs/plan.md`.
+
+## Addendum: scope that landed beyond this plan
+
+Several pieces were added during implementation that weren't in the original plan above. Recording them here for traceability; future cross-cutting work on any of these should branch off into its own feature plan rather than accreting more onto this one.
+
+- **Closed-phase celebration system** — `src/lib/ClosedCelebration.svelte`, `src/lib/celebrations.ts`, `src/lib/celebrations/RocketShow.svelte`, `src/lib/celebrations/DiscoShow.svelte`. Over-the-top "you finished a retro" moment when phase transitions to `closed`. Variant is picked deterministically per `roomId`; `?celebration=<id>` overrides for deliberate testing. Auto-dismisses after 6.5s or on backdrop click. Reduced-motion fallback shows a static banner mirroring the variant's text.
+- **Self-reported ready toggle in Collect** — `src/lib/CollectStatus.svelte`. Replaces the previous static vote-budget slot during Collect with an "I'm done adding cards" / "Done adding cards" toggle. Drives the advance-arrow ready glow below via awareness `ready` field.
+- **Advance-ready glow on `PhaseControls`** — `advanceReady` prop lights up the next-phase arrow when (a) every participant is ready in Collect or (b) every participant has spent their full budget in Vote.
+- **`VoteBudget` depleted state** — `remaining === 0` flips the badge to a success-tinted "Done voting!" pill.
+- **Per-card discussed celebration on `RetroCard`** — confetti + stamp animation when a card is marked discussed; gated by the `$effect.pre` transition pattern so it never plays on initial render.
+- **Deterministic empty-state placeholders** — `src/lib/emptyPlaceholders.ts` + `src/lib/hash.ts`. Each empty column shows an icon + copy picked deterministically from a curated pool by `(roomId, columnId)`, with accent-color rotation across the columns of a room.
+
+The "deferred / out of scope: animated phase transitions" item above is in spirit relaxed by the closed-phase celebration — but the rest of that list (modal redesign, light/dark, column accents, mobile) still stands.
 
 ## Verification
 
