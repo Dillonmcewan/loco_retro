@@ -10,8 +10,12 @@
 </script>
 
 <span class="budget" class:depleted aria-label="Votes remaining">
-	<span class="numbers">{remaining} / {total}</span>
-	<span class="caption">votes remaining</span>
+	{#if depleted}
+		<span class="done">Done voting!</span>
+	{:else}
+		<span class="numbers">{remaining} / {total}</span>
+		<span class="caption">votes remaining</span>
+	{/if}
 </span>
 
 <style>
@@ -37,11 +41,12 @@
 	}
 
 	.budget.depleted {
-		border-color: var(--color-danger);
-		background: var(--color-danger-soft);
+		border-color: var(--color-success);
+		background: var(--color-success-soft);
 	}
 
-	.budget.depleted .numbers {
-		color: var(--color-danger);
+	.done {
+		font-weight: 600;
+		color: var(--color-success);
 	}
 </style>
