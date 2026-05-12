@@ -12,16 +12,23 @@
   },
   "remoteUser": "node",
   "mounts": [
-    // Per-project persisted volume for ~/.claude so auth + session history
-    // survive container rebuilds. Scoped per project via ${devcontainerId}.
-    "source=claude-code-config-${devcontainerId},target=/home/node/.claude,type=volume"
+    // Per-project persisted volumes so auth + session state survive container
+    // rebuilds. Scoped per project via ${devcontainerId}.
+    "source=claude-code-config-${devcontainerId},target=/home/node/.claude,type=volume",
+    // Wrangler (Cloudflare) credentials — survives rebuild so `wrangler login`
+    // is a one-time step.
+    "source=wrangler-config-${devcontainerId},target=/home/node/.config/.wrangler,type=volume",
+    // PartyKit credentials — same idea.
+    "source=partykit-config-${devcontainerId},target=/home/node/.partykit,type=volume"
   ],
-  "postCreateCommand": "sudo chown -R node:node /home/node/.claude && sudo corepack enable && corepack prepare pnpm@latest --activate",
-  "forwardPorts": [5173, 4173, 1999],
+  "postCreateCommand": "sudo chown -R node:node /home/node/.claude /home/node/.config/.wrangler /home/node/.partykit && sudo corepack enable && corepack prepare pnpm@latest --activate",
+  "forwardPorts": [5173, 4173, 1999, 1998, 8976],
   "portsAttributes": {
     "5173": { "label": "SvelteKit dev", "onAutoForward": "notify" },
     "4173": { "label": "SvelteKit preview", "onAutoForward": "silent" },
-    "1999": { "label": "PartyKit dev", "onAutoForward": "silent" }
+    "1999": { "label": "PartyKit dev", "onAutoForward": "silent" },
+    "1998": { "label": "PartyKit login callback", "onAutoForward": "silent" },
+    "8976": { "label": "Wrangler login callback", "onAutoForward": "silent" }
   },
   "customizations": {
     "vscode": {
