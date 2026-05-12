@@ -1,5 +1,18 @@
 <script lang="ts">
-	const PALETTE = [
+	// Vibrant sparkle palette — intentionally separate from the muted brand
+	// colors so the exhaust trail reads as electric/glittery rather than blending
+	// into the UI.
+	const SPARKLE_PALETTE = [
+		'#ffd84a', // gold
+		'#ffffff', // white
+		'#ff3ec9', // hot pink
+		'#36e6d4', // cyan
+		'#5d8aff', // electric blue
+		'#a4ff4d', // lime
+		'#ffb02e' // orange
+	] as const;
+
+	const RAIN_PALETTE = [
 		'var(--color-primary)',
 		'var(--color-secondary)',
 		'var(--color-tertiary)',
@@ -7,22 +20,28 @@
 		'var(--color-success)'
 	] as const;
 
-	// Rocket flies from (-10vw, 110vh) to (110vw, -10vh) between t=200ms and t=1800ms.
+	// Rocket flies from (-15vw, 115vh) to (115vw, -15vh) between t=200ms and t=1800ms.
 	// Trail particles spawn along that path, each delayed so it appears just as
 	// the rocket passes its position.
-	const TRAIL_COUNT = 22;
 	const ROCKET_START_MS = 200;
 	const ROCKET_DURATION_MS = 1600;
+
+	type TrailShape = 'star' | 'dot' | 'streak';
+	const TRAIL_COUNT = 38;
 	const TRAIL = Array.from({ length: TRAIL_COUNT }, (_, i) => {
 		const progress = i / (TRAIL_COUNT - 1);
+		const r = Math.random();
+		const shape: TrailShape = r < 0.45 ? 'star' : r < 0.8 ? 'dot' : 'streak';
 		return {
 			progress,
 			delayMs: Math.round(ROCKET_START_MS + ROCKET_DURATION_MS * progress),
-			color: PALETTE[i % PALETTE.length],
-			// Slight perpendicular jitter so the trail looks like sparks, not a ruler.
-			jitterX: (Math.random() - 0.5) * 6,
-			jitterY: (Math.random() - 0.5) * 6,
-			size: 5 + Math.random() * 4
+			// Perpendicular jitter so the trail looks like spray, not a ruled line.
+			jitterX: (Math.random() - 0.5) * 4,
+			jitterY: (Math.random() - 0.5) * 4,
+			size: shape === 'star' ? 14 + Math.random() * 12 : 6 + Math.random() * 6,
+			color: SPARKLE_PALETTE[Math.floor(Math.random() * SPARKLE_PALETTE.length)],
+			rotation: Math.round(Math.random() * 360),
+			shape
 		};
 	});
 
@@ -36,7 +55,7 @@
 			driftVw: (Math.random() - 0.5) * 40,
 			startRotation: Math.round(Math.random() * 360),
 			endRotation: Math.round(Math.random() * 720 - 360),
-			color: PALETTE[i % PALETTE.length],
+			color: RAIN_PALETTE[i % RAIN_PALETTE.length],
 			size: isPaper ? 6 + Math.random() * 5 : 4 + Math.random() * 4,
 			height: isPaper ? 10 + Math.random() * 6 : 0,
 			isPaper
@@ -50,18 +69,61 @@
 	<div class="trail-layer">
 		{#each TRAIL as t, i (i)}
 			<span
-				class="spark"
+				class="spark spark-{t.shape}"
 				style:--progress={t.progress}
 				style:--jitter-x="{t.jitterX}vw"
 				style:--jitter-y="{t.jitterY}vh"
 				style:--delay="{t.delayMs}ms"
 				style:--size="{t.size}px"
-				style:background={t.color}
+				style:--rotation="{t.rotation}deg"
+				style:--color={t.color}
 			></span>
 		{/each}
 	</div>
 
-	<div class="rocket">🚀</div>
+	<!-- Inline SVG so the rocket's orientation is deterministic across platforms
+	     (emoji 🚀 leans differently on Apple vs Android vs Windows). Drawn
+	     pointing up in the viewBox, then rotated 45° clockwise via the inner
+	     <g> so the nose tracks the trajectory's NE direction. -->
+	<div class="rocket">
+		<svg viewBox="0 0 100 100" width="120" height="120" aria-hidden="true">
+			<g transform="rotate(45 50 50)">
+				<!-- nose cone -->
+				<path d="M50 6 L66 36 L34 36 Z" fill="#ff5b4a" stroke="#2a2420" stroke-width="2" />
+				<!-- body -->
+				<rect
+					x="34"
+					y="34"
+					width="32"
+					height="44"
+					rx="6"
+					fill="#f4f1ec"
+					stroke="#2a2420"
+					stroke-width="2"
+				/>
+				<!-- window -->
+				<circle cx="50" cy="50" r="8" fill="#7fcdff" stroke="#2a2420" stroke-width="2" />
+				<circle cx="47" cy="47" r="2.5" fill="#ffffff" opacity="0.85" />
+				<!-- fins -->
+				<path d="M34 64 L22 84 L34 78 Z" fill="#ff5b4a" stroke="#2a2420" stroke-width="2" />
+				<path d="M66 64 L78 84 L66 78 Z" fill="#ff5b4a" stroke="#2a2420" stroke-width="2" />
+				<!-- thruster ring -->
+				<rect
+					x="38"
+					y="76"
+					width="24"
+					height="6"
+					rx="2"
+					fill="#5a5563"
+					stroke="#2a2420"
+					stroke-width="2"
+				/>
+				<!-- flame -->
+				<path d="M42 82 Q46 92 50 86 Q54 92 58 82 Q56 96 50 100 Q44 96 42 82 Z" fill="#ffb02e" />
+				<path d="M45 84 Q48 90 50 87 Q52 90 55 84 Q53 92 50 95 Q47 92 45 84 Z" fill="#ffec5f" />
+			</g>
+		</svg>
+	</div>
 
 	<div class="rain-layer">
 		{#each RAIN as p, i (i)}
@@ -118,23 +180,27 @@
 
 	/* ─── Rocket ──────────────────────────────────────────────────────────── */
 
+	/* SVG is 120×120; negative margin so the translate target hits its center
+	   rather than its top-left corner. Orientation is baked into the SVG, so
+	   the CSS transform only needs to translate. */
 	.rocket {
 		position: absolute;
 		left: 0;
 		top: 0;
-		font-size: 5rem;
-		line-height: 1;
-		filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.25));
-		transform: translate(-15vw, 115vh) rotate(-45deg);
+		width: 120px;
+		height: 120px;
+		margin: -60px 0 0 -60px;
+		filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.35));
+		transform: translate(-15vw, 115vh);
 		animation: rocket-flight 1600ms cubic-bezier(0.32, 0.72, 0.4, 1) 200ms forwards;
 	}
 
 	@keyframes rocket-flight {
 		0% {
-			transform: translate(-15vw, 115vh) rotate(-45deg);
+			transform: translate(-15vw, 115vh);
 		}
 		100% {
-			transform: translate(115vw, -15vh) rotate(-45deg);
+			transform: translate(115vw, -15vh);
 		}
 	}
 
@@ -152,25 +218,60 @@
 		top: calc(110vh - var(--progress) * 120vh + var(--jitter-y));
 		width: var(--size);
 		height: var(--size);
-		border-radius: 50%;
+		color: var(--color);
 		opacity: 0;
-		transform: translate(-50%, -50%) scale(0.4);
-		animation: spark-pop 900ms ease-out var(--delay) forwards;
-		box-shadow: 0 0 8px currentColor;
+		transform: translate(-50%, -50%) scale(0.3) rotate(var(--rotation));
+		animation: sparkle-twinkle 950ms ease-out var(--delay) forwards;
 	}
 
-	@keyframes spark-pop {
+	/* Four-point CSS star (concave between points) — reads as a "twinkle" shape. */
+	.spark-star {
+		background: currentColor;
+		clip-path: polygon(50% 0%, 58% 42%, 100% 50%, 58% 58%, 50% 100%, 42% 58%, 0% 50%, 42% 42%);
+		filter: drop-shadow(0 0 6px currentColor) drop-shadow(0 0 14px currentColor);
+	}
+
+	.spark-dot {
+		background: currentColor;
+		border-radius: 50%;
+		box-shadow:
+			0 0 6px currentColor,
+			0 0 14px currentColor,
+			0 0 22px currentColor;
+	}
+
+	.spark-streak {
+		background: linear-gradient(
+			90deg,
+			transparent,
+			currentColor 40%,
+			currentColor 60%,
+			transparent
+		);
+		border-radius: 50%;
+		box-shadow:
+			0 0 8px currentColor,
+			0 0 18px currentColor;
+		/* streaks are oblong */
+		height: calc(var(--size) * 0.3);
+	}
+
+	@keyframes sparkle-twinkle {
 		0% {
 			opacity: 0;
-			transform: translate(-50%, -50%) scale(0.4);
+			transform: translate(-50%, -50%) scale(0.3) rotate(var(--rotation));
 		}
-		20% {
+		18% {
 			opacity: 1;
-			transform: translate(-50%, -50%) scale(1);
+			transform: translate(-50%, -50%) scale(1.25) rotate(calc(var(--rotation) + 90deg));
+		}
+		55% {
+			opacity: 0.95;
+			transform: translate(-50%, -50%) scale(1) rotate(calc(var(--rotation) + 180deg));
 		}
 		100% {
 			opacity: 0;
-			transform: translate(-50%, -50%) scale(0.6);
+			transform: translate(-50%, -50%) scale(0.4) rotate(calc(var(--rotation) + 280deg));
 		}
 	}
 
