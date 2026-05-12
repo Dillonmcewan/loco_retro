@@ -35,6 +35,45 @@
 		onToggleDiscussed
 	}: Props = $props();
 
+	// Animation fires only on the false → true transition. Re-mounts with an
+	// already-discussed card don't trigger it; neither does un-discussing.
+	let prevDiscussed: boolean | undefined;
+	let animating = $state(false);
+
+	$effect.pre(() => {
+		const current = discussed;
+		if (prevDiscussed === false && current === true) {
+			animating = true;
+			const t = setTimeout(() => (animating = false), 700);
+			prevDiscussed = current;
+			return () => clearTimeout(t);
+		}
+		prevDiscussed = current;
+	});
+
+	const cardClass = $derived(
+		['retro-card', discussed && 'discussed', animating && 'animating'].filter(Boolean).join(' ')
+	);
+
+	// 14 confetti dots fanned around the card center with varied distances so
+	// the burst reads as scattered rather than geometric.
+	const CONFETTI_DOTS = [
+		{ angle: 0, distance: 110, color: 'var(--color-primary)' },
+		{ angle: 26, distance: 80, color: 'var(--color-secondary)' },
+		{ angle: 52, distance: 130, color: 'var(--color-tertiary)' },
+		{ angle: 78, distance: 70, color: 'var(--color-phase-closed)' },
+		{ angle: 104, distance: 120, color: 'var(--color-success)' },
+		{ angle: 130, distance: 90, color: 'var(--color-primary)' },
+		{ angle: 156, distance: 115, color: 'var(--color-secondary)' },
+		{ angle: 182, distance: 75, color: 'var(--color-tertiary)' },
+		{ angle: 208, distance: 125, color: 'var(--color-phase-closed)' },
+		{ angle: 234, distance: 95, color: 'var(--color-success)' },
+		{ angle: 260, distance: 110, color: 'var(--color-primary)' },
+		{ angle: 286, distance: 85, color: 'var(--color-secondary)' },
+		{ angle: 312, distance: 125, color: 'var(--color-tertiary)' },
+		{ angle: 338, distance: 90, color: 'var(--color-phase-closed)' }
+	] as const;
+
 	const showDiscussedToggle = $derived(phase === 'discuss' || phase === 'closed');
 	const discussedDisabled = $derived(phase === 'closed');
 
@@ -104,7 +143,19 @@
 	}
 </script>
 
-<Card class={discussed ? 'retro-card discussed' : 'retro-card'}>
+<Card class={cardClass}>
+	{#if animating}
+		<span class="confetti" aria-hidden="true">
+			{#each CONFETTI_DOTS as dot, i (i)}
+				<span
+					class="confetti-dot"
+					style:--angle="{dot.angle}deg"
+					style:--distance="{dot.distance}px"
+					style:background={dot.color}
+				></span>
+			{/each}
+		</span>
+	{/if}
 	<div class="text-slot">
 		{#if editing}
 			<textarea
@@ -345,5 +396,98 @@
 		line-height: 1.5;
 		resize: none;
 		overflow: hidden;
+	}
+
+	/* ─── Discussed-toggle animations ──────────────────────────────────── */
+
+	/* stamp: card nudges 1 → 1.02 → 1, icon punches in with rotation kick. */
+	:global(.retro-card.animating) {
+		animation: stamp-card 280ms cubic-bezier(0.34, 1.56, 0.64, 1);
+		transform-origin: center;
+	}
+
+	:global(.retro-card.animating .discussed-toggle svg) {
+		animation: stamp-icon 280ms cubic-bezier(0.34, 1.56, 0.64, 1);
+		transform-origin: center;
+	}
+
+	@keyframes stamp-card {
+		0% {
+			transform: scale(1);
+		}
+		40% {
+			transform: scale(1.01);
+		}
+		100% {
+			transform: scale(1);
+		}
+	}
+
+	@keyframes stamp-icon {
+		0% {
+			transform: scale(0.85) rotate(-3deg);
+		}
+		60% {
+			transform: scale(1.1) rotate(2deg);
+		}
+		100% {
+			transform: scale(1) rotate(0deg);
+		}
+	}
+
+	/* confetti: dots fan outward from the card center, spread across the whole card. */
+	:global(.retro-card) {
+		position: relative;
+	}
+
+	.confetti {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		overflow: visible;
+		display: block;
+		z-index: 1;
+	}
+
+	.confetti-dot {
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		width: 7px;
+		height: 7px;
+		border-radius: 50%;
+		transform: translate(-50%, -50%);
+		animation: confetti-burst 650ms ease-out forwards;
+	}
+
+	@keyframes confetti-burst {
+		0% {
+			transform: translate(-50%, -50%) scale(0.3);
+			opacity: 0;
+		}
+		15% {
+			opacity: 1;
+		}
+		100% {
+			transform: translate(-50%, -50%)
+				translate(
+					calc(cos(var(--angle)) * var(--distance)),
+					calc(sin(var(--angle)) * var(--distance))
+				)
+				scale(1);
+			opacity: 0;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		:global(.retro-card.animating),
+		:global(.retro-card.animating .discussed-toggle svg) {
+			animation: none;
+		}
+
+		.confetti-dot {
+			animation: none;
+			opacity: 0;
+		}
 	}
 </style>
