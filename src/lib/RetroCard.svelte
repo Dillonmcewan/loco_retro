@@ -90,9 +90,6 @@
 		if (trimmed === '') {
 			cancelEdit();
 		} else if (trimmed === card.text) {
-			// Unchanged — exit edit mode without calling onEdit. (editCard
-			// already short-circuits on identical text, but skipping the call
-			// avoids a render churn cycle.)
 			editing = false;
 			draft = '';
 		} else {
@@ -101,111 +98,126 @@
 	}
 
 	// Save / Cancel mousedown calls this so the textarea doesn't lose focus
-	// before the click fires. Without it, blurring the textarea would trigger
-	// onTextareaBlur (which auto-saves), beating the explicit Cancel click.
+	// before the click fires.
 	function keepFocus(event: MouseEvent) {
 		event.preventDefault();
 	}
 </script>
 
 <Card class={discussed ? 'retro-card discussed' : 'retro-card'}>
-	{#if editing}
-		<textarea
-			bind:this={textareaEl}
-			bind:value={draft}
-			onkeydown={onTextareaKeydown}
-			onblur={onTextareaBlur}
-			use:autosize={draft}
-			aria-label="Edit card"
-			rows="1"
-		></textarea>
-		<div class="actions">
-			<button
-				type="button"
-				class="icon success"
-				onmousedown={keepFocus}
-				onclick={saveEdit}
-				aria-label="Save changes"
-				use:tooltip={'Save changes'}
-			>
-				<Check />
-			</button>
-			<button
-				type="button"
-				class="icon danger"
-				onmousedown={keepFocus}
-				onclick={cancelEdit}
-				aria-label="Cancel edit"
-				use:tooltip={'Cancel edit'}
-			>
-				<X />
-			</button>
-		</div>
-	{:else}
-		<p class="text" class:editable={canMutate} ondblclick={canMutate ? startEdit : undefined}>
-			{card.text}
-		</p>
-		<footer>
-			<span class="author">{card.author}</span>
-			<div class="footer-right">
+	<div class="text-slot">
+		{#if editing}
+			<textarea
+				bind:this={textareaEl}
+				bind:value={draft}
+				onkeydown={onTextareaKeydown}
+				onblur={onTextareaBlur}
+				use:autosize={draft}
+				aria-label="Edit card"
+				rows="1"
+			></textarea>
+		{:else}
+			<p class="text" class:editable={canMutate} ondblclick={canMutate ? startEdit : undefined}>
+				{card.text}
+			</p>
+		{/if}
+	</div>
+	<footer>
+		<span class="author">{card.author}</span>
+		<div class="footer-right">
+			<span class="vote-total-slot">
 				{#if showAggregate}
 					<span class="vote-total" aria-label="Total votes on this card">
 						Votes: {voteTotal}
 					</span>
 				{/if}
-				{#if votingSlot}
+			</span>
+			<span class="vote-controls-slot">
+				{#if votingSlot && phase === 'vote'}
 					{@render votingSlot()}
 				{/if}
-				{#if showDiscussedToggle}
+			</span>
+			<button
+				type="button"
+				class="icon discussed-toggle"
+				class:on={discussed}
+				class:reserved={!showDiscussedToggle}
+				aria-pressed={discussed}
+				aria-hidden={!showDiscussedToggle}
+				tabindex={showDiscussedToggle ? 0 : -1}
+				aria-label={discussed ? 'Mark as not discussed' : 'Mark as discussed'}
+				disabled={discussedDisabled || !showDiscussedToggle}
+				onclick={onToggleDiscussed}
+				use:tooltip={showDiscussedToggle
+					? discussed
+						? 'Mark as not discussed'
+						: 'Mark as discussed'
+					: ''}
+			>
+				{#if discussed}
+					<CheckCircle2 />
+				{:else}
+					<Circle />
+				{/if}
+			</button>
+			<div class="owner-actions" class:editing>
+				{#if editing}
 					<button
 						type="button"
-						class="icon discussed-toggle"
-						class:on={discussed}
-						aria-pressed={discussed}
-						aria-label={discussed ? 'Mark as not discussed' : 'Mark as discussed'}
-						disabled={discussedDisabled}
-						onclick={onToggleDiscussed}
-						use:tooltip={discussed ? 'Mark as not discussed' : 'Mark as discussed'}
+						class="icon success"
+						onmousedown={keepFocus}
+						onclick={saveEdit}
+						aria-label="Save changes"
+						use:tooltip={'Save changes'}
 					>
-						{#if discussed}
-							<CheckCircle2 />
-						{:else}
-							<Circle />
-						{/if}
+						<Check />
+					</button>
+					<button
+						type="button"
+						class="icon danger"
+						onmousedown={keepFocus}
+						onclick={cancelEdit}
+						aria-label="Cancel edit"
+						use:tooltip={'Cancel edit'}
+					>
+						<X />
+					</button>
+				{:else if canMutate}
+					<button
+						type="button"
+						class="icon"
+						onclick={startEdit}
+						aria-label="Edit card"
+						use:tooltip={'Edit card'}
+					>
+						<Pencil />
+					</button>
+					<button
+						type="button"
+						class="icon danger"
+						onclick={onDelete}
+						aria-label="Delete card"
+						use:tooltip={'Delete card'}
+					>
+						<Trash2 />
 					</button>
 				{/if}
-				{#if canMutate}
-					<div class="owner-actions">
-						<button
-							type="button"
-							class="icon"
-							onclick={startEdit}
-							aria-label="Edit card"
-							use:tooltip={'Edit card'}
-						>
-							<Pencil />
-						</button>
-						<button
-							type="button"
-							class="icon danger"
-							onclick={onDelete}
-							aria-label="Delete card"
-							use:tooltip={'Delete card'}
-						>
-							<Trash2 />
-						</button>
-					</div>
-				{/if}
 			</div>
-		</footer>
-	{/if}
+		</div>
+	</footer>
 </Card>
 
 <style>
-	.text {
+	.text-slot {
+		min-height: 1.5rem;
 		margin: 0 0 var(--space-2);
+	}
+
+	.text {
+		margin: 0;
 		white-space: pre-wrap;
 		word-break: break-word;
+		line-height: 1.5;
 	}
 
 	.text.editable {
@@ -218,6 +230,7 @@
 		justify-content: space-between;
 		gap: var(--space-2);
 		font-size: var(--font-size-xs);
+		min-height: 1.75rem;
 	}
 
 	.author {
@@ -231,6 +244,11 @@
 		gap: var(--space-2);
 	}
 
+	:global(.retro-card.discussed) {
+		background: var(--color-success-soft);
+		border-color: var(--color-success);
+	}
+
 	:global(.retro-card.discussed) .text,
 	:global(.retro-card.discussed) .author {
 		color: var(--color-muted);
@@ -242,8 +260,19 @@
 		opacity: 1;
 	}
 
+	button.icon.discussed-toggle.reserved {
+		visibility: hidden;
+		pointer-events: none;
+	}
+
 	button.icon.discussed-toggle:disabled {
 		cursor: default;
+	}
+
+	.vote-total-slot {
+		display: inline-flex;
+		align-items: center;
+		min-height: 1.5rem;
 	}
 
 	.vote-total {
@@ -255,11 +284,23 @@
 		font-size: var(--font-size-xs);
 	}
 
+	.vote-controls-slot {
+		display: inline-flex;
+		align-items: center;
+		min-height: 1.5rem;
+	}
+
 	.owner-actions {
 		display: flex;
 		gap: var(--space-2);
+		min-width: 3rem;
+		justify-content: flex-end;
 		opacity: 0;
 		transition: opacity 0.1s ease;
+	}
+
+	.owner-actions.editing {
+		opacity: 1;
 	}
 
 	/* `.retro-card` is on Card.svelte's <article>, outside this scope; the
@@ -280,7 +321,7 @@
 		line-height: 0;
 	}
 
-	button.icon:hover {
+	button.icon:hover:not(:disabled) {
 		color: var(--color-primary);
 	}
 
@@ -322,14 +363,8 @@
 		border: 1px solid var(--color-border-strong);
 		border-radius: var(--radius-sm);
 		font: inherit;
+		line-height: 1.5;
 		resize: none;
 		overflow: hidden;
-	}
-
-	.actions {
-		display: flex;
-		justify-content: flex-end;
-		gap: var(--space-2);
-		margin-top: var(--space-2);
 	}
 </style>

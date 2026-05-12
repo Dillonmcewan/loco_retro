@@ -29,6 +29,8 @@
 	import { getDisplayName, setDisplayName, getAuthorId } from '$lib/displayName';
 	import { upsertRoom } from '$lib/rooms';
 	import Share2 from 'lucide-svelte/icons/share-2';
+	import ArrowLeft from 'lucide-svelte/icons/arrow-left';
+	import Inbox from 'lucide-svelte/icons/inbox';
 	import { tooltip } from '$lib/tooltip';
 	import { colorsByParticipant } from '$lib/participantColor';
 	import RetroCard from '$lib/RetroCard.svelte';
@@ -103,17 +105,18 @@
 		const mb = myBallotStore(opened.doc, authorId);
 		const vt = voteTotalsStore(opened.doc);
 
-		let indexed = false;
+		let indexedPhase: string | null = null;
 		const unsubs: Array<() => void> = [
 			m.subscribe((v) => {
 				meta = v;
-				if (!indexed && v && v.name) {
-					indexed = true;
+				if (v && v.name && v.phase !== indexedPhase) {
+					indexedPhase = v.phase;
 					upsertRoom({
 						id: data.id,
 						name: v.name,
 						templateId: v.templateId,
-						lastOpenedAt: Date.now()
+						lastOpenedAt: Date.now(),
+						phase: v.phase
 					});
 				}
 			}),
@@ -215,6 +218,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>{meta?.name ? `${meta.name} · LocoRetro` : 'LocoRetro'}</title>
+</svelte:head>
+
 {#if !displayName}
 	<main class="gate">
 		<h1>Join the retro</h1>
@@ -231,6 +238,14 @@
 	<main class="room">
 		<header>
 			<div class="title">
+				<a
+					class="link back"
+					href="/"
+					aria-label="Back to dashboard"
+					use:tooltip={'Back to dashboard'}
+				>
+					<ArrowLeft />
+				</a>
 				<h1>{meta?.name ?? 'Untitled retro'}</h1>
 				<button
 					type="button"
@@ -244,9 +259,11 @@
 			</div>
 			<div class="phase-stack">
 				<PhaseControls {phase} onAdvance={handleAdvancePhase} onBack={handleBackPhase} />
-				{#if phase === 'vote'}
-					<VoteBudget remaining={votesRemaining} total={votesTotal} />
-				{/if}
+				<div class="vote-budget-slot">
+					{#if phase === 'vote'}
+						<VoteBudget remaining={votesRemaining} total={votesTotal} />
+					{/if}
+				</div>
 			</div>
 			<ul class="participants" aria-label="Participants">
 				{#each people as p (p.clientId)}
@@ -293,7 +310,10 @@
 							{/each}
 						</ul>
 						{#if cardsFor(column.id).length === 0}
-							<p class="empty">No cards yet.</p>
+							<div class="empty" aria-label="No cards yet">
+								<Inbox />
+								<span>Drop your first card.</span>
+							</div>
 						{/if}
 					</div>
 					{#if phase === 'collect'}
@@ -373,7 +393,7 @@
 		flex: none;
 	}
 
-	button.link {
+	.link {
 		display: inline-flex;
 		align-items: center;
 		padding: 0;
@@ -384,17 +404,17 @@
 		line-height: 0;
 	}
 
-	button.link:hover {
+	.link:hover {
 		color: var(--color-primary);
 	}
 
-	button.link:focus-visible {
+	.link:focus-visible {
 		outline: 2px solid var(--color-primary);
 		outline-offset: 2px;
 		border-radius: 2px;
 	}
 
-	button.link :global(svg) {
+	.link :global(svg) {
 		width: 1.375rem;
 		height: 1.375rem;
 	}
@@ -451,9 +471,28 @@
 	}
 
 	.empty {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: var(--space-2);
+		min-height: 5rem;
+		padding: var(--space-4) var(--space-2);
 		color: var(--color-muted);
 		font-size: var(--font-size-sm);
-		margin: 0;
+		opacity: 0.7;
+	}
+
+	.empty :global(svg) {
+		width: 1.5rem;
+		height: 1.5rem;
+		color: var(--color-tertiary);
+	}
+
+	.vote-budget-slot {
+		min-height: 1.875rem;
+		display: flex;
+		align-items: center;
 	}
 
 	.card-list {
