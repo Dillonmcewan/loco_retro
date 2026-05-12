@@ -89,13 +89,13 @@
 
 	@keyframes gray-bg-in {
 		to {
-			opacity: 1;
+			opacity: 0.75;
 		}
 	}
 
 	@keyframes gray-bg-out {
 		from {
-			opacity: 1;
+			opacity: 0.75;
 		}
 		to {
 			opacity: 0;
