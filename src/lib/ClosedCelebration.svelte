@@ -59,7 +59,7 @@
 		{:else}
 			<DiscoShow />
 		{/if}
-		<div class="reduced-banner" aria-hidden="true">Retro complete</div>
+		<div class="reduced-banner" aria-hidden="true">Mission Accomplished!</div>
 		<div class="sr-only" role="status" aria-live="polite">Retro closed</div>
 	</div>
 {/if}

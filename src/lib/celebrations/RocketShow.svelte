@@ -171,7 +171,7 @@
 	</div>
 
 	<div class="banner-wrap">
-		<div class="banner">🎉 Retro complete! 🎉</div>
+		<div class="banner">Mission Accomplished!</div>
 	</div>
 </div>
 
@@ -356,17 +356,16 @@
 	}
 
 	.banner {
-		font-size: clamp(2.5rem, 7vw, 5.5rem);
-		font-weight: 800;
+		font-size: clamp(3rem, 9vw, 7rem);
+		font-weight: 900;
 		letter-spacing: -0.02em;
 		color: var(--color-text);
-		background: var(--color-surface);
-		padding: var(--space-6) var(--space-10);
-		border-radius: var(--radius-lg);
-		border: 3px solid var(--color-phase-closed);
-		box-shadow:
-			0 2px 4px rgba(42, 36, 32, 0.1),
-			0 24px 60px -12px rgba(42, 36, 32, 0.35);
+		/* Subtle white halo so the words stay readable when confetti or the
+		   rocket flies across them. */
+		text-shadow:
+			0 2px 0 rgba(255, 255, 255, 0.9),
+			0 0 18px rgba(255, 255, 255, 0.75),
+			0 6px 24px rgba(42, 36, 32, 0.35);
 		transform: scale(0);
 		opacity: 0;
 		animation:

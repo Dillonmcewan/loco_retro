@@ -32,7 +32,7 @@
 	</div>
 
 	<div class="banner-wrap">
-		<div class="banner">🪩 Retro complete! 🪩</div>
+		<div class="banner">Mission Accomplished!</div>
 	</div>
 </div>
 
@@ -225,18 +225,16 @@
 	}
 
 	.banner {
-		font-size: clamp(2.5rem, 7vw, 5.5rem);
-		font-weight: 800;
+		font-size: clamp(3rem, 9vw, 7rem);
+		font-weight: 900;
 		letter-spacing: -0.02em;
 		color: #fff7e6;
-		background: rgba(40, 30, 60, 0.85);
-		padding: var(--space-6) var(--space-10);
-		border-radius: var(--radius-lg);
-		border: 3px solid var(--color-tertiary);
-		box-shadow:
-			0 0 0 1px rgba(255, 255, 255, 0.15) inset,
-			0 24px 60px -12px rgba(0, 0, 0, 0.6),
-			0 0 80px rgba(245, 184, 49, 0.35);
+		/* Warm glow so the words read against the dimmed backdrop and the
+		   sweeping spotlights without needing a card behind them. */
+		text-shadow:
+			0 0 20px rgba(245, 184, 49, 0.85),
+			0 0 60px rgba(245, 184, 49, 0.55),
+			0 6px 30px rgba(0, 0, 0, 0.7);
 		transform: scale(0);
 		opacity: 0;
 		animation:
