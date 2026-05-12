@@ -14,7 +14,7 @@
 - **Lint / format:** ESLint + Prettier (SvelteKit defaults).
 - **Icons:** `lucide-svelte` — per-icon imports (`lucide-svelte/icons/<name>`) keep the bundle tree-shaken.
 - **State / persistence:** **Yjs** (CRDT) + **`y-indexeddb`** for local persistence. The browser holds the authoritative copy of every retro it has touched.
-- **Realtime transport:** **`y-partykit`** over WebSocket. The room "server" is a Cloudflare Durable Object defined in `party/main.ts`; its `onConnect` delegates to `y-partykit`'s built-in Yjs sync helper with `persist: { mode: 'snapshot' }`, so the latest Yjs state survives DO hibernation and unsticks late-joiner bootstrap. We (the team) operate no server — Cloudflare runs the DO. The client's PartyKit host is required from `VITE_PARTYKIT_HOST` (committed `.env` for dev; deploy target sets it for prod). No source-level fallback — if the env var is missing the client throws at module load.
+- **Realtime transport:** **`y-partykit`** over WebSocket. The room "server" is a Cloudflare Durable Object defined in `party/main.ts`; its `onConnect` delegates to `y-partykit`'s built-in Yjs sync helper with `persist: { mode: 'snapshot' }`, so the latest Yjs state survives DO hibernation and unsticks late-joiner bootstrap. We (the team) operate no server — Cloudflare runs the DO. The client's PartyKit host is required from `VITE_PARTYKIT_HOST`, loaded by Vite from committed env files: `.env` for dev defaults (`localhost:1999`) and `.env.production` for the prod host (baked in at `vite build` time). No source-level fallback — if the env var is missing the client throws at module load.
 - **Deployment adapter:** **`@sveltejs/adapter-cloudflare`**. SvelteKit deploys to Cloudflare Pages; the PartyKit worker deploys via `partykit deploy` to the same Cloudflare account.
 
 ## Architecture
@@ -47,6 +47,8 @@ Routes that touch CRDT state are client-rendered (`ssr=false`) — Yjs and Index
 | Dev server (app only)  | `pnpm dev`           |
 | PartyKit dev server    | `pnpm party:dev`     |
 | PartyKit deploy        | `pnpm party:deploy`  |
+| Deploy app (Pages)     | `pnpm deploy:app`    |
+| Deploy everything      | `pnpm deploy`        |
 | Type-check             | `pnpm check`         |
 | Lint                   | `pnpm lint`          |
 | Format                 | `pnpm format`        |
@@ -57,8 +59,33 @@ Routes that touch CRDT state are client-rendered (`ssr=false`) — Yjs and Index
 
 ## Deploy
 
-- **App:** `pnpm build` produces `.svelte-kit/cloudflare/`; deploy to Cloudflare Pages.
-- **PartyKit worker:** `pnpm party:deploy` (wraps `partykit deploy`). First deploy requires a Cloudflare account linked via the PartyKit CLI. The deployed host is `loco-retro.<account>.partykit.dev`; set `VITE_PARTYKIT_HOST` on the Pages project to that value.
+Two deployable units, always shipped in this order: the **PartyKit worker first** (because its public host is baked into the SvelteKit build), then the **SvelteKit app**. Both target Cloudflare under a single account; we operate no servers ourselves.
+
+### One-time bootstrap
+
+1. `pnpm dlx partykit login` — OAuth to Cloudflare (PartyKit's session).
+2. `pnpm dlx wrangler login` — OAuth to Cloudflare (Wrangler's session, separate from PartyKit's).
+3. `pnpm party:deploy` — first deploy of the worker. The CLI prints the host: `loco-retro.<account>.partykit.dev`.
+4. Replace `<account>` in `.env.production` with the value from step 3 and commit. Vite reads this file during `vite build` and bakes the host into the client bundle.
+5. `pnpm dlx wrangler pages project create loco-retro --production-branch=main` — create the Pages project once.
+
+### Steady-state deploy
+
+`pnpm deploy` ships both targets in order: `partykit deploy` → `vite build` (using `.env.production`) → `wrangler pages deploy .svelte-kit/cloudflare --project-name=loco-retro --branch=main`. The composed script lives in `package.json`; `wrangler` is a pinned `devDependency` so the deploy command is hermetic and doesn't depend on a global install.
+
+- **App URL:** `https://loco-retro.pages.dev` (plus any custom domain attached in the Pages dashboard).
+- **Worker URL:** `https://loco-retro.<account>.partykit.dev`.
+- **No pre-deploy gate yet.** `pnpm deploy` does not run `check` / `lint` / tests today — deploys are local-only and the developer is responsible for sanity-checking before shipping. A pre-deploy gate will land alongside the GitHub Actions migration (see below).
+
+### Rollback
+
+- **Pages:** promote a previous deployment from the Cloudflare Pages dashboard (Pages retains build history).
+- **PartyKit:** `git checkout <previous-sha> && pnpm party:deploy`.
+- No database, no migrations — rollback is purely a redeploy of older code.
+
+### Future: GitHub Actions
+
+When we move CI/CD to GitHub Actions on push to `main`, the workflow will run `pnpm check && pnpm lint && pnpm test:unit && pnpm test:e2e` as a gate, then run the same `pnpm deploy` chain. Required repo secrets at that point: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, and a PartyKit deploy token. Preview environments per PR are out of scope until there are users.
 
 ## Open decisions
 
