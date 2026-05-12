@@ -481,10 +481,10 @@
 	@keyframes pulse-wave {
 		0%,
 		100% {
-			transform: scale(1);
+			transform: translateY(0);
 		}
 		50% {
-			transform: scale(1.08);
+			transform: translateY(-4px);
 		}
 	}
 
