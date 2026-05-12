@@ -55,7 +55,12 @@ export type RoomMetaSnapshot = {
 	votesPerParticipant: number;
 };
 
-export type Participant = { clientId: number; name: string; authorId: string };
+export type Participant = {
+	clientId: number;
+	name: string;
+	authorId: string;
+	ready: boolean;
+};
 
 export type Card = {
 	id: string;
@@ -563,11 +568,14 @@ export function participantsStore(awareness: OpenRoom['awareness']): Readable<Pa
 	function snapshot(): Participant[] {
 		const list: Participant[] = [];
 		for (const [clientId, state] of awareness.getStates()) {
-			const user = (state as { user?: { name?: unknown; authorId?: unknown } } | undefined)?.user;
+			const user = (
+				state as { user?: { name?: unknown; authorId?: unknown; ready?: unknown } } | undefined
+			)?.user;
 			const name = user?.name;
 			if (typeof name === 'string' && name.trim() !== '') {
 				const authorId = typeof user?.authorId === 'string' ? user.authorId : '';
-				list.push({ clientId, name, authorId });
+				const ready = user?.ready === true;
+				list.push({ clientId, name, authorId, ready });
 			}
 		}
 		return list;

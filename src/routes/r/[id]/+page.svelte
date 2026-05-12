@@ -41,6 +41,7 @@
 	import PhaseControls from '$lib/PhaseControls.svelte';
 	import VoteControls from '$lib/VoteControls.svelte';
 	import VoteBudget from '$lib/VoteBudget.svelte';
+	import CollectStatus from '$lib/CollectStatus.svelte';
 	import Toast from '$lib/Toast.svelte';
 	import type { Column } from '$lib/templates';
 	import type { PageData } from './$types';
@@ -69,6 +70,7 @@
 	let myBallot = $state<Ballot>({});
 	let voteTotals = $state<VoteTotals>({});
 	let votesSpentByAuthor = $state<VotesSpentByAuthor>({});
+	let localReady = $state(false);
 
 	const participantColors = $derived(colorsByParticipant(people));
 	const phase = $derived<Phase>(meta?.phase ?? 'collect');
@@ -76,10 +78,23 @@
 	const votesSpent = $derived(Object.values(myBallot).reduce((acc, n) => acc + n, 0));
 	const votesRemaining = $derived(Math.max(votesTotal - votesSpent, 0));
 	const canCastVote = $derived(phase === 'vote' && votesRemaining > 0);
-	const everyoneDoneVoting = $derived(
-		phase === 'vote' &&
-			people.length > 0 &&
-			people.every((p) => p.authorId !== '' && (votesSpentByAuthor[p.authorId] ?? 0) >= votesTotal)
+	const showProgress = $derived(phase === 'collect' || phase === 'vote');
+	const doneByClientId = $derived.by(() => {
+		const out = new Map<number, boolean>();
+		for (const p of people) {
+			if (phase === 'collect') {
+				out.set(p.clientId, p.ready);
+			} else if (phase === 'vote') {
+				const spent = p.authorId ? (votesSpentByAuthor[p.authorId] ?? 0) : 0;
+				out.set(p.clientId, p.authorId !== '' && spent >= votesTotal);
+			} else {
+				out.set(p.clientId, false);
+			}
+		}
+		return out;
+	});
+	const everyoneDone = $derived(
+		showProgress && people.length > 0 && people.every((p) => doneByClientId.get(p.clientId))
 	);
 
 	// During Discuss/Closed, sort each column's cards by vote total descending,
@@ -153,7 +168,7 @@
 		const saved = getDisplayName();
 		if (saved) {
 			displayName = saved;
-			opened.awareness.setLocalStateField('user', { name: saved, authorId });
+			opened.awareness.setLocalStateField('user', { name: saved, authorId, ready: false });
 		}
 
 		return () => unsubs.forEach((fn) => fn());
@@ -170,7 +185,13 @@
 		if (!trimmed || !room) return;
 		setDisplayName(trimmed);
 		displayName = trimmed;
-		room.awareness.setLocalStateField('user', { name: trimmed, authorId });
+		room.awareness.setLocalStateField('user', { name: trimmed, authorId, ready: false });
+	}
+
+	function setReady(value: boolean) {
+		if (!room || !displayName) return;
+		localReady = value;
+		room.awareness.setLocalStateField('user', { name: displayName, authorId, ready: value });
 	}
 
 	function handleAddCard(columnId: string, text: string) {
@@ -275,30 +296,32 @@
 					{phase}
 					onAdvance={handleAdvancePhase}
 					onBack={handleBackPhase}
-					advanceReady={everyoneDoneVoting}
+					advanceReady={everyoneDone}
 				/>
 				<div class="vote-budget-slot">
 					{#if phase === 'vote'}
 						<VoteBudget remaining={votesRemaining} total={votesTotal} />
+					{:else if phase === 'collect'}
+						<CollectStatus ready={localReady} onToggle={() => setReady(!localReady)} />
 					{/if}
 				</div>
 			</div>
 			<ul class="participants" aria-label="Participants">
 				{#each people as p, i (p.clientId)}
 					{@const color = participantColors.get(p.clientId)}
-					{@const spent = p.authorId ? (votesSpentByAuthor[p.authorId] ?? 0) : 0}
-					{@const done = phase === 'vote' && p.authorId !== '' && spent >= votesTotal}
-					{@const stillVoting = phase === 'vote' && !done}
+					{@const done = doneByClientId.get(p.clientId) ?? false}
+					{@const pending = showProgress && !done}
+					{@const doneLabel = phase === 'collect' ? 'Done adding cards' : 'Done voting'}
 					<li
-						class:still-voting={stillVoting}
-						class:done
+						class:pending
+						class:done={showProgress && done}
 						style:background-color={color?.bg}
 						style:color={color?.fg}
 						style:--wave-index={i}
 					>
 						<span class="pname">{p.name}</span>
-						{#if done}
-							<Check class="done-check" aria-label="Done voting" />
+						{#if showProgress && done}
+							<Check class="done-check" aria-label={doneLabel} />
 						{/if}
 					</li>
 				{/each}
@@ -478,7 +501,7 @@
 		transform-origin: center;
 	}
 
-	.participants li.still-voting {
+	.participants li.pending {
 		animation: pulse-wave 1.4s ease-in-out infinite;
 		animation-delay: calc(var(--wave-index, 0) * 0.18s);
 	}
@@ -499,7 +522,7 @@
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.participants li.still-voting {
+		.participants li.pending {
 			animation: none;
 		}
 	}

@@ -116,7 +116,11 @@ describe('Room page', () => {
 
 		expect(screen.getByRole('heading', { name: /sprint 42/i })).toBeInTheDocument();
 		expect(screen.queryByRole('heading', { name: /join the retro/i })).not.toBeInTheDocument();
-		expect(awareness.getStates().get(1)?.user).toEqual({ name: 'Dillon', authorId: 'me' });
+		expect(awareness.getStates().get(1)?.user).toEqual({
+			name: 'Dillon',
+			authorId: 'me',
+			ready: false
+		});
 		expect(screen.getByRole('heading', { name: /went well/i })).toBeInTheDocument();
 	});
 
@@ -282,6 +286,24 @@ describe('Room page', () => {
 		expect(screen.getAllByRole('button', { name: /mark as not discussed/i })).toHaveLength(1);
 	});
 
+	it('Collect phase: toggling the ready button broadcasts ready=true and flips copy', async () => {
+		const user = userEvent.setup();
+		setDisplayName('Dillon');
+		render(RoomPage, { props: { data: { id: VALID_ID } } });
+		await tick();
+
+		// Default state: not ready.
+		expect(awareness.getStates().get(1)?.user).toMatchObject({ ready: false });
+		const toggle = screen.getByRole('button', { name: /i'm done/i });
+		expect(toggle).toBeInTheDocument();
+
+		await user.click(toggle);
+		await tick();
+
+		expect(awareness.getStates().get(1)?.user).toMatchObject({ ready: true });
+		expect(screen.getByRole('button', { name: /done adding cards/i })).toBeInTheDocument();
+	});
+
 	it('Collect phase: cards render in insertion order even when vote totals differ', async () => {
 		setDisplayName('Dillon');
 		render(RoomPage, { props: { data: { id: VALID_ID } } });
@@ -301,7 +323,11 @@ describe('Room page', () => {
 		await user.click(screen.getByRole('button', { name: /join/i }));
 
 		expect(localStorage.getItem('loco_retro:displayName')).toBe('Dillon');
-		expect(awareness.getStates().get(1)?.user).toEqual({ name: 'Dillon', authorId: 'me' });
+		expect(awareness.getStates().get(1)?.user).toEqual({
+			name: 'Dillon',
+			authorId: 'me',
+			ready: false
+		});
 		expect(screen.getByRole('heading', { name: /sprint 42/i })).toBeInTheDocument();
 	});
 });
