@@ -57,7 +57,7 @@
 			aria-label="Dismiss celebration"
 		></button>
 		<Variant />
-		<div class="reduced-banner" aria-hidden="true">Mission Accomplished!</div>
+		<div class="reduced-banner" aria-hidden="true">{playing.reducedText}</div>
 		<div class="sr-only" role="status" aria-live="polite">Retro closed</div>
 	</div>
 {/if}

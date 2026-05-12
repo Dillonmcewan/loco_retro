@@ -4,10 +4,12 @@
 // across the registry.
 //
 // Adding a new variant is two steps:
-//   1. Drop a new <Name>Show.svelte component into ./celebrations/
-//   2. Add an entry below — { id: 'name', Show: NameShow }
-// The CelebrationId type and the URL override (?celebration=<id>) pick it
-// up automatically.
+//   1. Drop a new <Name>Show.svelte component into ./celebrations/ with
+//      class="celebration-variant" on its root div.
+//   2. Add an entry below — { id, Show, reducedText }.
+// The CelebrationId type, the URL override (?celebration=<id>), the
+// per-room deterministic picker, and the reduced-motion fallback all pick
+// the new variant up automatically.
 
 import type { Component } from 'svelte';
 import RocketShow from './celebrations/RocketShow.svelte';
@@ -17,11 +19,15 @@ import { hashString } from './hash';
 export type Celebration = {
 	id: string;
 	Show: Component;
+	// Shown by the reduced-motion fallback in place of the animated banner.
+	// Should mirror the wording on the variant's own banner so the message
+	// stays consistent.
+	reducedText: string;
 };
 
 export const CELEBRATIONS = [
-	{ id: 'rocket', Show: RocketShow },
-	{ id: 'disco', Show: DiscoShow }
+	{ id: 'rocket', Show: RocketShow, reducedText: 'Mission Accomplished!' },
+	{ id: 'disco', Show: DiscoShow, reducedText: 'Party Time!' }
 ] as const satisfies readonly Celebration[];
 
 export type CelebrationId = (typeof CELEBRATIONS)[number]['id'];
