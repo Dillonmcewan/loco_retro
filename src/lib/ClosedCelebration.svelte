@@ -1,16 +1,13 @@
 <script lang="ts">
 	import type { Phase } from '$lib/room';
-	import RocketShow from '$lib/celebrations/RocketShow.svelte';
-	import DiscoShow from '$lib/celebrations/DiscoShow.svelte';
+	import { celebrationFor, celebrationById, type Celebration } from '$lib/celebrations';
 
-	type Variant = 'rocket' | 'disco';
-
-	let { phase }: { phase: Phase } = $props();
+	let { phase, roomId }: { phase: Phase; roomId: string } = $props();
 
 	const TOTAL_MS = 6500;
 
 	let prevPhase: Phase | undefined;
-	let playing = $state<Variant | null>(null);
+	let playing = $state<Celebration | null>(null);
 	let dismissTimer: ReturnType<typeof setTimeout> | null = null;
 
 	// Mirror the $effect.pre transition pattern used by RetroCard (lines 43-52).
@@ -19,7 +16,7 @@
 	$effect.pre(() => {
 		const current = phase;
 		if (prevPhase !== undefined && prevPhase !== 'closed' && current === 'closed') {
-			playing = pickVariant();
+			playing = pickCelebration();
 			if (dismissTimer) clearTimeout(dismissTimer);
 			dismissTimer = setTimeout(() => {
 				playing = null;
@@ -29,12 +26,15 @@
 		prevPhase = current;
 	});
 
-	function pickVariant(): Variant {
+	// Default pick is deterministic per roomId (same retro always lands on the
+	// same celebration). `?celebration=<id>` overrides for deliberate testing.
+	function pickCelebration(): Celebration {
 		if (typeof window !== 'undefined') {
 			const override = new URLSearchParams(window.location.search).get('celebration');
-			if (override === 'rocket' || override === 'disco') return override;
+			const overridden = celebrationById(override);
+			if (overridden) return overridden;
 		}
-		return Math.random() < 0.5 ? 'rocket' : 'disco';
+		return celebrationFor(roomId);
 	}
 
 	function dismiss() {
@@ -47,6 +47,7 @@
 </script>
 
 {#if playing}
+	{@const Variant = playing.Show}
 	<div class="celebration">
 		<div class="gray-bg" aria-hidden="true"></div>
 		<button
@@ -55,11 +56,7 @@
 			onclick={dismiss}
 			aria-label="Dismiss celebration"
 		></button>
-		{#if playing === 'rocket'}
-			<RocketShow />
-		{:else}
-			<DiscoShow />
-		{/if}
+		<Variant />
 		<div class="reduced-banner" aria-hidden="true">Mission Accomplished!</div>
 		<div class="sr-only" role="status" aria-live="polite">Retro closed</div>
 	</div>
@@ -140,8 +137,8 @@
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.celebration :global(.rocket-show),
-		.celebration :global(.disco-show) {
+		/* Variant roots opt into the fallback by carrying .celebration-variant. */
+		.celebration :global(.celebration-variant) {
 			display: none;
 		}
 		.reduced-banner {

@@ -90,7 +90,7 @@
 	});
 </script>
 
-<div class="rocket-show" aria-hidden="true">
+<div class="rocket-show celebration-variant" aria-hidden="true">
 	<div class="trail-layer">
 		{#each TRAIL as t, i (i)}
 			<span

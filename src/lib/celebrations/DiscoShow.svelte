@@ -54,7 +54,7 @@
 	];
 </script>
 
-<div class="disco-show" aria-hidden="true">
+<div class="disco-show celebration-variant" aria-hidden="true">
 	<div class="ball-anchor">
 		{#each SPOTLIGHTS as light, i (i)}
 			<div

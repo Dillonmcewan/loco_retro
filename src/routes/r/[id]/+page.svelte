@@ -384,7 +384,7 @@
 			{/each}
 		</section>
 
-		<ClosedCelebration {phase} />
+		<ClosedCelebration {phase} roomId={data.id} />
 	</main>
 {/if}
 

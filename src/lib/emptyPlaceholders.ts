@@ -10,6 +10,7 @@ import Telescope from 'lucide-svelte/icons/telescope';
 import Compass from 'lucide-svelte/icons/compass';
 import Feather from 'lucide-svelte/icons/feather';
 import Cookie from 'lucide-svelte/icons/cookie';
+import { hashString } from './hash';
 
 export type Placeholder = {
 	Icon: typeof Sparkles;
@@ -42,16 +43,6 @@ const ENTRIES: readonly PlaceholderEntry[] = [
 	{ Icon: Feather, text: 'Lay down the first feather.' },
 	{ Icon: Cookie, text: 'Leave a crumb of thought.' }
 ] as const;
-
-// djb2-style 32-bit string hash. Deterministic, no deps.
-function hashString(s: string): number {
-	let h = 5381;
-	for (let i = 0; i < s.length; i++) {
-		h = (h * 33) ^ s.charCodeAt(i);
-	}
-	// Coerce to unsigned 32-bit.
-	return h >>> 0;
-}
 
 // mulberry32 PRNG — small, fast, deterministic given a seed.
 function mulberry32(seed: number): () => number {
