@@ -55,7 +55,7 @@ export type RoomMetaSnapshot = {
 	votesPerParticipant: number;
 };
 
-export type Participant = { clientId: number; name: string };
+export type Participant = { clientId: number; name: string; authorId: string };
 
 export type Card = {
 	id: string;
@@ -396,6 +396,7 @@ export function readCards(doc: Y.Doc): CardsByColumn {
 
 export type Ballot = Record<string, number>;
 export type VoteTotals = Record<string, number>;
+export type VotesSpentByAuthor = Record<string, number>;
 
 function ballotsMap(doc: Y.Doc): Y.Map<Y.Map<number>> {
 	return doc.getMap<Y.Map<number>>('ballots');
@@ -461,6 +462,15 @@ export function readVoteTotals(doc: Y.Doc): VoteTotals {
 		for (const [cardId, count] of b) {
 			if (count > 0) out[cardId] = (out[cardId] ?? 0) + count;
 		}
+	}
+	return out;
+}
+
+export function readVotesSpentByAuthor(doc: Y.Doc): VotesSpentByAuthor {
+	const out: VotesSpentByAuthor = {};
+	for (const [authorId, b] of ballotsMap(doc)) {
+		const spent = ballotSpent(b);
+		if (spent > 0) out[authorId] = spent;
 	}
 	return out;
 }
@@ -540,13 +550,24 @@ export function voteTotalsStore(doc: Y.Doc): Readable<VoteTotals> {
 	});
 }
 
+export function votesSpentByAuthorStore(doc: Y.Doc): Readable<VotesSpentByAuthor> {
+	const ballots = ballotsMap(doc);
+	return readable<VotesSpentByAuthor>(readVotesSpentByAuthor(doc), (set) => {
+		const handler = () => set(readVotesSpentByAuthor(doc));
+		ballots.observeDeep(handler);
+		return () => ballots.unobserveDeep(handler);
+	});
+}
+
 export function participantsStore(awareness: OpenRoom['awareness']): Readable<Participant[]> {
 	function snapshot(): Participant[] {
 		const list: Participant[] = [];
 		for (const [clientId, state] of awareness.getStates()) {
-			const name = (state as { user?: { name?: unknown } } | undefined)?.user?.name;
+			const user = (state as { user?: { name?: unknown; authorId?: unknown } } | undefined)?.user;
+			const name = user?.name;
 			if (typeof name === 'string' && name.trim() !== '') {
-				list.push({ clientId, name });
+				const authorId = typeof user?.authorId === 'string' ? user.authorId : '';
+				list.push({ clientId, name, authorId });
 			}
 		}
 		return list;

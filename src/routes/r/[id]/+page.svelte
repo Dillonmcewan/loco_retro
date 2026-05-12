@@ -9,6 +9,7 @@
 		participantsStore,
 		myBallotStore,
 		voteTotalsStore,
+		votesSpentByAuthorStore,
 		addCard,
 		editCard,
 		deleteCard,
@@ -24,12 +25,14 @@
 		type OpenRoom,
 		type Phase,
 		type RoomMetaSnapshot,
-		type VoteTotals
+		type VoteTotals,
+		type VotesSpentByAuthor
 	} from '$lib/room';
 	import { getDisplayName, setDisplayName, getAuthorId } from '$lib/displayName';
 	import { upsertRoom } from '$lib/rooms';
 	import Share2 from 'lucide-svelte/icons/share-2';
 	import ArrowLeft from 'lucide-svelte/icons/arrow-left';
+	import Check from 'lucide-svelte/icons/check';
 	import { tooltip } from '$lib/tooltip';
 	import { placeholderFor } from '$lib/emptyPlaceholders';
 	import { colorsByParticipant } from '$lib/participantColor';
@@ -65,6 +68,7 @@
 	let authorId = $state('');
 	let myBallot = $state<Ballot>({});
 	let voteTotals = $state<VoteTotals>({});
+	let votesSpentByAuthor = $state<VotesSpentByAuthor>({});
 
 	const participantColors = $derived(colorsByParticipant(people));
 	const phase = $derived<Phase>(meta?.phase ?? 'collect');
@@ -104,6 +108,7 @@
 
 		const mb = myBallotStore(opened.doc, authorId);
 		const vt = voteTotalsStore(opened.doc);
+		const vsa = votesSpentByAuthorStore(opened.doc);
 
 		let indexedPhase: string | null = null;
 		const unsubs: Array<() => void> = [
@@ -134,13 +139,16 @@
 			}),
 			vt.subscribe((v) => {
 				voteTotals = v;
+			}),
+			vsa.subscribe((v) => {
+				votesSpentByAuthor = v;
 			})
 		];
 
 		const saved = getDisplayName();
 		if (saved) {
 			displayName = saved;
-			opened.awareness.setLocalStateField('user', { name: saved });
+			opened.awareness.setLocalStateField('user', { name: saved, authorId });
 		}
 
 		return () => unsubs.forEach((fn) => fn());
@@ -157,7 +165,7 @@
 		if (!trimmed || !room) return;
 		setDisplayName(trimmed);
 		displayName = trimmed;
-		room.awareness.setLocalStateField('user', { name: trimmed });
+		room.awareness.setLocalStateField('user', { name: trimmed, authorId });
 	}
 
 	function handleAddCard(columnId: string, text: string) {
@@ -266,9 +274,23 @@
 				</div>
 			</div>
 			<ul class="participants" aria-label="Participants">
-				{#each people as p (p.clientId)}
+				{#each people as p, i (p.clientId)}
 					{@const color = participantColors.get(p.clientId)}
-					<li style:background-color={color?.bg} style:color={color?.fg}>{p.name}</li>
+					{@const spent = p.authorId ? (votesSpentByAuthor[p.authorId] ?? 0) : 0}
+					{@const done = phase === 'vote' && p.authorId !== '' && spent >= votesTotal}
+					{@const stillVoting = phase === 'vote' && !done}
+					<li
+						class:still-voting={stillVoting}
+						class:done
+						style:background-color={color?.bg}
+						style:color={color?.fg}
+						style:--wave-index={i}
+					>
+						<span class="pname">{p.name}</span>
+						{#if done}
+							<Check class="done-check" aria-label="Done voting" />
+						{/if}
+					</li>
 				{/each}
 			</ul>
 		</header>
@@ -436,10 +458,40 @@
 	}
 
 	.participants li {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-1);
 		padding: var(--space-1) var(--space-3);
 		border-radius: 1rem;
 		font-size: var(--font-size-sm);
 		font-weight: 500;
+		transform-origin: center;
+	}
+
+	.participants li.still-voting {
+		animation: pulse-wave 1.4s ease-in-out infinite;
+		animation-delay: calc(var(--wave-index, 0) * 0.18s);
+	}
+
+	.participants li :global(.done-check) {
+		width: 0.9rem;
+		height: 0.9rem;
+	}
+
+	@keyframes pulse-wave {
+		0%,
+		100% {
+			transform: scale(1);
+		}
+		50% {
+			transform: scale(1.08);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.participants li.still-voting {
+			animation: none;
+		}
 	}
 
 	.columns {

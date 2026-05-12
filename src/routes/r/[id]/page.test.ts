@@ -116,7 +116,7 @@ describe('Room page', () => {
 
 		expect(screen.getByRole('heading', { name: /sprint 42/i })).toBeInTheDocument();
 		expect(screen.queryByRole('heading', { name: /join the retro/i })).not.toBeInTheDocument();
-		expect(awareness.getStates().get(1)?.user).toEqual({ name: 'Dillon' });
+		expect(awareness.getStates().get(1)?.user).toEqual({ name: 'Dillon', authorId: 'me' });
 		expect(screen.getByRole('heading', { name: /went well/i })).toBeInTheDocument();
 	});
 
@@ -301,7 +301,7 @@ describe('Room page', () => {
 		await user.click(screen.getByRole('button', { name: /join/i }));
 
 		expect(localStorage.getItem('loco_retro:displayName')).toBe('Dillon');
-		expect(awareness.getStates().get(1)?.user).toEqual({ name: 'Dillon' });
+		expect(awareness.getStates().get(1)?.user).toEqual({ name: 'Dillon', authorId: 'me' });
 		expect(screen.getByRole('heading', { name: /sprint 42/i })).toBeInTheDocument();
 	});
 });
