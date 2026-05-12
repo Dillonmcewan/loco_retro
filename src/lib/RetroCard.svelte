@@ -125,41 +125,32 @@
 	<footer>
 		<span class="author">{card.author}</span>
 		<div class="footer-right">
-			<span class="vote-total-slot">
-				{#if showAggregate}
-					<span class="vote-total" aria-label="Total votes on this card">
-						Votes: {voteTotal}
-					</span>
-				{/if}
-			</span>
-			<span class="vote-controls-slot">
-				{#if votingSlot && phase === 'vote'}
-					{@render votingSlot()}
-				{/if}
-			</span>
-			<button
-				type="button"
-				class="icon discussed-toggle"
-				class:on={discussed}
-				class:reserved={!showDiscussedToggle}
-				aria-pressed={discussed}
-				aria-hidden={!showDiscussedToggle}
-				tabindex={showDiscussedToggle ? 0 : -1}
-				aria-label={discussed ? 'Mark as not discussed' : 'Mark as discussed'}
-				disabled={discussedDisabled || !showDiscussedToggle}
-				onclick={onToggleDiscussed}
-				use:tooltip={showDiscussedToggle
-					? discussed
-						? 'Mark as not discussed'
-						: 'Mark as discussed'
-					: ''}
-			>
-				{#if discussed}
-					<CheckCircle2 />
-				{:else}
-					<Circle />
-				{/if}
-			</button>
+			{#if showAggregate}
+				<span class="vote-total" aria-label="Total votes on this card">
+					Votes: {voteTotal}
+				</span>
+			{/if}
+			{#if votingSlot && phase === 'vote'}
+				{@render votingSlot()}
+			{/if}
+			{#if showDiscussedToggle}
+				<button
+					type="button"
+					class="icon discussed-toggle"
+					class:on={discussed}
+					aria-pressed={discussed}
+					aria-label={discussed ? 'Mark as not discussed' : 'Mark as discussed'}
+					disabled={discussedDisabled}
+					onclick={onToggleDiscussed}
+					use:tooltip={discussed ? 'Mark as not discussed' : 'Mark as discussed'}
+				>
+					{#if discussed}
+						<CheckCircle2 />
+					{:else}
+						<Circle />
+					{/if}
+				</button>
+			{/if}
 			<div class="owner-actions" class:editing>
 				{#if editing}
 					<button
@@ -241,7 +232,9 @@
 	.footer-right {
 		display: flex;
 		align-items: center;
+		justify-content: flex-end;
 		gap: var(--space-2);
+		margin-left: auto;
 	}
 
 	:global(.retro-card.discussed) {
@@ -260,19 +253,8 @@
 		opacity: 1;
 	}
 
-	button.icon.discussed-toggle.reserved {
-		visibility: hidden;
-		pointer-events: none;
-	}
-
 	button.icon.discussed-toggle:disabled {
 		cursor: default;
-	}
-
-	.vote-total-slot {
-		display: inline-flex;
-		align-items: center;
-		min-height: 1.5rem;
 	}
 
 	.vote-total {
@@ -284,19 +266,16 @@
 		font-size: var(--font-size-xs);
 	}
 
-	.vote-controls-slot {
-		display: inline-flex;
-		align-items: center;
-		min-height: 1.5rem;
-	}
-
 	.owner-actions {
 		display: flex;
 		gap: var(--space-2);
-		min-width: 3rem;
 		justify-content: flex-end;
 		opacity: 0;
 		transition: opacity 0.1s ease;
+	}
+
+	.owner-actions:empty {
+		display: none;
 	}
 
 	.owner-actions.editing {
