@@ -30,12 +30,13 @@ Distributed software teams run retros in tools that either require accounts and 
 - Exporting retros to Markdown / other formats — revisit in v2.
 - Native mobile apps — the web app should be responsive, but mobile-native is out of scope.
 - Long-term cloud archival. Data lives on participants' devices; any relay is best-effort and not a system of record.
+- Cross-device retro history. The R11 dashboard is per-browser; rooms are scoped to whatever's in the user's local IndexedDB + sidecar index on this device. Discovering retros across devices would require accounts, which v1 explicitly rejects.
 
 ## Requirements
 
 _Numbered (R1, R2, …) so feature plans in `docs/features/` can trace back._
 
-- **R1 — Create a room.** A facilitator picks a template (preset or custom columns) and a room name, and the system produces a shareable URL.
+- **R1 — Create a room.** From the dashboard at `/`, a facilitator opens a "New Retro" modal, picks a template (preset or custom columns) and a room name, and the system produces a shareable URL.
 - **R2 — Join a room.** Anyone with the URL can join by entering a display name. No account required. The display name is stored locally and reused on the next visit from the same browser.
 - **R3 — Preset templates.** Built-in presets are available at room creation: *Went well / Didn't go well / Actions*, *Start / Stop / Continue*, *Mad / Sad / Glad*, *4Ls (Liked / Learned / Lacked / Longed for)*.
 - **R4 — Add / edit / delete cards.** During the *Collect* phase, any participant can create cards under any column and can edit or delete their own cards. Cards are attributed to the author's display name.
@@ -45,6 +46,7 @@ _Numbered (R1, R2, …) so feature plans in `docs/features/` can trace back._
 - **R8 — Local-first sync.** Each client holds full retro state locally via a CRDT and syncs through a managed Cloudflare Durable Object (via `y-partykit`). Edits made while offline appear locally immediately and merge on reconnect without data loss, for the duration of a single retro session.
 - **R9 — Room lifecycle.** The facilitator can close a room. Closed rooms are read-only but remain viewable by anyone with the join code as long as the state exists on at least one participant's device or the relay's best-effort cache.
 - **R10 — Custom columns.** As an alternative to picking a preset, the facilitator may define their own columns (1–6, with custom titles) at room creation.
+- **R11 — Dashboard.** The root route `/` presents a tile grid of retros the user has on this device, sorted by most-recently-opened. Each tile shows the room name, template, and a relative "last opened" timestamp; clicking a tile loads `/r/<id>` in the room's last-known state (including *Closed*). The first tile is always a "New Retro" affordance that opens the room-creation modal (see R1). The dashboard reflects local state only — rooms appear once they've been created or opened from this browser.
 
 ## Open questions
 

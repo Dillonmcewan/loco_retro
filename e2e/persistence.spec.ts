@@ -7,6 +7,7 @@ import { test, expect } from '@playwright/test';
 // get lost).
 test('room state survives a reload', async ({ page }) => {
 	await page.goto('/');
+	await page.getByRole('button', { name: /create a new retro/i }).click();
 	await page.getByLabel('Room name').fill('Persistence check');
 	await page.getByRole('button', { name: /create retro/i }).click();
 	await expect(page).toHaveURL(/\/r\/[0-9a-f-]{36}$/i);

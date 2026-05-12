@@ -31,6 +31,7 @@ test('two-client Discuss: cards sort by votes and discussed toggle replicates', 
 	const pageB = await ctxB.newPage();
 
 	await pageA.goto('/');
+	await pageA.getByRole('button', { name: /create a new retro/i }).click();
 	await pageA.getByLabel('Room name').fill('Discuss retro');
 	await pageA.getByText('Start / Stop / Continue').click();
 	await pageA.getByLabel('Votes per participant').fill('3');

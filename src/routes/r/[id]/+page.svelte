@@ -27,6 +27,7 @@
 		type VoteTotals
 	} from '$lib/room';
 	import { getDisplayName, setDisplayName, getAuthorId } from '$lib/displayName';
+	import { upsertRoom } from '$lib/rooms';
 	import Share2 from 'lucide-svelte/icons/share-2';
 	import { tooltip } from '$lib/tooltip';
 	import { colorsByParticipant } from '$lib/participantColor';
@@ -102,9 +103,19 @@
 		const mb = myBallotStore(opened.doc, authorId);
 		const vt = voteTotalsStore(opened.doc);
 
+		let indexed = false;
 		const unsubs: Array<() => void> = [
 			m.subscribe((v) => {
 				meta = v;
+				if (!indexed && v && v.name) {
+					indexed = true;
+					upsertRoom({
+						id: data.id,
+						name: v.name,
+						templateId: v.templateId,
+						lastOpenedAt: Date.now()
+					});
+				}
 			}),
 			c.subscribe((v) => {
 				cols = v;

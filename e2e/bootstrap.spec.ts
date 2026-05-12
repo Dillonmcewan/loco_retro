@@ -23,6 +23,7 @@ test('late joiner bootstraps from the DO after creator leaves', async ({ browser
 	const pageA = await ctxA.newPage();
 
 	await pageA.goto('/');
+	await pageA.getByRole('button', { name: /create a new retro/i }).click();
 	await pageA.getByLabel('Room name').fill('Bootstrap retro');
 	await pageA.getByText('Start / Stop / Continue').click();
 	await pageA.getByRole('button', { name: /create retro/i }).click();

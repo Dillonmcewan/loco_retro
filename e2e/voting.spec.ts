@@ -37,6 +37,7 @@ test('two-client dot voting flow with reclamation on delete', async ({ browser }
 	// Client A creates a room with a 3-vote budget and the Start/Stop/Continue
 	// preset.
 	await pageA.goto('/');
+	await pageA.getByRole('button', { name: /create a new retro/i }).click();
 	await pageA.getByLabel('Room name').fill('Voting retro');
 	await pageA.getByText('Start / Stop / Continue').click();
 	const votes = pageA.getByLabel('Votes per participant');
@@ -112,6 +113,7 @@ test('deleting a voted card refunds the budget on the next Vote phase', async ({
 	const pageA = await ctxA.newPage();
 
 	await pageA.goto('/');
+	await pageA.getByRole('button', { name: /create a new retro/i }).click();
 	await pageA.getByLabel('Room name').fill('Reclaim retro');
 	await pageA.getByText('Start / Stop / Continue').click();
 	await pageA.getByLabel('Votes per participant').fill('3');

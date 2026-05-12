@@ -19,6 +19,7 @@ test('phase advances sync across two clients and gate card mutations', async ({ 
 	const pageB = await ctxB.newPage();
 
 	await pageA.goto('/');
+	await pageA.getByRole('button', { name: /create a new retro/i }).click();
 	await pageA.getByLabel('Room name').fill('Phases retro');
 	await pageA.getByText('Start / Stop / Continue').click();
 	await pageA.getByRole('button', { name: /create retro/i }).click();

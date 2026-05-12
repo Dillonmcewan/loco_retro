@@ -20,6 +20,7 @@ test('two clients can add, edit, and delete cards with ownership gating', async 
 
 	// A: create the room.
 	await pageA.goto('/');
+	await pageA.getByRole('button', { name: /create a new retro/i }).click();
 	await pageA.getByLabel('Room name').fill('Cards retro');
 	await pageA.getByText('Start / Stop / Continue').click();
 	await pageA.getByRole('button', { name: /create retro/i }).click();

@@ -11,6 +11,12 @@
     "ghcr.io/anthropics/devcontainer-features/claude-code:1.0": {}
   },
   "remoteUser": "node",
+  // Git worktree note: when this repo is opened from a worktree, git only
+  // works inside the container if the VS Code Dev Containers setting
+  //   "dev.containers.experimentalMountGitWorktreeCommonDir": true
+  // is enabled on the host. It auto-mounts the main repo's .git common dir
+  // so the worktree's `gitdir:` pointer resolves. Only takes effect when
+  // workspaceMount is left at its default (which it is here).
   "mounts": [
     // Per-project persisted volume for ~/.claude so auth + session history
     // survive container rebuilds. Scoped per project via ${devcontainerId}.
@@ -19,7 +25,7 @@
   "postCreateCommand": "sudo chown -R node:node /home/node/.claude && sudo corepack enable && corepack prepare pnpm@latest --activate",
   "forwardPorts": [5173, 4173, 1999],
   "portsAttributes": {
-    "5173": { "label": "SvelteKit dev", "onAutoForward": "notify" },
+    "5173": { "label": "SvelteKit dev", "onAutoForward": "silent" },
     "4173": { "label": "SvelteKit preview", "onAutoForward": "silent" },
     "1999": { "label": "PartyKit dev", "onAutoForward": "silent" }
   },

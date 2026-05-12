@@ -2,125 +2,68 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 
-// Mock SvelteKit + Yjs-touching modules so the component can mount in jsdom.
 vi.mock('$app/navigation', () => ({
 	goto: vi.fn(async () => {})
 }));
 
+// The modal imports room internals; keep them inert so jsdom can mount it.
 vi.mock('$lib/room', async () => {
 	const actual = await vi.importActual<typeof import('$lib/room')>('$lib/room');
 	return {
 		...actual,
 		ensureRoom: vi.fn(() => ({ doc: { getMap: () => ({ get: () => undefined }) } })),
-		seedRoom: vi.fn(() => true)
+		seedRoom: vi.fn(() => true),
+		leaveRoom: vi.fn()
 	};
 });
 
-import CreatePage from './+page.svelte';
-import { goto } from '$app/navigation';
-import { ensureRoom, seedRoom } from '$lib/room';
+import Dashboard from './+page.svelte';
+import { upsertRoom } from '$lib/rooms';
 
-describe('Create page', () => {
+describe('Dashboard', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		localStorage.clear();
 	});
 
-	it('blocks submit when name is empty', async () => {
-		const user = userEvent.setup();
-		render(CreatePage);
-		const submit = screen.getByRole('button', { name: /create/i });
-		await user.click(submit);
-		expect(goto).not.toHaveBeenCalled();
-		expect(ensureRoom).not.toHaveBeenCalled();
-		expect(seedRoom).not.toHaveBeenCalled();
-		expect(screen.getByRole('alert')).toHaveTextContent(/required/i);
+	it('renders the empty state when no rooms are in the index', () => {
+		render(Dashboard);
+		expect(screen.getByRole('button', { name: /create a new retro/i })).toBeInTheDocument();
+		expect(screen.getByText(/show up here/i)).toBeInTheDocument();
 	});
 
-	it('on valid submit: opens doc, seeds it, navigates to /r/<uuid>', async () => {
-		const user = userEvent.setup();
-		render(CreatePage);
-
-		const nameInput = screen.getByLabelText(/room name/i);
-		await user.type(nameInput, 'Sprint 42');
-
-		await user.click(screen.getByRole('radio', { name: /start \/ stop \/ continue/i }));
-
-		await user.click(screen.getByRole('button', { name: /create/i }));
-
-		expect(ensureRoom).toHaveBeenCalledTimes(1);
-		expect(seedRoom).toHaveBeenCalledTimes(1);
-		expect(seedRoom).toHaveBeenCalledWith(expect.anything(), {
-			name: 'Sprint 42',
+	it('renders one tile per indexed room, newest first', () => {
+		upsertRoom({
+			id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1',
+			name: 'Older retro',
+			templateId: 'wwd-actions',
+			lastOpenedAt: 1_000
+		});
+		upsertRoom({
+			id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2',
+			name: 'Newer retro',
 			templateId: 'start-stop-continue',
-			votesPerParticipant: 5
+			lastOpenedAt: 2_000
 		});
 
-		expect(goto).toHaveBeenCalledTimes(1);
-		const target = vi.mocked(goto).mock.calls[0][0] as string;
-		expect(target).toMatch(
-			/^\/r\/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-		);
+		render(Dashboard);
+
+		const tiles = screen.getAllByRole('button', { name: /open retro/i });
+		expect(tiles).toHaveLength(2);
+		// First tile in DOM order should be the newest.
+		expect(tiles[0]).toHaveAccessibleName(/newer retro/i);
+		expect(tiles[1]).toHaveAccessibleName(/older retro/i);
 	});
 
-	it('defaults the votes-per-participant input to 5 and forwards it to seedRoom', async () => {
+	it('opens the modal when the New Retro tile is clicked', async () => {
 		const user = userEvent.setup();
-		render(CreatePage);
+		render(Dashboard);
 
-		const votes = screen.getByLabelText(/votes per participant/i) as HTMLInputElement;
-		expect(votes.value).toBe('5');
+		// Heading is hidden until the modal opens.
+		expect(screen.queryByRole('heading', { name: /create a retro/i })).not.toBeInTheDocument();
 
-		await user.type(screen.getByLabelText(/room name/i), 'X');
-		await user.click(screen.getByRole('button', { name: /create/i }));
+		await user.click(screen.getByRole('button', { name: /create a new retro/i }));
 
-		expect(seedRoom).toHaveBeenCalledWith(
-			expect.anything(),
-			expect.objectContaining({ votesPerParticipant: 5 })
-		);
-	});
-
-	it('forwards a custom votes value to seedRoom', async () => {
-		const user = userEvent.setup();
-		render(CreatePage);
-
-		const votes = screen.getByLabelText(/votes per participant/i) as HTMLInputElement;
-		await user.clear(votes);
-		await user.type(votes, '12');
-
-		await user.type(screen.getByLabelText(/room name/i), 'X');
-		await user.click(screen.getByRole('button', { name: /create/i }));
-
-		expect(seedRoom).toHaveBeenCalledWith(
-			expect.anything(),
-			expect.objectContaining({ votesPerParticipant: 12 })
-		);
-	});
-
-	it('rejects votes-per-participant < 1', async () => {
-		const user = userEvent.setup();
-		render(CreatePage);
-
-		const votes = screen.getByLabelText(/votes per participant/i) as HTMLInputElement;
-		await user.clear(votes);
-		await user.type(votes, '0');
-
-		await user.type(screen.getByLabelText(/room name/i), 'X');
-		await user.click(screen.getByRole('button', { name: /create/i }));
-
-		expect(seedRoom).not.toHaveBeenCalled();
-		expect(goto).not.toHaveBeenCalled();
-		expect(screen.getByRole('alert')).toHaveTextContent(/positive integer/i);
-	});
-
-	it('trims whitespace from the room name before seeding', async () => {
-		const user = userEvent.setup();
-		render(CreatePage);
-
-		await user.type(screen.getByLabelText(/room name/i), '   Sprint 42   ');
-		await user.click(screen.getByRole('button', { name: /create/i }));
-
-		expect(seedRoom).toHaveBeenCalledWith(
-			expect.anything(),
-			expect.objectContaining({ name: 'Sprint 42' })
-		);
+		expect(screen.getByRole('heading', { name: /create a retro/i })).toBeInTheDocument();
 	});
 });

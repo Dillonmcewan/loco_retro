@@ -8,6 +8,7 @@ test('two clients can create and join the same room', async ({ browser }) => {
 
 	// A: create the room with the Start/Stop/Continue template.
 	await pageA.goto('/');
+	await pageA.getByRole('button', { name: /create a new retro/i }).click();
 	await pageA.getByLabel('Room name').fill('Sprint 42');
 	await pageA.getByText('Start / Stop / Continue').click();
 	await pageA.getByRole('button', { name: /create retro/i }).click();
