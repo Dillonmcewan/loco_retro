@@ -205,7 +205,7 @@
 		animation:
 			banner-pop 700ms cubic-bezier(0.34, 1.56, 0.64, 1) 800ms forwards,
 			banner-pulse 600ms ease-in-out 1500ms infinite,
-			banner-rainbow 2400ms linear 1500ms infinite,
+			banner-rainbow 2400ms linear 800ms infinite,
 			banner-out 700ms ease-in 5300ms forwards;
 		text-align: center;
 		white-space: nowrap;
