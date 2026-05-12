@@ -45,13 +45,19 @@
 		};
 	});
 
+	// Hold the rain back until the rocket is well into its flight and the
+	// sparkle trail has had a chance to read on its own. Last spark finishes
+	// near 2.75s; rain starts streaming in from 1.4s so there's overlap with
+	// the trail tail-end but the exhaust isn't drowned out from the jump.
+	const RAIN_START_MS = 1400;
+	const RAIN_STAGGER_MS = 1500;
 	const RAIN_COUNT = 110;
 	const RAIN = Array.from({ length: RAIN_COUNT }, (_, i) => {
 		const isPaper = Math.random() < 0.5;
 		return {
 			left: Math.random() * 100,
-			delayMs: Math.round(Math.random() * 1600),
-			durationMs: Math.round(2600 + Math.random() * 1400),
+			delayMs: Math.round(RAIN_START_MS + Math.random() * RAIN_STAGGER_MS),
+			durationMs: Math.round(2400 + Math.random() * 1300),
 			driftVw: (Math.random() - 0.5) * 40,
 			startRotation: Math.round(Math.random() * 360),
 			endRotation: Math.round(Math.random() * 720 - 360),
