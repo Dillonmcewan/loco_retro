@@ -198,7 +198,11 @@
 		margin: -60px 0 0 -60px;
 		filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.35));
 		transform: translate(-15vw, 115vh);
-		animation: rocket-flight 1600ms cubic-bezier(0.32, 0.72, 0.4, 1) 200ms forwards;
+		/* Linear so each spark's delay (computed from the rocket's linear
+		   path-progress) actually corresponds to the rocket's on-screen
+		   position. An ease-out here would put the rocket way ahead of its
+		   trail. */
+		animation: rocket-flight 1600ms linear 200ms forwards;
 	}
 
 	@keyframes rocket-flight {
@@ -267,7 +271,7 @@
 			opacity: 0;
 			transform: translate(-50%, -50%) scale(0.3) rotate(var(--rotation));
 		}
-		18% {
+		6% {
 			opacity: 1;
 			transform: translate(-50%, -50%) scale(1.25) rotate(calc(var(--rotation) + 90deg));
 		}
