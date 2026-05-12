@@ -205,6 +205,7 @@
 		animation:
 			banner-pop 700ms cubic-bezier(0.34, 1.56, 0.64, 1) 800ms forwards,
 			banner-pulse 600ms ease-in-out 1500ms infinite,
+			banner-rainbow 2400ms linear 1500ms infinite,
 			banner-out 700ms ease-in 5300ms forwards;
 		text-align: center;
 		white-space: nowrap;
@@ -225,11 +226,31 @@
 		0%,
 		100% {
 			transform: scale(1);
-			filter: hue-rotate(0deg);
 		}
 		50% {
 			transform: scale(1.06);
-			filter: hue-rotate(40deg);
+		}
+	}
+
+	/* Cycles the text through the vibrant sparkle palette so it reads as a
+	   pulsing rainbow. Linear timing keeps the colors flowing at a steady
+	   party clip rather than easing into and out of each stop. */
+	@keyframes banner-rainbow {
+		0%,
+		100% {
+			color: #ff3ec9;
+		}
+		20% {
+			color: #ffd84a;
+		}
+		40% {
+			color: #36e6d4;
+		}
+		60% {
+			color: #5d8aff;
+		}
+		80% {
+			color: #a4ff4d;
 		}
 	}
 
