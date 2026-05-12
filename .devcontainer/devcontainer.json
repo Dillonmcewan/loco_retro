@@ -21,7 +21,7 @@
     // PartyKit credentials — same idea.
     "source=partykit-config-${devcontainerId},target=/home/node/.partykit,type=volume"
   ],
-  "postCreateCommand": "sudo chown -R node:node /home/node/.claude /home/node/.config/.wrangler /home/node/.partykit && sudo corepack enable && corepack prepare pnpm@latest --activate && mkdir -p /home/node/.local/bin && printf '#!/bin/sh\\nfor arg in \"$@\"; do echo \"xdg-open (stub): $arg\"; done\\nexit 0\\n' > /home/node/.local/bin/xdg-open && chmod +x /home/node/.local/bin/xdg-open",
+  "postCreateCommand": "sudo chown -R node:node /home/node/.claude /home/node/.config/.wrangler /home/node/.partykit && sudo corepack enable && corepack prepare pnpm@latest --activate && mkdir -p /home/node/.local/bin && printf '#!/bin/sh\\n# Headless container: the `open` npm package detaches child stdio, so\\n# print the URL to /dev/tty (the controlling terminal) instead of stdout.\\n{ echo \"\"; echo \"=== xdg-open (stub) \\u2014 open this URL on your host browser: ===\"; for arg in \"$@\"; do echo \"  $arg\"; done; echo \"\"; } > /dev/tty 2>/dev/null || true\\nexit 0\\n' > /home/node/.local/bin/xdg-open && chmod +x /home/node/.local/bin/xdg-open",
   "forwardPorts": [5173, 4173, 1999, 1998, 8976],
   "portsAttributes": {
     "5173": { "label": "SvelteKit dev", "onAutoForward": "notify" },
