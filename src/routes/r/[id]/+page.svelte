@@ -30,8 +30,8 @@
 	import { upsertRoom } from '$lib/rooms';
 	import Share2 from 'lucide-svelte/icons/share-2';
 	import ArrowLeft from 'lucide-svelte/icons/arrow-left';
-	import Inbox from 'lucide-svelte/icons/inbox';
 	import { tooltip } from '$lib/tooltip';
+	import { placeholderFor } from '$lib/emptyPlaceholders';
 	import { colorsByParticipant } from '$lib/participantColor';
 	import RetroCard from '$lib/RetroCard.svelte';
 	import CardForm from '$lib/CardForm.svelte';
@@ -278,7 +278,7 @@
 		{/if}
 
 		<section aria-label="Columns" class="columns">
-			{#each cols as column (column.id)}
+			{#each cols as column, columnIndex (column.id)}
 				<article class="column">
 					<h3>{column.title}</h3>
 					<div class="column-scroll">
@@ -310,9 +310,10 @@
 							{/each}
 						</ul>
 						{#if cardsFor(column.id).length === 0}
+							{@const placeholder = placeholderFor(data.id, columnIndex)}
 							<div class="empty" aria-label="No cards yet">
-								<Inbox />
-								<span>Drop your first card.</span>
+								<placeholder.Icon />
+								<span>{placeholder.text}</span>
 							</div>
 						{/if}
 					</div>
