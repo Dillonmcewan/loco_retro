@@ -91,8 +91,6 @@
 </script>
 
 <div class="rocket-show" aria-hidden="true">
-	<div class="brighten"></div>
-
 	<div class="trail-layer">
 		{#each TRAIL as t, i (i)}
 			<span
@@ -181,28 +179,6 @@
 		inset: 0;
 		overflow: hidden;
 		pointer-events: none;
-	}
-
-	/* ─── Screen brighten ─────────────────────────────────────────────────── */
-
-	.brighten {
-		position: absolute;
-		inset: 0;
-		background: #ffffff;
-		opacity: 0;
-		animation: brighten-pulse 600ms ease-out forwards;
-	}
-
-	@keyframes brighten-pulse {
-		0% {
-			opacity: 0;
-		}
-		25% {
-			opacity: 0.35;
-		}
-		100% {
-			opacity: 0;
-		}
 	}
 
 	/* ─── Rocket ──────────────────────────────────────────────────────────── */
@@ -359,13 +335,7 @@
 		font-size: clamp(3rem, 9vw, 7rem);
 		font-weight: 900;
 		letter-spacing: -0.02em;
-		color: var(--color-text);
-		/* Subtle white halo so the words stay readable when confetti or the
-		   rocket flies across them. */
-		text-shadow:
-			0 2px 0 rgba(255, 255, 255, 0.9),
-			0 0 18px rgba(255, 255, 255, 0.75),
-			0 6px 24px rgba(42, 36, 32, 0.35);
+		color: #fbf7f0;
 		transform: scale(0);
 		opacity: 0;
 		animation:

@@ -48,6 +48,7 @@
 
 {#if playing}
 	<div class="celebration">
+		<div class="gray-bg" aria-hidden="true"></div>
 		<button
 			type="button"
 			class="dismiss-backdrop"
@@ -70,6 +71,35 @@
 		inset: 0;
 		z-index: 1100;
 		pointer-events: none;
+	}
+
+	/* Opaque warm-charcoal slab that fully covers the room UI for the duration
+	   of the show. Fades in at the start and out just before the orchestrator
+	   dismisses (TOTAL_MS = 6500ms). */
+	.gray-bg {
+		position: absolute;
+		inset: 0;
+		background: #3a3733;
+		opacity: 0;
+		pointer-events: none;
+		animation:
+			gray-bg-in 250ms ease-out forwards,
+			gray-bg-out 600ms ease-in 5900ms forwards;
+	}
+
+	@keyframes gray-bg-in {
+		to {
+			opacity: 1;
+		}
+	}
+
+	@keyframes gray-bg-out {
+		from {
+			opacity: 1;
+		}
+		to {
+			opacity: 0;
+		}
 	}
 
 	.dismiss-backdrop {
@@ -106,7 +136,7 @@
 		justify-content: center;
 		font-size: clamp(2rem, 6vw, 4.5rem);
 		font-weight: 800;
-		color: var(--color-text);
+		color: #fbf7f0;
 	}
 
 	@media (prefers-reduced-motion: reduce) {

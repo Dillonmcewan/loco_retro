@@ -13,8 +13,6 @@
 </script>
 
 <div class="disco-show" aria-hidden="true">
-	<div class="backdrop"></div>
-
 	<div class="ball-anchor">
 		{#each SPOTLIGHTS as light, i (i)}
 			<div
@@ -42,33 +40,6 @@
 		inset: 0;
 		overflow: hidden;
 		pointer-events: none;
-	}
-
-	/* ─── Dim backdrop ────────────────────────────────────────────────────── */
-
-	.backdrop {
-		position: absolute;
-		inset: 0;
-		background: radial-gradient(ellipse at center, rgba(20, 14, 40, 0.55), rgba(0, 0, 0, 0.7));
-		opacity: 0;
-		animation:
-			backdrop-in 500ms ease-out forwards,
-			backdrop-out 700ms ease-in 5500ms forwards;
-	}
-
-	@keyframes backdrop-in {
-		to {
-			opacity: 1;
-		}
-	}
-
-	@keyframes backdrop-out {
-		from {
-			opacity: 1;
-		}
-		to {
-			opacity: 0;
-		}
 	}
 
 	/* ─── Disco ball anchor (sets coordinate origin for cones + ball) ─────── */
@@ -228,13 +199,7 @@
 		font-size: clamp(3rem, 9vw, 7rem);
 		font-weight: 900;
 		letter-spacing: -0.02em;
-		color: #fff7e6;
-		/* Warm glow so the words read against the dimmed backdrop and the
-		   sweeping spotlights without needing a card behind them. */
-		text-shadow:
-			0 0 20px rgba(245, 184, 49, 0.85),
-			0 0 60px rgba(245, 184, 49, 0.55),
-			0 6px 30px rgba(0, 0, 0, 0.7);
+		color: #fbf7f0;
 		transform: scale(0);
 		opacity: 0;
 		animation:
