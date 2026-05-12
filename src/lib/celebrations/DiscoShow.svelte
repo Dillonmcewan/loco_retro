@@ -30,7 +30,7 @@
 	</div>
 
 	<div class="banner-wrap">
-		<div class="banner">Mission Accomplished!</div>
+		<div class="banner">Party Time!</div>
 	</div>
 </div>
 
