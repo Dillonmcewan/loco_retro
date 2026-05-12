@@ -311,7 +311,11 @@
 						</ul>
 						{#if cardsFor(column.id).length === 0}
 							{@const placeholder = placeholderFor(data.id, columnIndex)}
-							<div class="empty" aria-label="No cards yet">
+							<div
+								class="empty"
+								aria-label="No cards yet"
+								style:--empty-icon-color={placeholder.color}
+							>
 								<placeholder.Icon />
 								<span>{placeholder.text}</span>
 							</div>
@@ -487,7 +491,7 @@
 	.empty :global(svg) {
 		width: 1.5rem;
 		height: 1.5rem;
-		color: var(--color-tertiary);
+		color: var(--empty-icon-color, var(--color-tertiary));
 	}
 
 	.vote-budget-slot {

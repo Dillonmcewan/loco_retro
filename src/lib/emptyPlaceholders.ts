@@ -14,9 +14,21 @@ import Cookie from 'lucide-svelte/icons/cookie';
 export type Placeholder = {
 	Icon: typeof Sparkles;
 	text: string;
+	color: string;
 };
 
-export const PLACEHOLDERS: readonly Placeholder[] = [
+// CSS vars rotated through the icon. Picked from the existing accent tokens
+// so the column placeholders share the broader palette.
+const PLACEHOLDER_COLORS: readonly string[] = [
+	'var(--color-primary)',
+	'var(--color-secondary)',
+	'var(--color-tertiary)',
+	'var(--color-phase-closed)'
+];
+
+type PlaceholderEntry = { Icon: typeof Sparkles; text: string };
+
+const ENTRIES: readonly PlaceholderEntry[] = [
 	{ Icon: Sparkles, text: 'Toss in your first sparkle.' },
 	{ Icon: Rocket, text: 'First card launches the rocket.' },
 	{ Icon: Lightbulb, text: 'Spark the first idea.' },
@@ -63,10 +75,23 @@ function seededPermutation(n: number, seed: number): number[] {
 	return out;
 }
 
+// Exposed for tests / callers that need the full pool.
+export const PLACEHOLDERS: readonly Placeholder[] = ENTRIES.map((entry, i) => ({
+	...entry,
+	color: PLACEHOLDER_COLORS[i % PLACEHOLDER_COLORS.length]
+}));
+
 // Deterministic per (roomId, columnIndex). Different columns of the same room
-// get distinct entries as long as the pool is at least as large as the column
-// count. The largest preset template has 4 columns; pool is 12.
+// get distinct icon/text entries as long as the pool is at least as large as
+// the column count. The largest preset template has 4 columns; pool is 12.
+// Color cycles through PLACEHOLDER_COLORS with a roomId-seeded offset, so
+// adjacent columns always get different colors and the rotation feels fresh
+// per room.
 export function placeholderFor(roomId: string, columnIndex: number): Placeholder {
-	const perm = seededPermutation(PLACEHOLDERS.length, hashString(roomId));
-	return PLACEHOLDERS[perm[columnIndex % PLACEHOLDERS.length]];
+	const seed = hashString(roomId);
+	const perm = seededPermutation(ENTRIES.length, seed);
+	const entry = ENTRIES[perm[columnIndex % ENTRIES.length]];
+	const colorOffset = seed % PLACEHOLDER_COLORS.length;
+	const color = PLACEHOLDER_COLORS[(colorOffset + columnIndex) % PLACEHOLDER_COLORS.length];
+	return { ...entry, color };
 }
