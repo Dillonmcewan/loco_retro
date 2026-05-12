@@ -61,7 +61,9 @@ Routes that touch CRDT state are client-rendered (`ssr=false`) — Yjs and Index
 
 Two deployable units, always shipped in this order: the **PartyKit worker first** (because its public host is baked into the SvelteKit build), then the **SvelteKit app**. Both target Cloudflare under a single account; we operate no servers ourselves.
 
-### One-time bootstrap
+### One-time bootstrap (run on the host, not in the dev container)
+
+The PartyKit and Wrangler login flows both want to open a browser; the dev container is headless, so run these on your host machine where they Just Work. After login, deploys can run from anywhere — but for simplicity, deploy from the host too.
 
 1. `pnpm dlx partykit login` — OAuth to Cloudflare (PartyKit's session).
 2. `pnpm dlx wrangler login` — OAuth to Cloudflare (Wrangler's session, separate from PartyKit's).
@@ -69,7 +71,7 @@ Two deployable units, always shipped in this order: the **PartyKit worker first*
 4. Replace `<account>` in `.env.production` with the value from step 3 and commit. Vite reads this file during `vite build` and bakes the host into the client bundle.
 5. `pnpm dlx wrangler pages project create loco-retro --production-branch=main` — create the Pages project once.
 
-### Steady-state deploy
+### Steady-state deploy (run on the host)
 
 `pnpm deploy` ships both targets in order: `partykit deploy` → `vite build` (using `.env.production`) → `wrangler pages deploy .svelte-kit/cloudflare --project-name=loco-retro --branch=main`. The composed script lives in `package.json`; `wrangler` is a pinned `devDependency` so the deploy command is hermetic and doesn't depend on a global install.
 
