@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+
 	// Vibrant sparkle palette — intentionally separate from the muted brand
 	// colors so the exhaust trail reads as electric/glittery rather than blending
 	// into the UI.
@@ -51,6 +53,25 @@
 	// the trail tail-end but the exhaust isn't drowned out from the jump.
 	const RAIN_START_MS = 1400;
 	const RAIN_STAGGER_MS = 1500;
+	// Flight path spans 130vw horizontally and 130vh vertically, so its on-screen
+	// angle depends on the viewport aspect ratio — not a constant 45°. Compute
+	// the rocket rotation from the live viewport so the nose tracks the actual
+	// trajectory on any monitor.
+	let rocketRotation = $state(45);
+	onMount(() => {
+		const update = () => {
+			const angleAboveHorizontal =
+				(Math.atan2(window.innerHeight, window.innerWidth) * 180) / Math.PI;
+			// SVG is drawn pointing straight up. CSS rotate is clockwise from up,
+			// so to point along a direction that's `angleAboveHorizontal` degrees
+			// above horizontal we rotate by (90° − that angle).
+			rocketRotation = 90 - angleAboveHorizontal;
+		};
+		update();
+		window.addEventListener('resize', update);
+		return () => window.removeEventListener('resize', update);
+	});
+
 	const RAIN_COUNT = 110;
 	const RAIN = Array.from({ length: RAIN_COUNT }, (_, i) => {
 		const isPaper = Math.random() < 0.5;
@@ -89,11 +110,11 @@
 
 	<!-- Inline SVG so the rocket's orientation is deterministic across platforms
 	     (emoji 🚀 leans differently on Apple vs Android vs Windows). Drawn
-	     pointing up in the viewBox, then rotated 45° clockwise via the inner
-	     <g> so the nose tracks the trajectory's NE direction. -->
+	     pointing up in the viewBox; the inner <g> rotates by the live trajectory
+	     angle so the nose tracks the path on any aspect ratio. -->
 	<div class="rocket">
 		<svg viewBox="0 0 100 100" width="120" height="120" aria-hidden="true">
-			<g transform="rotate(45 50 50)">
+			<g transform="rotate({rocketRotation} 50 50)">
 				<!-- nose cone -->
 				<path d="M50 6 L66 36 L34 36 Z" fill="#ff5b4a" stroke="#2a2420" stroke-width="2" />
 				<!-- body -->
