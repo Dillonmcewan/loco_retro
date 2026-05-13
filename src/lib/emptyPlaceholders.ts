@@ -1,16 +1,10 @@
 import Sparkles from 'lucide-svelte/icons/sparkles';
-import Rocket from 'lucide-svelte/icons/rocket';
-import Lightbulb from 'lucide-svelte/icons/lightbulb';
-import Coffee from 'lucide-svelte/icons/coffee';
-import Flame from 'lucide-svelte/icons/flame';
+import FlameKindling from 'lucide-svelte/icons/flame-kindling';
 import Ghost from 'lucide-svelte/icons/ghost';
 import Music from 'lucide-svelte/icons/music';
-import Anchor from 'lucide-svelte/icons/anchor';
-import Telescope from 'lucide-svelte/icons/telescope';
 import Compass from 'lucide-svelte/icons/compass';
-import Feather from 'lucide-svelte/icons/feather';
-import Cookie from 'lucide-svelte/icons/cookie';
 import { hashString } from './hash';
+import { Balloon, IceCreamCone, Rocket, Shovel } from 'lucide-svelte';
 
 export type Placeholder = {
 	Icon: typeof Sparkles;
@@ -24,24 +18,23 @@ const PLACEHOLDER_COLORS: readonly string[] = [
 	'var(--color-primary)',
 	'var(--color-secondary)',
 	'var(--color-tertiary)',
+	'var(--color-phase-collect)',
+	'var(--color-phase-vote)',
+	'var(--color-phase-discuss)',
 	'var(--color-phase-closed)'
 ];
 
 type PlaceholderEntry = { Icon: typeof Sparkles; text: string };
 
 const ENTRIES: readonly PlaceholderEntry[] = [
-	{ Icon: Sparkles, text: 'Toss in your first sparkle.' },
-	{ Icon: Rocket, text: 'First card launches the rocket.' },
-	{ Icon: Lightbulb, text: 'Spark the first idea.' },
-	{ Icon: Coffee, text: 'Pour the first cup.' },
-	{ Icon: Flame, text: 'Light the first match.' },
+	{ Icon: FlameKindling, text: 'Spark the conversation.' },
 	{ Icon: Ghost, text: "It's quiet in here… too quiet." },
 	{ Icon: Music, text: 'Be the opening note.' },
-	{ Icon: Anchor, text: 'Drop the first anchor.' },
-	{ Icon: Telescope, text: 'Spot something on the horizon.' },
-	{ Icon: Compass, text: 'Point us in a direction.' },
-	{ Icon: Feather, text: 'Lay down the first feather.' },
-	{ Icon: Cookie, text: 'Leave a crumb of thought.' }
+	{ Icon: Compass, text: 'Point us in the right direction.' },
+	{ Icon: Rocket, text: 'Launch the discussion.' },
+	{ Icon: Balloon, text: 'Get the party started.' },
+	{ Icon: IceCreamCone, text: 'First card gets ice cream' },
+	{ Icon: Shovel, text: 'What should we dig into?' },
 ] as const;
 
 // mulberry32 PRNG — small, fast, deterministic given a seed.
