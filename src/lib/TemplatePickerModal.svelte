@@ -2,6 +2,7 @@
 	import { aggregatedTemplates, type Template } from '$lib/templates';
 	import { listRooms } from '$lib/rooms';
 	import ColumnEditor from '$lib/ColumnEditor.svelte';
+	import Plus from 'lucide-svelte/icons/plus';
 
 	type Props = {
 		open: boolean;
@@ -46,52 +47,54 @@
 
 <dialog bind:this={dialogEl} onclose={handleClose} aria-labelledby="template-picker-title">
 	<div class="content">
-		<h2 id="template-picker-title">Choose a template</h2>
+		<h2 id="template-picker-title">{editorOpen ? 'Create new template' : 'Choose a template'}</h2>
 
 		{#if editorOpen}
 			<ColumnEditor onSave={handleEditorSave} onCancel={() => (editorOpen = false)} />
 		{:else}
-			{#if yours.length > 0}
-				<section aria-labelledby="yours-heading" class="section">
-					<h3 id="yours-heading">Yours</h3>
-					<ul class="list">
-						{#each yours as t (t.key)}
-							<li>
-								<button type="button" class="row" onclick={() => selectTemplate(t)}>
-									<span class="row-label">{t.label}</span>
-									<span class="row-cols">
-										{#each t.columns as c, i (i)}
-											<span class="col-chip">{c.title}</span>
-										{/each}
-									</span>
-								</button>
-							</li>
-						{/each}
-					</ul>
-				</section>
-			{/if}
+			<section aria-labelledby="custom-heading" class="section">
+				<h3 id="custom-heading">Custom</h3>
+				<div class="template-grid">
+					{#each yours as t (t.key)}
+						<button type="button" class="template-card" onclick={() => selectTemplate(t)}>
+							<span class="template-name">{t.label}</span>
+							<span class="template-cols">
+								{#each t.columns as c, i (i)}
+									<span class="col-chip">{c.title}</span>
+								{/each}
+							</span>
+						</button>
+					{/each}
+					<button
+						type="button"
+						class="template-card new-template"
+						onclick={() => (editorOpen = true)}
+						aria-label="Create new template"
+					>
+						<Plus />
+						<span class="template-name">New template</span>
+					</button>
+				</div>
+			</section>
 
 			<section aria-labelledby="presets-heading" class="section">
 				<h3 id="presets-heading">Presets</h3>
-				<ul class="list">
+				<div class="template-grid">
 					{#each presets as t (t.key)}
-						<li>
-							<button type="button" class="row" onclick={() => selectTemplate(t)}>
-								<span class="row-label">{t.label}</span>
-								<span class="row-cols">
-									{#each t.columns as c, i (i)}
-										<span class="col-chip">{c.title}</span>
-									{/each}
-								</span>
-							</button>
-						</li>
+						<button type="button" class="template-card" onclick={() => selectTemplate(t)}>
+							<span class="template-name">{t.label}</span>
+							<span class="template-cols">
+								{#each t.columns as c, i (i)}
+									<span class="col-chip">{c.title}</span>
+								{/each}
+							</span>
+						</button>
 					{/each}
-				</ul>
+				</div>
 			</section>
 
 			<div class="actions">
 				<button type="button" class="secondary" onclick={() => dialogEl?.close()}>Cancel</button>
-				<button type="button" onclick={() => (editorOpen = true)}>Create new template</button>
 			</div>
 		{/if}
 	</div>
@@ -145,44 +148,58 @@
 		letter-spacing: 0.05em;
 	}
 
-	.list {
-		list-style: none;
-		padding: 0;
-		margin: 0;
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-2);
+	.template-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+		gap: var(--space-3);
 	}
 
-	.row {
-		width: 100%;
+	.template-card {
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-2);
-		padding: var(--space-3) var(--space-4);
+		gap: var(--space-3);
+		padding: var(--space-4) var(--space-4);
 		background: var(--color-surface);
-		border: 1px solid var(--color-border-strong);
+		border: 1.5px solid var(--color-border-strong);
 		border-radius: var(--radius-md);
-		text-align: left;
 		cursor: pointer;
+		text-align: left;
 		font: inherit;
 		color: inherit;
 		transition:
 			border-color 0.12s ease,
-			background 0.12s ease;
+			background 0.12s ease,
+			box-shadow 0.12s ease,
+			transform 0.05s ease;
 	}
 
-	.row:hover {
+	.template-card:hover {
 		border-color: var(--color-primary);
-		background: var(--color-primary-soft);
+		box-shadow: 0 4px 12px -4px rgba(255, 107, 91, 0.18);
+		transform: translateY(-1px);
 	}
 
-	.row-label {
+	.template-card.new-template {
+		border-style: dashed;
+		justify-content: center;
+		align-items: center;
+		text-align: center;
+		color: var(--color-muted);
+		gap: var(--space-2);
+	}
+
+	.template-card.new-template :global(svg) {
+		width: var(--icon-size-md);
+		height: var(--icon-size-md);
+	}
+
+	.template-name {
 		font-weight: 600;
 		font-size: var(--font-size-md);
+		line-height: 1.3;
 	}
 
-	.row-cols {
+	.template-cols {
 		display: flex;
 		flex-wrap: wrap;
 		gap: var(--space-1);

@@ -2,6 +2,9 @@
 	import { templateKeyFromTitles, deriveTemplateLabel, type Template } from '$lib/templates';
 	import { MIN_COLUMNS, MAX_COLUMNS } from '$lib/room';
 	import X from 'lucide-svelte/icons/x';
+	import Plus from 'lucide-svelte/icons/plus';
+	import { tick } from 'svelte';
+	import { tooltip } from '$lib/tooltip';
 
 	type Props = {
 		onSave: (t: Template) => void;
@@ -27,6 +30,22 @@
 		titles = titles.filter((_, idx) => idx !== i);
 		rowErrors = rowErrors.filter((_, idx) => idx !== i);
 		formError = null;
+	}
+
+	async function handleTitleKeydown(e: KeyboardEvent, i: number) {
+		if (e.key !== 'Enter') return;
+		// Enter inside a column-title input shouldn't submit the form —
+		// it adds (or jumps to) the next row instead.
+		e.preventDefault();
+		if (i === titles.length - 1) {
+			if (titles.length >= MAX_COLUMNS) return;
+			addRow();
+		}
+		await tick();
+		const next = document.querySelector<HTMLInputElement>(
+			`input[aria-label="Column ${i + 2} title"]`
+		);
+		next?.focus();
 	}
 
 	function handleSubmit(event: SubmitEvent) {
@@ -64,7 +83,7 @@
 		<input
 			type="text"
 			bind:value={templateName}
-			placeholder="Optional — leave blank to use column titles"
+			placeholder="My template (optional)"
 			autocomplete="off"
 		/>
 	</label>
@@ -80,6 +99,7 @@
 						aria-label={`Column ${i + 1} title`}
 						aria-invalid={rowErrors[i] ? 'true' : undefined}
 						placeholder="Column title"
+						onkeydown={(e) => handleTitleKeydown(e, i)}
 					/>
 					<button
 						type="button"
@@ -93,8 +113,15 @@
 				</li>
 			{/each}
 		</ul>
-		<button type="button" class="add" onclick={addRow} disabled={titles.length >= MAX_COLUMNS}>
-			Add column
+		<button
+			type="button"
+			class="add"
+			onclick={addRow}
+			disabled={titles.length >= MAX_COLUMNS}
+			aria-label="Add column"
+			use:tooltip={'Add column'}
+		>
+			<Plus />
 		</button>
 	</fieldset>
 
@@ -205,14 +232,22 @@
 
 	.add {
 		align-self: flex-start;
-		padding: var(--space-2) var(--space-4);
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.25rem;
+		height: 2.25rem;
+		padding: 0;
 		background: transparent;
 		color: var(--color-primary);
 		border: 1px dashed var(--color-primary);
 		border-radius: var(--radius-sm);
-		font-weight: 500;
-		font-size: var(--font-size-sm);
 		cursor: pointer;
+	}
+
+	.add :global(svg) {
+		width: var(--icon-size-md);
+		height: var(--icon-size-md);
 	}
 
 	.add:disabled {

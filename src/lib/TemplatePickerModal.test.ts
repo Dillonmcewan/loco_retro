@@ -11,15 +11,16 @@ describe('TemplatePickerModal', () => {
 		localStorage.clear();
 	});
 
-	it('renders all presets and hides Yours when history is empty', () => {
+	it('always renders the Custom and Presets sections; Custom shows only the "New template" tile when history is empty', () => {
 		render(TemplatePickerModal, {
 			open: true,
 			onSelect: vi.fn(),
 			onClose: vi.fn()
 		});
 		expect(screen.getByRole('heading', { name: /choose a template/i })).toBeInTheDocument();
-		expect(screen.queryByRole('heading', { name: /^yours$/i })).not.toBeInTheDocument();
+		expect(screen.getByRole('heading', { name: /^custom$/i })).toBeInTheDocument();
 		expect(screen.getByRole('heading', { name: /^presets$/i })).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: /create new template/i })).toBeInTheDocument();
 		for (const p of PRESET_TEMPLATES) {
 			expect(
 				screen.getByRole('button', { name: new RegExp(escapeRegex(p.label)) })
@@ -27,7 +28,7 @@ describe('TemplatePickerModal', () => {
 		}
 	});
 
-	it('shows the Yours section when there are custom templates in history', () => {
+	it('lists custom templates under "Custom" alongside the New template tile', () => {
 		upsertRoom({
 			id: '11111111-1111-4111-8111-111111111111',
 			name: 'r',
@@ -39,8 +40,9 @@ describe('TemplatePickerModal', () => {
 			onSelect: vi.fn(),
 			onClose: vi.fn()
 		});
-		expect(screen.getByRole('heading', { name: /^yours$/i })).toBeInTheDocument();
+		expect(screen.getByRole('heading', { name: /^custom$/i })).toBeInTheDocument();
 		expect(screen.getByRole('button', { name: /Mind \/ Body \/ Soul/ })).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: /create new template/i })).toBeInTheDocument();
 	});
 
 	it('clicking a preset row calls onSelect with the template', async () => {
