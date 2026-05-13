@@ -617,6 +617,18 @@ describe('ballots: seed + helpers', () => {
 		expect(readRoomMeta(doc2)?.chrisMode).toBe(false);
 	});
 
+	it('chrisMode survives a Yjs encode/decode round-trip', () => {
+		const source = new Y.Doc();
+		seedRoom(source, { name: 'r', columns: DEFAULT_COLUMNS, chrisMode: true });
+		const update = Y.encodeStateAsUpdate(source);
+
+		const target = new Y.Doc();
+		Y.applyUpdate(target, update);
+
+		expect(readRoomMeta(target)?.chrisMode).toBe(true);
+		expect(readRoomMeta(target)?.name).toBe('r');
+	});
+
 	it('retractVote decrements; clamps at 0; drops key at 0', () => {
 		const { doc, colId } = seededVotingDoc();
 		const cid = addAndVote(doc, colId);

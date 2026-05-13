@@ -363,6 +363,23 @@ describe('Room page', () => {
 		expect(rendered).toEqual(['mine', 'theirs']);
 	});
 
+	it('resets the local ready flag when the phase transitions', async () => {
+		const user = userEvent.setup();
+		setDisplayName('Dillon');
+		render(RoomPage, { props: { data: { id: VALID_ID } } });
+		await tick();
+
+		// Mark myself ready in Collect via the CollectStatus button.
+		await user.click(screen.getByRole('button', { name: /^i'm done/i }));
+		await tick();
+		expect((awareness.getStates().get(1)?.user as { ready: boolean }).ready).toBe(true);
+
+		// Advance Collect → Vote. The $effect.pre should fire setReady(false).
+		await user.click(screen.getByRole('button', { name: 'Advance: Vote' }));
+		await tick();
+		expect((awareness.getStates().get(1)?.user as { ready: boolean }).ready).toBe(false);
+	});
+
 	it('persists the name on gate submit and reveals the room', async () => {
 		const user = userEvent.setup();
 		render(RoomPage, { props: { data: { id: VALID_ID } } });
