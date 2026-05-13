@@ -35,7 +35,7 @@ Single polish pass, three groupings:
 - **Constant-height cards** (`src/lib/RetroCard.svelte`):
   - Current root cause: edit mode swaps `<p>` for `<textarea>` and replaces the footer with a separate `.actions` row; phase changes mount/unmount vote total badge, VoteControls, discussed toggle, and edit/delete buttons. The card structure literally changes between phases.
   - Fix: the card structure stays constant. Footer is always rendered. Edit-mode save/cancel buttons live in the same footer position (replacing the owner-actions slot). Vote total, VoteControls, and discussed toggle are always-mounted slots — when not active for the current phase, they render an empty placeholder element with the same dimensions. Textarea gets `min-height` matched to a single-line `<p>` height so entering edit on a short card doesn't grow it.
-- **Constant-height columns**: `VoteBudget` is always rendered inside `.phase-stack`, using `visibility: hidden` outside the vote phase so the header reserves vertical space and columns below don't get squeezed.
+- **Constant-height columns**: a min-height slot inside `.phase-stack` reserves vertical space across phases. The slot hosts `CollectStatus` during Collect (the self-reported ready toggle — see Addendum) and `VoteBudget` during Vote / Discuss / Closed. The slot's `min-height` keeps the header the same height even when neither component renders content of its own.
 - **Stronger "discussed" indicator**: the whole card gets a faint green tint (`--color-success-soft` background + matching border) on top of the existing strikethrough — visible even when the card text is one short word.
 - **Better empty-column placeholder**: replace `<p>No cards yet.</p>` with a centered icon + short copy ("Drop your first card."). Fixed height so it doesn't affect column sizing.
 
@@ -66,7 +66,7 @@ Single polish pass, three groupings:
 - `src/lib/rooms.ts` — `RoomIndexEntry.phase?: Phase`; `isEntry` accepts (but doesn't require) it.
 - `src/routes/+page.svelte` — top bar + Wordmark; svelte:head; placeholder tiles in empty state; drop `.hint` and `main.empty` width swap.
 - `src/lib/RoomTile.svelte` — left phase stripe, phase icon, inverted hover, `entry.phase` consumption.
-- `src/routes/r/[id]/+page.svelte` — svelte:head with retro name; back-to-dashboard link; always-rendered VoteBudget (visibility-hidden when not vote); write `phase` to room index when meta changes; better empty-column placeholder.
+- `src/routes/r/[id]/+page.svelte` — svelte:head with retro name; back-to-dashboard link; phase-aware min-height slot (`CollectStatus` during Collect, `VoteBudget` otherwise); write `phase` to room index when meta changes; better empty-column placeholder.
 - `src/lib/RetroCard.svelte` — keep footer always rendered; always-mounted vote-total / vote-controls / discussed-toggle / owner-actions slots with placeholder fallbacks; textarea min-height; stronger discussed tint.
 - `src/routes/page.test.ts`, `e2e/dashboard.spec.ts` — replace assertions on the removed "show up here" hint with assertions on the new placeholder copy.
 
