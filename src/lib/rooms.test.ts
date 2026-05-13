@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
 	listRooms,
+	getRoom,
 	upsertRoom,
 	touchRoom,
 	removeRoom,
@@ -14,7 +15,7 @@ function entry(overrides: Partial<RoomIndexEntry> = {}): RoomIndexEntry {
 	return {
 		id: 'a',
 		name: 'A retro',
-		templateId: 'wwd-actions',
+		columnTitles: ['Went well', "Didn't go well", 'Actions'],
 		lastOpenedAt: 1_000,
 		...overrides
 	};
@@ -34,6 +35,12 @@ describe('rooms sidecar index', () => {
 		const rooms = listRooms();
 		expect(rooms).toHaveLength(1);
 		expect(rooms[0].id).toBe('a');
+		expect(rooms[0].columnTitles).toEqual(['Went well', "Didn't go well", 'Actions']);
+	});
+
+	it('round-trips optional templateName', () => {
+		upsertRoom(entry({ templateName: 'My favourite' }));
+		expect(listRooms()[0].templateName).toBe('My favourite');
 	});
 
 	it('upsertRoom updates an existing entry in place (no duplicates)', () => {
@@ -50,6 +57,12 @@ describe('rooms sidecar index', () => {
 		upsertRoom(entry({ id: 'new', lastOpenedAt: 3 }));
 		upsertRoom(entry({ id: 'mid', lastOpenedAt: 2 }));
 		expect(listRooms().map((r) => r.id)).toEqual(['new', 'mid', 'old']);
+	});
+
+	it('getRoom returns the entry by id, or null', () => {
+		upsertRoom(entry({ id: 'a' }));
+		expect(getRoom('a')?.id).toBe('a');
+		expect(getRoom('missing')).toBeNull();
 	});
 
 	it('touchRoom refreshes lastOpenedAt for an existing entry', () => {
@@ -95,7 +108,17 @@ describe('rooms sidecar index', () => {
 		const mixed = JSON.stringify([
 			entry({ id: 'good' }),
 			{ id: 'missing-fields' },
-			{ id: 5, name: 'wrong-type', templateId: 't', lastOpenedAt: 1 }
+			{ id: 5, name: 'wrong-type', columnTitles: ['x'], lastOpenedAt: 1 },
+			{ id: 'no-titles', name: 'x', lastOpenedAt: 1 },
+			{ id: 'empty-titles', name: 'x', columnTitles: [], lastOpenedAt: 1 },
+			{ id: 'blank-title', name: 'x', columnTitles: ['  '], lastOpenedAt: 1 },
+			{
+				id: 'bad-name',
+				name: 'x',
+				columnTitles: ['ok'],
+				lastOpenedAt: 1,
+				templateName: 5
+			}
 		]);
 		localStorage.setItem(ROOMS_KEY, mixed);
 		expect(listRooms().map((r) => r.id)).toEqual(['good']);
@@ -161,7 +184,6 @@ describe('formatRelative', () => {
 	it('falls back to a locale date past 30d', () => {
 		const out = formatRelative(now - 60 * 86_400_000, now);
 		expect(out).not.toMatch(/ago$/);
-		// Sanity: result looks like a date string (any locale).
 		expect(out.length).toBeGreaterThan(0);
 	});
 });

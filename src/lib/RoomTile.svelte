@@ -4,7 +4,7 @@
 	import ThumbsUp from 'lucide-svelte/icons/thumbs-up';
 	import MessageSquare from 'lucide-svelte/icons/message-square';
 	import Check from 'lucide-svelte/icons/check';
-	import { PRESET_TEMPLATES } from '$lib/templates';
+	import { deriveTemplateLabel } from '$lib/templates';
 	import { formatRelative, type RoomIndexEntry } from '$lib/rooms';
 	import type { Phase } from '$lib/room';
 
@@ -12,7 +12,7 @@
 	let { entry }: Props = $props();
 
 	const templateLabel = $derived(
-		PRESET_TEMPLATES.find((t) => t.id === entry.templateId)?.label ?? entry.templateId
+		entry.templateName?.trim() || deriveTemplateLabel(entry.columnTitles)
 	);
 	const relative = $derived(formatRelative(entry.lastOpenedAt));
 	const phase: Phase = $derived(entry.phase ?? 'collect');

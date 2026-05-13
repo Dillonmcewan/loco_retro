@@ -74,10 +74,16 @@ let awareness: FakeAwareness;
 
 function buildRoom(): { doc: Y.Doc; awareness: FakeAwareness } {
 	const doc = new Y.Doc();
-	seedRoom(doc, { name: 'Sprint 42', templateId: 'wwd-actions' });
-	addCard(doc, { columnId: 'went-well', text: 'mine', author: 'Dillon', authorId: 'me' });
+	seedRoom(doc, {
+		name: 'Sprint 42',
+		columns: [{ title: 'Went well' }, { title: "Didn't go well" }, { title: 'Actions' }]
+	});
+	const firstColumnId = (doc.getArray<Y.Map<unknown>>('columns').get(0) as Y.Map<unknown>).get(
+		'id'
+	) as string;
+	addCard(doc, { columnId: firstColumnId, text: 'mine', author: 'Dillon', authorId: 'me' });
 	addCard(doc, {
-		columnId: 'went-well',
+		columnId: firstColumnId,
 		text: 'theirs',
 		author: 'Other',
 		authorId: 'someone-else'

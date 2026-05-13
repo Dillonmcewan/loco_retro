@@ -28,13 +28,16 @@ import {
 	type Ballot,
 	type VoteTotals
 } from './room';
-import { getTemplate, DEFAULT_TEMPLATE_ID } from './templates';
+import { DEFAULT_TEMPLATE } from './templates';
+
+const DEFAULT_COLUMNS = DEFAULT_TEMPLATE.columns.map((c) => ({ title: c.title }));
+const DEFAULT_TITLES = DEFAULT_COLUMNS.map((c) => c.title);
 
 const UUID_V4 = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function seededDoc(): Y.Doc {
 	const doc = new Y.Doc();
-	seedRoom(doc, { name: 'Sprint 42', templateId: DEFAULT_TEMPLATE_ID });
+	seedRoom(doc, { name: 'Sprint 42', columns: DEFAULT_COLUMNS });
 	return doc;
 }
 
@@ -77,60 +80,94 @@ describe('isRoomId', () => {
 describe('seedRoom', () => {
 	it('writes meta and columns from the chosen template into an empty doc', () => {
 		const doc = new Y.Doc();
-		const seeded = seedRoom(doc, { name: 'Sprint 42', templateId: DEFAULT_TEMPLATE_ID });
+		const seeded = seedRoom(doc, { name: 'Sprint 42', columns: DEFAULT_COLUMNS });
 
 		expect(seeded).toBe(true);
 		expect(readRoomMeta(doc)).toEqual({
 			name: 'Sprint 42',
-			templateId: DEFAULT_TEMPLATE_ID,
 			phase: 'collect',
 			votesPerParticipant: 5
 		});
-		expect(readColumns(doc)).toEqual(getTemplate(DEFAULT_TEMPLATE_ID)?.columns);
+		expect(readColumns(doc).map((c) => c.title)).toEqual(DEFAULT_TITLES);
 	});
 
 	it('is a no-op on an already-seeded doc', () => {
 		const doc = new Y.Doc();
-		seedRoom(doc, { name: 'Sprint 42', templateId: DEFAULT_TEMPLATE_ID });
-		const seeded = seedRoom(doc, { name: 'Different name', templateId: 'start-stop-continue' });
+		seedRoom(doc, { name: 'Sprint 42', columns: DEFAULT_COLUMNS });
+		const seeded = seedRoom(doc, {
+			name: 'Different name',
+			columns: [{ title: 'X' }, { title: 'Y' }]
+		});
 
 		expect(seeded).toBe(false);
 		expect(readRoomMeta(doc)).toEqual({
 			name: 'Sprint 42',
-			templateId: DEFAULT_TEMPLATE_ID,
 			phase: 'collect',
 			votesPerParticipant: 5
 		});
-		expect(readColumns(doc)).toEqual(getTemplate(DEFAULT_TEMPLATE_ID)?.columns);
+		expect(readColumns(doc).map((c) => c.title)).toEqual(DEFAULT_TITLES);
 	});
 
 	it('honors an explicit votesPerParticipant value', () => {
 		const doc = new Y.Doc();
-		seedRoom(doc, { name: 'r', templateId: DEFAULT_TEMPLATE_ID, votesPerParticipant: 12 });
+		seedRoom(doc, { name: 'r', columns: DEFAULT_COLUMNS, votesPerParticipant: 12 });
 		expect(readRoomMeta(doc)?.votesPerParticipant).toBe(12);
 	});
 
 	it('rejects non-positive / non-integer votesPerParticipant', () => {
 		const doc = new Y.Doc();
 		expect(() =>
-			seedRoom(doc, { name: 'r', templateId: DEFAULT_TEMPLATE_ID, votesPerParticipant: 0 })
+			seedRoom(doc, { name: 'r', columns: DEFAULT_COLUMNS, votesPerParticipant: 0 })
 		).toThrow(/votesPerParticipant/);
 		expect(() =>
-			seedRoom(doc, { name: 'r', templateId: DEFAULT_TEMPLATE_ID, votesPerParticipant: -1 })
+			seedRoom(doc, { name: 'r', columns: DEFAULT_COLUMNS, votesPerParticipant: -1 })
 		).toThrow(/votesPerParticipant/);
 		expect(() =>
-			seedRoom(doc, { name: 'r', templateId: DEFAULT_TEMPLATE_ID, votesPerParticipant: 1.5 })
+			seedRoom(doc, { name: 'r', columns: DEFAULT_COLUMNS, votesPerParticipant: 1.5 })
 		).toThrow(/votesPerParticipant/);
 	});
 
-	it('throws on an unknown template id', () => {
+	it('trims column titles and rejects empty ones', () => {
 		const doc = new Y.Doc();
-		expect(() => seedRoom(doc, { name: 'x', templateId: 'nope' })).toThrow(/Unknown template/);
+		seedRoom(doc, {
+			name: 'r',
+			columns: [{ title: '  Custom ' }, { title: 'Two' }]
+		});
+		expect(readColumns(doc).map((c) => c.title)).toEqual(['Custom', 'Two']);
+		expect(() =>
+			seedRoom(new Y.Doc(), { name: 'r', columns: [{ title: '   ' }] })
+		).toThrow(/non-empty/);
+	});
+
+	it('rejects column counts outside 1–6', () => {
+		expect(() => seedRoom(new Y.Doc(), { name: 'r', columns: [] })).toThrow(
+			/columns\.length/
+		);
+		expect(() =>
+			seedRoom(new Y.Doc(), {
+				name: 'r',
+				columns: [1, 2, 3, 4, 5, 6, 7].map((n) => ({ title: `t${n}` }))
+			})
+		).toThrow(/columns\.length/);
+	});
+
+	it('mints unique random column ids', () => {
+		const doc = new Y.Doc();
+		seedRoom(doc, { name: 'r', columns: DEFAULT_COLUMNS });
+		const ids = readColumns(doc).map((c) => c.id);
+		expect(new Set(ids).size).toBe(ids.length);
+		for (const id of ids) expect(id).toMatch(UUID_V4);
+	});
+
+	it('readRoomMeta no longer surfaces templateId', () => {
+		const doc = new Y.Doc();
+		seedRoom(doc, { name: 'r', columns: DEFAULT_COLUMNS });
+		expect(readRoomMeta(doc)).not.toHaveProperty('templateId');
 	});
 
 	it('seeds columns as Y.Map entries with a nested empty cards Y.Array', () => {
 		const doc = new Y.Doc();
-		seedRoom(doc, { name: 'Sprint 42', templateId: DEFAULT_TEMPLATE_ID });
+		seedRoom(doc, { name: 'Sprint 42', columns: DEFAULT_COLUMNS });
 
 		const arr = doc.getArray<Y.Map<unknown>>('columns');
 		expect(arr.length).toBeGreaterThan(0);
@@ -485,7 +522,7 @@ describe('cardsStore', () => {
 describe('ballots: seed + helpers', () => {
 	function seededVotingDoc(votesPerParticipant = 5): { doc: Y.Doc; colId: string } {
 		const doc = new Y.Doc();
-		seedRoom(doc, { name: 'r', templateId: DEFAULT_TEMPLATE_ID, votesPerParticipant });
+		seedRoom(doc, { name: 'r', columns: DEFAULT_COLUMNS, votesPerParticipant });
 		const colId = readColumns(doc)[0].id;
 		return { doc, colId };
 	}
@@ -497,11 +534,11 @@ describe('ballots: seed + helpers', () => {
 
 	it('seedRoom initializes an empty ballots map; idempotent on re-seed', () => {
 		const doc = new Y.Doc();
-		seedRoom(doc, { name: 'r', templateId: DEFAULT_TEMPLATE_ID });
+		seedRoom(doc, { name: 'r', columns: DEFAULT_COLUMNS });
 		expect(readVoteTotals(doc)).toEqual({});
 		expect(readMyBallot(doc, 'a')).toEqual({});
 		// Second seed is no-op (already asserted above), ballots stay empty.
-		seedRoom(doc, { name: 'r2', templateId: DEFAULT_TEMPLATE_ID });
+		seedRoom(doc, { name: 'r2', columns: DEFAULT_COLUMNS });
 		expect(readVoteTotals(doc)).toEqual({});
 	});
 
@@ -628,7 +665,7 @@ describe('ballots: seed + helpers', () => {
 describe('vote stores', () => {
 	function seededVotingDoc(): { doc: Y.Doc; cardId: string } {
 		const doc = new Y.Doc();
-		seedRoom(doc, { name: 'r', templateId: DEFAULT_TEMPLATE_ID });
+		seedRoom(doc, { name: 'r', columns: DEFAULT_COLUMNS });
 		const colId = readColumns(doc)[0].id;
 		const card = addCard(doc, { columnId: colId, text: '1', author: 'A', authorId: 'a' })!;
 		advancePhase(doc);
@@ -663,7 +700,7 @@ describe('vote stores', () => {
 
 	it('voteTotalsStore emits on remote-author updates via Y.applyUpdate', () => {
 		const docA = new Y.Doc();
-		seedRoom(docA, { name: 'r', templateId: DEFAULT_TEMPLATE_ID });
+		seedRoom(docA, { name: 'r', columns: DEFAULT_COLUMNS });
 		const colId = readColumns(docA)[0].id;
 		const card = addCard(docA, { columnId: colId, text: '1', author: 'A', authorId: 'a' })!;
 		advancePhase(docA);

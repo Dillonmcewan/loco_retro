@@ -15,7 +15,7 @@ function makeEntry(overrides: Partial<RoomIndexEntry> = {}): RoomIndexEntry {
 	return {
 		id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
 		name: 'Sprint 42',
-		templateId: 'wwd-actions',
+		columnTitles: ['Went well', "Didn't go well", 'Actions'],
 		lastOpenedAt: Date.now(),
 		...overrides
 	};
@@ -26,15 +26,20 @@ describe('RoomTile', () => {
 		vi.clearAllMocks();
 	});
 
-	it('renders the room name and resolved template label', () => {
-		render(RoomTile, { entry: makeEntry({ templateId: 'start-stop-continue' }) });
+	it('renders the room name and derived label from columnTitles', () => {
+		render(RoomTile, { entry: makeEntry({ columnTitles: ['Start', 'Stop', 'Continue'] }) });
 		expect(screen.getByText('Sprint 42')).toBeInTheDocument();
 		expect(screen.getByText('Start / Stop / Continue')).toBeInTheDocument();
 	});
 
-	it('falls back to the raw templateId when no preset matches', () => {
-		render(RoomTile, { entry: makeEntry({ templateId: 'custom-future-template' }) });
-		expect(screen.getByText('custom-future-template')).toBeInTheDocument();
+	it('prefers explicit templateName when present', () => {
+		render(
+			RoomTile,
+			{
+				entry: makeEntry({ columnTitles: ['A', 'B', 'C'], templateName: 'My ritual' })
+			}
+		);
+		expect(screen.getByText('My ritual')).toBeInTheDocument();
 	});
 
 	it('renders a relative timestamp', () => {

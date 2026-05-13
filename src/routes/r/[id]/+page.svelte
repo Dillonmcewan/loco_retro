@@ -29,7 +29,7 @@
 		type VotesSpentByAuthor
 	} from '$lib/room';
 	import { getDisplayName, setDisplayName, getAuthorId } from '$lib/displayName';
-	import { upsertRoom } from '$lib/rooms';
+	import { upsertRoom, getRoom } from '$lib/rooms';
 	import Share2 from 'lucide-svelte/icons/share-2';
 	import ArrowLeft from 'lucide-svelte/icons/arrow-left';
 	import Check from 'lucide-svelte/icons/check';
@@ -44,7 +44,7 @@
 	import CollectStatus from '$lib/CollectStatus.svelte';
 	import Toast from '$lib/Toast.svelte';
 	import ClosedCelebration from '$lib/ClosedCelebration.svelte';
-	import type { Column } from '$lib/templates';
+	import type { Column } from '$lib/room';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -132,22 +132,28 @@
 		const vsa = votesSpentByAuthorStore(opened.doc);
 
 		let indexedPhase: string | null = null;
+		function tryIndex() {
+			if (!meta || !meta.name || cols.length === 0) return;
+			if (meta.phase === indexedPhase) return;
+			indexedPhase = meta.phase;
+			const existing = getRoom(data.id);
+			upsertRoom({
+				id: data.id,
+				name: meta.name,
+				columnTitles: cols.map((c) => c.title),
+				templateName: existing?.templateName,
+				lastOpenedAt: Date.now(),
+				phase: meta.phase
+			});
+		}
 		const unsubs: Array<() => void> = [
 			m.subscribe((v) => {
 				meta = v;
-				if (v && v.name && v.phase !== indexedPhase) {
-					indexedPhase = v.phase;
-					upsertRoom({
-						id: data.id,
-						name: v.name,
-						templateId: v.templateId,
-						lastOpenedAt: Date.now(),
-						phase: v.phase
-					});
-				}
+				tryIndex();
 			}),
 			c.subscribe((v) => {
 				cols = v;
+				tryIndex();
 			}),
 			cs.subscribe((v) => {
 				cards = v;

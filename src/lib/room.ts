@@ -2,7 +2,11 @@ import { readable, type Readable } from 'svelte/store';
 import * as Y from 'yjs';
 import { IndexeddbPersistence } from 'y-indexeddb';
 import YPartyKitProvider from 'y-partykit/provider';
-import { getTemplate, type Column } from './templates';
+
+export type Column = {
+	id: string;
+	title: string;
+};
 
 // ─── Config ────────────────────────────────────────────────────────────────
 
@@ -31,9 +35,12 @@ export type OpenRoom = {
 
 export type SeedParams = {
 	name: string;
-	templateId: string;
+	columns: { title: string }[];
 	votesPerParticipant?: number;
 };
+
+export const MIN_COLUMNS = 1;
+export const MAX_COLUMNS = 6;
 
 export const DEFAULT_VOTES_PER_PARTICIPANT = 5;
 
@@ -50,7 +57,6 @@ function isPhase(value: unknown): value is Phase {
 
 export type RoomMetaSnapshot = {
 	name: string;
-	templateId: string;
 	phase: Phase;
 	votesPerParticipant: number;
 };
@@ -107,7 +113,6 @@ type CardShape = {
 
 type MetaShape = {
 	name: string;
-	templateId: string;
 	phase: Phase;
 	votesPerParticipant: number;
 };
@@ -182,9 +187,14 @@ export function seedRoom(doc: Y.Doc, params: SeedParams): boolean {
 	const meta = metaMap(doc);
 	if (metaAcc.get(meta, 'name')) return false;
 
-	const template = getTemplate(params.templateId);
-	if (!template) {
-		throw new Error(`Unknown template: ${params.templateId}`);
+	const trimmedTitles = params.columns.map((c) => c.title.trim());
+	if (trimmedTitles.length < MIN_COLUMNS || trimmedTitles.length > MAX_COLUMNS) {
+		throw new Error(
+			`columns.length must be between ${MIN_COLUMNS} and ${MAX_COLUMNS} (got ${trimmedTitles.length})`
+		);
+	}
+	if (trimmedTitles.some((t) => t === '')) {
+		throw new Error('column titles must be non-empty');
 	}
 
 	const requested = params.votesPerParticipant ?? DEFAULT_VOTES_PER_PARTICIPANT;
@@ -199,14 +209,13 @@ export function seedRoom(doc: Y.Doc, params: SeedParams): boolean {
 
 	doc.transact(() => {
 		metaAcc.set(meta, 'name', params.name);
-		metaAcc.set(meta, 'templateId', params.templateId);
 		metaAcc.set(meta, 'phase', 'collect');
 		metaAcc.set(meta, 'votesPerParticipant', requested);
 		columns.push(
-			template.columns.map((c) => {
+			trimmedTitles.map((title) => {
 				const col = new Y.Map<unknown>();
-				colAcc.set(col, 'id', c.id);
-				colAcc.set(col, 'title', c.title);
+				colAcc.set(col, 'id', crypto.randomUUID());
+				colAcc.set(col, 'title', title);
 				colAcc.set(col, 'cards', new Y.Array<Y.Map<unknown>>());
 				return col;
 			})
@@ -219,15 +228,14 @@ export function seedRoom(doc: Y.Doc, params: SeedParams): boolean {
 export function readRoomMeta(doc: Y.Doc): RoomMetaSnapshot | null {
 	const meta = metaMap(doc);
 	const name = metaAcc.get(meta, 'name');
-	const templateId = metaAcc.get(meta, 'templateId');
-	if (typeof name !== 'string' || !name || typeof templateId !== 'string' || !templateId) {
+	if (typeof name !== 'string' || !name) {
 		return null;
 	}
 	const rawPhase = metaAcc.get(meta, 'phase');
 	const phase: Phase = isPhase(rawPhase) ? rawPhase : 'collect';
 	const rawVotes = metaAcc.get(meta, 'votesPerParticipant');
 	const votesPerParticipant = isValidVoteCount(rawVotes) ? rawVotes : DEFAULT_VOTES_PER_PARTICIPANT;
-	return { name, templateId, phase, votesPerParticipant };
+	return { name, phase, votesPerParticipant };
 }
 
 // ─── Phase machine ─────────────────────────────────────────────────────────

@@ -5,7 +5,8 @@ const ROOMS_KEY = 'loco_retro:rooms';
 export type RoomIndexEntry = {
 	id: string;
 	name: string;
-	templateId: string;
+	columnTitles: string[];
+	templateName?: string;
 	lastOpenedAt: number;
 	phase?: Phase;
 };
@@ -21,10 +22,19 @@ function isEntry(value: unknown): value is RoomIndexEntry {
 		typeof v.id !== 'string' ||
 		v.id.length === 0 ||
 		typeof v.name !== 'string' ||
-		typeof v.templateId !== 'string' ||
 		typeof v.lastOpenedAt !== 'number' ||
 		!Number.isFinite(v.lastOpenedAt)
 	) {
+		return false;
+	}
+	if (
+		!Array.isArray(v.columnTitles) ||
+		v.columnTitles.length === 0 ||
+		v.columnTitles.some((t) => typeof t !== 'string' || t.trim() === '')
+	) {
+		return false;
+	}
+	if (v.templateName !== undefined && typeof v.templateName !== 'string') {
 		return false;
 	}
 	if (v.phase !== undefined && !(PHASE_ORDER as readonly string[]).includes(v.phase as string)) {
@@ -55,6 +65,10 @@ function writeAll(entries: RoomIndexEntry[]): void {
 
 export function listRooms(): RoomIndexEntry[] {
 	return readAll().sort((a, b) => b.lastOpenedAt - a.lastOpenedAt);
+}
+
+export function getRoom(id: string): RoomIndexEntry | null {
+	return readAll().find((e) => e.id === id) ?? null;
 }
 
 export function upsertRoom(entry: RoomIndexEntry): void {

@@ -38,13 +38,13 @@ describe('Dashboard', () => {
 		upsertRoom({
 			id: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1',
 			name: 'Older retro',
-			templateId: 'wwd-actions',
+			columnTitles: ['Went well', "Didn't go well", 'Actions'],
 			lastOpenedAt: 1_000
 		});
 		upsertRoom({
 			id: 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2',
 			name: 'Newer retro',
-			templateId: 'start-stop-continue',
+			columnTitles: ['Start', 'Stop', 'Continue'],
 			lastOpenedAt: 2_000
 		});
 
