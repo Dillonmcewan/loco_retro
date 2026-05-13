@@ -83,7 +83,7 @@
 	}
 
 	button.step :global(svg) {
-		width: 1rem;
-		height: 1rem;
+		width: var(--icon-size-sm);
+		height: var(--icon-size-sm);
 	}
 </style>

@@ -512,8 +512,8 @@
 	}
 
 	.participants li :global(.done-check) {
-		width: 0.9rem;
-		height: 0.9rem;
+		width: var(--icon-size-sm);
+		height: var(--icon-size-sm);
 	}
 
 	@keyframes pulse-wave {

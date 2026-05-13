@@ -144,8 +144,8 @@
 	}
 
 	.phase-icon :global(svg) {
-		width: 0.95rem;
-		height: 0.95rem;
+		width: var(--icon-size-sm);
+		height: var(--icon-size-sm);
 	}
 
 	.phase-label {
