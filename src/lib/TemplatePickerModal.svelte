@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { aggregatedTemplates, type Template } from '$lib/templates';
 	import { listRooms } from '$lib/rooms';
+	import CardSurface from '$lib/CardSurface.svelte';
 	import ColumnEditor from '$lib/ColumnEditor.svelte';
 	import Plus from 'lucide-svelte/icons/plus';
 
@@ -56,24 +57,24 @@
 				<h3 id="custom-heading">Custom</h3>
 				<div class="template-grid">
 					{#each yours as t (t.key)}
-						<button type="button" class="template-card" onclick={() => selectTemplate(t)}>
+						<CardSurface onclick={() => selectTemplate(t)} class="template-card">
 							<span class="template-name">{t.label}</span>
 							<span class="template-cols">
 								{#each t.columns as c, i (i)}
 									<span class="col-chip">{c.title}</span>
 								{/each}
 							</span>
-						</button>
+						</CardSurface>
 					{/each}
-					<button
-						type="button"
-						class="template-card new-template"
+					<CardSurface
+						variant="dashed"
+						ariaLabel="Create new template"
 						onclick={() => (editorOpen = true)}
-						aria-label="Create new template"
+						class="template-card new-template"
 					>
 						<Plus />
 						<span class="template-name">New template</span>
-					</button>
+					</CardSurface>
 				</div>
 			</section>
 
@@ -81,14 +82,14 @@
 				<h3 id="presets-heading">Presets</h3>
 				<div class="template-grid">
 					{#each presets as t (t.key)}
-						<button type="button" class="template-card" onclick={() => selectTemplate(t)}>
+						<CardSurface onclick={() => selectTemplate(t)} class="template-card">
 							<span class="template-name">{t.label}</span>
 							<span class="template-cols">
 								{#each t.columns as c, i (i)}
 									<span class="col-chip">{c.title}</span>
 								{/each}
 							</span>
-						</button>
+						</CardSurface>
 					{/each}
 				</div>
 			</section>
@@ -154,41 +155,21 @@
 		gap: var(--space-3);
 	}
 
-	.template-card {
+	:global(.template-card) {
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-3);
 		padding: var(--space-4) var(--space-4);
-		background: var(--color-surface);
-		border: 1.5px solid var(--color-border-strong);
-		border-radius: var(--radius-md);
-		cursor: pointer;
-		text-align: left;
-		font: inherit;
-		color: inherit;
-		transition:
-			border-color 0.12s ease,
-			background 0.12s ease,
-			box-shadow 0.12s ease,
-			transform 0.05s ease;
 	}
 
-	.template-card:hover {
-		border-color: var(--color-primary);
-		box-shadow: 0 4px 12px -4px rgba(255, 107, 91, 0.18);
-		transform: translateY(-1px);
-	}
-
-	.template-card.new-template {
-		border-style: dashed;
+	:global(.template-card.new-template) {
 		justify-content: center;
 		align-items: center;
 		text-align: center;
-		color: var(--color-muted);
 		gap: var(--space-2);
 	}
 
-	.template-card.new-template :global(svg) {
+	:global(.template-card.new-template svg) {
 		width: var(--icon-size-md);
 		height: var(--icon-size-md);
 	}

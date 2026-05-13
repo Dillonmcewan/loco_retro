@@ -10,6 +10,8 @@
 	} from '$lib/room';
 	import { recentTemplates, DEFAULT_TEMPLATE, isPresetKey, type Template } from '$lib/templates';
 	import { listRooms, upsertRoom } from '$lib/rooms';
+	import CardSurface from '$lib/CardSurface.svelte';
+	import SelectableCard from '$lib/SelectableCard.svelte';
 	import TemplatePickerModal from '$lib/TemplatePickerModal.svelte';
 	import { tooltip } from '$lib/tooltip';
 	import InfinityIcon from 'lucide-svelte/icons/infinity';
@@ -158,12 +160,10 @@
 				<legend>Template</legend>
 				<div class="template-grid">
 					{#each recents as template (template.key)}
-						<button
-							type="button"
-							aria-pressed={selectedTemplate.key === template.key}
-							class="template-card"
-							class:selected={selectedTemplate.key === template.key}
+						<SelectableCard
+							selected={selectedTemplate.key === template.key}
 							onclick={() => selectRecent(template)}
+							class="template-card"
 						>
 							<span class="template-name">{template.label}</span>
 							<span class="template-cols">
@@ -171,12 +171,16 @@
 									<span class="col-chip">{col.title}</span>
 								{/each}
 							</span>
-						</button>
+						</SelectableCard>
 					{/each}
-					<button type="button" class="template-card more" onclick={() => (pickerOpen = true)}>
+					<CardSurface
+						variant="dashed"
+						onclick={() => (pickerOpen = true)}
+						class="template-card more"
+					>
 						<span class="template-name">More templates…</span>
 						<span class="more-sub">Browse all, or create your own</span>
-					</button>
+					</CardSurface>
 				</div>
 			</fieldset>
 
@@ -325,43 +329,17 @@
 		gap: var(--space-3);
 	}
 
-	.template-card {
+	:global(.template-card) {
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-3);
 		padding: var(--space-4) var(--space-4);
-		background: var(--color-surface);
-		border: 1.5px solid var(--color-border-strong);
-		border-radius: var(--radius-md);
-		cursor: pointer;
-		text-align: left;
-		font: inherit;
-		color: inherit;
-		transition:
-			border-color 0.12s ease,
-			background 0.12s ease,
-			box-shadow 0.12s ease,
-			transform 0.05s ease;
 	}
 
-	.template-card:hover:not(.selected) {
-		border-color: var(--color-primary);
-		box-shadow: 0 4px 12px -4px rgba(255, 107, 91, 0.18);
-		transform: translateY(-1px);
-	}
-
-	.template-card.selected {
-		border-color: var(--color-primary);
-		background: var(--color-primary-soft);
-		box-shadow: 0 0 0 3px var(--color-primary-soft);
-	}
-
-	.template-card.more {
-		border-style: dashed;
+	:global(.template-card.more) {
 		justify-content: center;
 		align-items: center;
 		text-align: center;
-		color: var(--color-muted);
 	}
 
 	.more-sub {
@@ -389,7 +367,7 @@
 		font-weight: 500;
 	}
 
-	.template-card.selected .col-chip {
+	:global(.template-card.is-selected) .col-chip {
 		background: white;
 		color: var(--color-text);
 	}
@@ -442,10 +420,6 @@
 
 	.actions button {
 		flex: 1;
-	}
-
-	.template-card {
-		box-shadow: none;
 	}
 
 	.error {

@@ -4,6 +4,7 @@
 	import ThumbsUp from 'lucide-svelte/icons/thumbs-up';
 	import MessageSquare from 'lucide-svelte/icons/message-square';
 	import Check from 'lucide-svelte/icons/check';
+	import CardSurface from '$lib/CardSurface.svelte';
 	import { deriveTemplateLabel } from '$lib/templates';
 	import { formatRelative, type RoomIndexEntry } from '$lib/rooms';
 	import type { Phase } from '$lib/room';
@@ -24,17 +25,18 @@
 		closed: 'Closed'
 	};
 
+	const phaseAccentStyle = $derived(`--card-accent: var(--color-phase-${phase})`);
+
 	function open() {
 		goto(`/r/${entry.id}`);
 	}
 </script>
 
-<button
-	type="button"
-	class="tile"
-	data-phase={phase}
+<CardSurface
+	ariaLabel={`Open retro: ${entry.name}`}
 	onclick={open}
-	aria-label={`Open retro: ${entry.name}`}
+	style={phaseAccentStyle}
+	class="room-tile"
 >
 	<span class="stripe" aria-hidden="true"></span>
 	<span class="body">
@@ -50,62 +52,21 @@
 		</span>
 		<span class="time">{relative}</span>
 	</span>
-</button>
+</CardSurface>
 
 <style>
-	.tile {
+	:global(.room-tile) {
 		position: relative;
 		display: flex;
-		padding: 0;
-		background: var(--color-surface);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius-md);
-		box-shadow: var(--shadow-card-sm);
-		text-align: left;
-		cursor: pointer;
-		color: var(--color-text);
 		min-height: 8rem;
+		color: var(--color-text);
 		overflow: hidden;
-		--tile-phase-color: var(--color-phase-collect);
-		transition:
-			border-color 0.12s ease,
-			box-shadow 0.15s ease,
-			transform 0.1s ease;
-	}
-
-	.tile[data-phase='vote'] {
-		--tile-phase-color: var(--color-phase-vote);
-	}
-
-	.tile[data-phase='discuss'] {
-		--tile-phase-color: var(--color-phase-discuss);
-	}
-
-	.tile[data-phase='closed'] {
-		--tile-phase-color: var(--color-phase-closed);
-	}
-
-	.tile:hover {
-		border-color: var(--tile-phase-color);
-		box-shadow: var(--shadow-card);
-		transform: translateY(-2px);
-	}
-
-	.tile:focus-visible {
-		outline: none;
-		border-color: var(--tile-phase-color);
-		box-shadow: 0 0 0 3px var(--color-primary-soft);
-	}
-
-	.tile:active {
-		transform: translateY(0);
-		box-shadow: var(--shadow-card-sm);
 	}
 
 	.stripe {
 		flex: none;
 		width: 6px;
-		background: var(--tile-phase-color);
+		background: var(--card-accent);
 	}
 
 	.body {
@@ -140,7 +101,7 @@
 	.phase-icon {
 		display: inline-flex;
 		align-items: center;
-		color: var(--tile-phase-color);
+		color: var(--card-accent);
 	}
 
 	.phase-icon :global(svg) {

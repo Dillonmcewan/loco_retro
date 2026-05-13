@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import Plus from 'lucide-svelte/icons/plus';
 	import Sparkles from 'lucide-svelte/icons/sparkles';
+	import CardSurface from '$lib/CardSurface.svelte';
 	import CreateRoomModal from '$lib/CreateRoomModal.svelte';
 	import RoomTile from '$lib/RoomTile.svelte';
 	import Wordmark from '$lib/Wordmark.svelte';
@@ -42,10 +43,15 @@
 	</header>
 
 	<section class="grid" aria-label="Your retros">
-		<button type="button" class="new-tile" onclick={openModal} aria-label="Create a new retro">
+		<CardSurface
+			variant="dashed"
+			ariaLabel="Create a new retro"
+			onclick={openModal}
+			class="new-tile"
+		>
 			<Plus />
 			<span class="new-label">New retro</span>
-		</button>
+		</CardSurface>
 
 		{#each rooms as entry (entry.id)}
 			<RoomTile {entry} />
@@ -98,7 +104,7 @@
 		gap: var(--space-4);
 	}
 
-	.new-tile {
+	:global(.new-tile) {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -106,37 +112,11 @@
 		gap: var(--space-2);
 		padding: var(--space-5);
 		min-height: 8rem;
-		background: var(--color-surface);
-		border: 1.5px dashed var(--color-border-strong);
-		border-radius: var(--radius-md);
-		color: var(--color-muted);
-		cursor: pointer;
 		font-weight: 600;
 		font-size: var(--font-size-md);
-		transition:
-			border-color 0.12s ease,
-			color 0.12s ease,
-			background 0.12s ease,
-			box-shadow 0.12s ease,
-			transform 0.1s ease;
 	}
 
-	.new-tile:hover {
-		border-color: var(--color-primary);
-		color: var(--color-primary);
-		background: var(--color-primary-soft);
-		transform: translateY(-2px);
-		box-shadow: var(--shadow-card);
-	}
-
-	.new-tile:focus-visible {
-		outline: none;
-		border-color: var(--color-primary);
-		color: var(--color-primary);
-		box-shadow: 0 0 0 3px var(--color-primary-soft);
-	}
-
-	.new-tile :global(svg) {
+	:global(.new-tile svg) {
 		width: 2rem;
 		height: 2rem;
 	}

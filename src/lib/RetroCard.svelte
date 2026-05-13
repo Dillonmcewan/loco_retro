@@ -7,7 +7,6 @@
 	import X from 'lucide-svelte/icons/x';
 	import type { Snippet } from 'svelte';
 	import type { Card as CardType, Phase } from './room';
-	import Card from './Card.svelte';
 	import { autosize } from './autosize';
 	import { tooltip } from './tooltip';
 
@@ -50,10 +49,6 @@
 		}
 		prevDiscussed = current;
 	});
-
-	const cardClass = $derived(
-		['retro-card', discussed && 'discussed', animating && 'animating'].filter(Boolean).join(' ')
-	);
 
 	// 14 confetti dots fanned around the card center with varied distances so
 	// the burst reads as scattered rather than geometric.
@@ -143,7 +138,7 @@
 	}
 </script>
 
-<Card class={cardClass}>
+<article class="retro-card" class:discussed class:animating>
 	{#if animating}
 		<span class="confetti" aria-hidden="true">
 			{#each CONFETTI_DOTS as dot, i (i)}
@@ -247,9 +242,17 @@
 			</div>
 		</div>
 	</footer>
-</Card>
+</article>
 
 <style>
+	.retro-card {
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-sm);
+		padding: var(--space-3) var(--space-4);
+		box-shadow: var(--shadow-card-sm);
+	}
+
 	.text-slot {
 		min-height: 1.5rem;
 		margin: 0 0 var(--space-2);
@@ -333,9 +336,7 @@
 		opacity: 1;
 	}
 
-	/* `.retro-card` is on Card.svelte's <article>, outside this scope; the
-	   inner `.owner-actions` is scoped here. The combinator works at runtime. */
-	:global(.retro-card:hover) .owner-actions,
+	.retro-card:hover .owner-actions,
 	.owner-actions:focus-within {
 		opacity: 1;
 	}
