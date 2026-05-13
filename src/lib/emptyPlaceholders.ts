@@ -1,6 +1,5 @@
 import Sparkles from 'lucide-svelte/icons/sparkles';
 import FlameKindling from 'lucide-svelte/icons/flame-kindling';
-import Ghost from 'lucide-svelte/icons/ghost';
 import Music from 'lucide-svelte/icons/music';
 import Compass from 'lucide-svelte/icons/compass';
 import { hashString } from './hash';
@@ -33,7 +32,7 @@ const ENTRIES: readonly PlaceholderEntry[] = [
 	{ Icon: Rocket, text: 'Launch the discussion.' },
 	{ Icon: Balloon, text: 'Get the party started.' },
 	{ Icon: IceCreamCone, text: 'First card gets ice cream' },
-	{ Icon: Shovel, text: 'What should we dig into?' },
+	{ Icon: Shovel, text: 'What should we dig into?' }
 ] as const;
 
 // mulberry32 PRNG — small, fast, deterministic given a seed.
