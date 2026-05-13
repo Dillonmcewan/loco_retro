@@ -333,7 +333,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-3);
-		padding: var(--space-4) var(--space-4);
+		--card-padding: var(--space-4);
 	}
 
 	:global(.template-card.more) {

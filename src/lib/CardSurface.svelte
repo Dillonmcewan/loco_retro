@@ -48,7 +48,7 @@
 		text-align: left;
 		font: inherit;
 		cursor: pointer;
-		padding: 0;
+		padding: var(--card-padding, 0);
 		transition: var(--card-transition);
 	}
 
