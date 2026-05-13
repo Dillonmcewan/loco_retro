@@ -58,6 +58,33 @@ describe('ClosedCelebration.svelte', () => {
 		expect(container.querySelector('.celebration')).not.toBeNull();
 	});
 
+	it('auto-dismisses after 6500ms', async () => {
+		const { container, rerender } = render(ClosedCelebration, {
+			props: { phase: 'discuss', roomId: 'room-1' }
+		});
+		await rerender({ phase: 'closed', roomId: 'room-1' });
+		await tick();
+		expect(container.querySelector('.celebration')).not.toBeNull();
+
+		vi.advanceTimersByTime(6500);
+		await tick();
+		expect(container.querySelector('.celebration')).toBeNull();
+	});
+
+	it('does not fire the dismiss timer after unmount', async () => {
+		// Regression guard for commit 9b91522: timer survived unmount and
+		// stomped on Svelte's reactivity after the component was gone.
+		const { rerender, unmount } = render(ClosedCelebration, {
+			props: { phase: 'discuss', roomId: 'room-1' }
+		});
+		await rerender({ phase: 'closed', roomId: 'room-1' });
+		await tick();
+		unmount();
+		// Advancing past TOTAL_MS must not throw — the returned $effect.pre
+		// cleanup is responsible for clearing the timer.
+		expect(() => vi.advanceTimersByTime(7000)).not.toThrow();
+	});
+
 	it('clicking the dismiss backdrop removes the celebration', async () => {
 		// userEvent disagrees with fake timers; use real for this test.
 		vi.useRealTimers();
