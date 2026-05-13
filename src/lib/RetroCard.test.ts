@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/svelte';
+import { tick } from 'svelte';
 import userEvent from '@testing-library/user-event';
 import { createRawSnippet } from 'svelte';
 import RetroCard from './RetroCard.svelte';
@@ -171,6 +172,43 @@ describe('RetroCard.svelte', () => {
 		expect(btn).toBeDisabled();
 		await user.click(btn);
 		expect(onToggleDiscussed).not.toHaveBeenCalled();
+	});
+
+	it('applies the .animating class when discussed flips false → true', async () => {
+		const onToggleDiscussed = vi.fn();
+		const { container, rerender } = render(RetroCard, {
+			props: {
+				card: baseCard,
+				currentAuthorId: 'author-1',
+				phase: 'discuss' as Phase,
+				onEdit: vi.fn(),
+				onDelete: vi.fn(),
+				voteTotal: 0,
+				discussed: false,
+				onToggleDiscussed
+			}
+		});
+		await tick();
+		expect(container.querySelector('.retro-card.animating')).toBeNull();
+
+		await rerender({
+			card: baseCard,
+			currentAuthorId: 'author-1',
+			phase: 'discuss' as Phase,
+			onEdit: vi.fn(),
+			onDelete: vi.fn(),
+			voteTotal: 0,
+			discussed: true,
+			onToggleDiscussed
+		});
+		await tick();
+		expect(container.querySelector('.retro-card.animating')).not.toBeNull();
+	});
+
+	it('does NOT apply .animating when mounted with discussed=true (initial-load skip)', async () => {
+		const { container } = setup({ phase: 'discuss', discussed: true });
+		await tick();
+		expect(container.querySelector('.retro-card.animating')).toBeNull();
 	});
 
 	it('renders the votingSlot snippet when provided', () => {
