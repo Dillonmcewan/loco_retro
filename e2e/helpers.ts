@@ -58,7 +58,7 @@ export async function addCardUnder(page: Page, columnTitle: string, text: string
 
 /** Locate a card article by its text. */
 export function cardLocator(page: Page, text: string): Locator {
-	return page.locator('article.card', { hasText: text });
+	return page.locator('article.retro-card', { hasText: text });
 }
 
 /** Cast one vote on the card with the given text. */

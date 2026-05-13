@@ -22,7 +22,9 @@
 		children
 	}: Props = $props();
 
-	const composedClass = $derived(['selectable-card', selected && 'is-selected', klass].filter(Boolean).join(' '));
+	const composedClass = $derived(
+		['selectable-card', selected && 'is-selected', klass].filter(Boolean).join(' ')
+	);
 </script>
 
 <CardSurface

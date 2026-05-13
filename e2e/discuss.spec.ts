@@ -46,12 +46,12 @@ test('two-client Discuss: cards sort by votes and discussed toggle replicates', 
 
 	// Sort within the Start column: c2 (2 votes), then a 1-vote tie between
 	// c1 (added first) and c3 (added third) — older createdAt wins the tie.
-	const startCardsA = columnLocator(pageA, 'Start').locator('article.card');
+	const startCardsA = columnLocator(pageA, 'Start').locator('article.retro-card');
 	await expect(startCardsA.nth(0)).toContainText('c2');
 	await expect(startCardsA.nth(1)).toContainText('c1');
 	await expect(startCardsA.nth(2)).toContainText('c3');
 
-	const startCardsB = columnLocator(pageB, 'Start').locator('article.card');
+	const startCardsB = columnLocator(pageB, 'Start').locator('article.retro-card');
 	await expect(startCardsB.nth(0)).toContainText('c2');
 	await expect(startCardsB.nth(1)).toContainText('c1');
 	await expect(startCardsB.nth(2)).toContainText('c3');

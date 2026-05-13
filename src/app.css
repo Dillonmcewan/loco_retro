@@ -47,10 +47,7 @@
 	--card-lift: -2px;
 	--card-accent: var(--color-primary);
 	--card-transition:
-		border-color 0.12s ease,
-		background 0.12s ease,
-		color 0.12s ease,
-		box-shadow 0.15s ease,
+		border-color 0.12s ease, background 0.12s ease, color 0.12s ease, box-shadow 0.15s ease,
 		transform 0.1s ease;
 
 	/* Radii */

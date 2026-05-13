@@ -44,7 +44,7 @@ describe('RoomTile', () => {
 		expect(screen.getByText('5m ago')).toBeInTheDocument();
 	});
 
-	it('renders data-phase + label matching entry.phase for every phase', () => {
+	it('renders --card-accent + label matching entry.phase for every phase', () => {
 		const cases: Array<[Phase, string]> = [
 			['collect', 'Collect'],
 			['vote', 'Vote'],
@@ -53,8 +53,8 @@ describe('RoomTile', () => {
 		];
 		for (const [phase, label] of cases) {
 			const { container, unmount } = render(RoomTile, { entry: makeEntry({ phase }) });
-			const tile = container.querySelector('.tile');
-			expect(tile?.getAttribute('data-phase')).toBe(phase);
+			const tile = container.querySelector('.room-tile');
+			expect(tile?.getAttribute('style')).toContain(`--card-accent: var(--color-phase-${phase})`);
 			expect(screen.getByText(label)).toBeInTheDocument();
 			unmount();
 		}
@@ -62,7 +62,9 @@ describe('RoomTile', () => {
 
 	it('defaults phase to collect when entry.phase is missing', () => {
 		const { container } = render(RoomTile, { entry: makeEntry() });
-		expect(container.querySelector('.tile')?.getAttribute('data-phase')).toBe('collect');
+		expect(container.querySelector('.room-tile')?.getAttribute('style')).toContain(
+			'--card-accent: var(--color-phase-collect)'
+		);
 	});
 
 	it('navigates to /r/<id> on click', async () => {
