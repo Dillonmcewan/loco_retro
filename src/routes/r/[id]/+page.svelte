@@ -82,9 +82,7 @@
 	const votesRemaining = $derived(Math.max(votesTotal - votesSpent, 0));
 	const canCastVote = $derived(phase === 'vote' && (chrisMode || votesRemaining > 0));
 	const showProgress = $derived(phase === 'collect' || phase === 'vote');
-	const voteDone = $derived(
-		phase === 'vote' && (chrisMode ? localReady : votesRemaining <= 0)
-	);
+	const voteDone = $derived(phase === 'vote' && (chrisMode ? localReady : votesRemaining <= 0));
 	const doneByClientId = $derived.by(() => {
 		const out = new Map<number, boolean>();
 		for (const p of people) {

@@ -41,7 +41,7 @@ describe('VoteBudget.svelte (normal mode)', () => {
 });
 
 describe('VoteBudget.svelte (Chris mode)', () => {
-	it('renders as an interactive button with the I\'m done affordance', () => {
+	it("renders as an interactive button with the I'm done affordance", () => {
 		const { container } = render(VoteBudget, {
 			props: baseProps({ unlimited: true })
 		});

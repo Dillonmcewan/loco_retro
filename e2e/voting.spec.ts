@@ -59,8 +59,8 @@ test('two-client dot voting flow with reclamation on delete', async ({ browser }
 
 	// A advances to Vote. B sees the budget chip too.
 	await pageA.getByRole('button', { name: 'Advance: Vote' }).click();
-	await expect(pageA.getByLabel(/votes remaining/i)).toContainText('3 / 3');
-	await expect(pageB.getByLabel(/votes remaining/i)).toContainText('3 / 3');
+	await expect(pageA.locator('.budget')).toContainText('3 / 3');
+	await expect(pageB.locator('.budget')).toContainText('3 / 3');
 
 	// No aggregate badges during Vote.
 	await expect(pageA.getByLabel(/total votes/i)).toHaveCount(0);
@@ -70,7 +70,7 @@ test('two-client dot voting flow with reclamation on delete', async ({ browser }
 	await castOn(pageA, 'pair more often');
 	await castOn(pageA, 'pair more often');
 	await castOn(pageA, 'late standups');
-	await expect(pageA.getByLabel(/votes remaining/i)).toContainText(/Done voting!/i);
+	await expect(pageA.locator('.budget')).toContainText(/Done voting!/i);
 
 	// A's + buttons are now disabled (budget spent).
 	for (const text of ['pair more often', 'late standups']) {
@@ -83,7 +83,7 @@ test('two-client dot voting flow with reclamation on delete', async ({ browser }
 	await castOn(pageB, 'late standups');
 	await castOn(pageB, 'late standups');
 	await castOn(pageB, 'late standups');
-	await expect(pageB.getByLabel(/votes remaining/i)).toContainText(/Done voting!/i);
+	await expect(pageB.locator('.budget')).toContainText(/Done voting!/i);
 
 	// A retracts one from "late standups" and re-allocates to "pair more often".
 	await retractOn(pageA, 'late standups');
@@ -91,8 +91,8 @@ test('two-client dot voting flow with reclamation on delete', async ({ browser }
 
 	// Advance to Discuss. Controls + budget chip disappear on both sides.
 	await pageA.getByRole('button', { name: 'Advance: Discuss' }).click();
-	await expect(pageA.getByLabel(/votes remaining/i)).toHaveCount(0);
-	await expect(pageB.getByLabel(/votes remaining/i)).toHaveCount(0);
+	await expect(pageA.locator('.budget')).toHaveCount(0);
+	await expect(pageB.locator('.budget')).toHaveCount(0);
 	await expect(pageA.getByRole('button', { name: /cast a vote/i })).toHaveCount(0);
 	await expect(pageB.getByRole('button', { name: /cast a vote/i })).toHaveCount(0);
 
@@ -124,10 +124,10 @@ test('Chris mode: no budget cap, chip toggles manual "done voting"', async ({ br
 
 	const votesInput = pageA.getByLabel('Votes per participant');
 	await expect(votesInput).toBeEnabled();
-	const chrisToggle = pageA.getByRole('button', { name: /chris mode/i });
-	await expect(chrisToggle).toHaveAttribute('aria-pressed', 'false');
-	await chrisToggle.click();
-	await expect(chrisToggle).toHaveAttribute('aria-pressed', 'true');
+	const chrisToggle = pageA.getByLabel(/chris mode/i);
+	await expect(chrisToggle).not.toBeChecked();
+	await chrisToggle.check();
+	await expect(chrisToggle).toBeChecked();
 	await expect(votesInput).toBeDisabled();
 
 	await pageA.getByRole('button', { name: /create retro/i }).click();
@@ -143,8 +143,8 @@ test('Chris mode: no budget cap, chip toggles manual "done voting"', async ({ br
 
 	await pageA.getByRole('button', { name: 'Advance: Vote' }).click();
 	// Budget chip is interactive, shows "I'm done" affordance (no X / N count).
-	const chipA = pageA.getByLabel(/votes remaining/i);
-	const chipB = pageB.getByLabel(/votes remaining/i);
+	const chipA = pageA.locator('.budget');
+	const chipB = pageB.locator('.budget');
 	await expect(chipA).toContainText(/I'm done/i);
 	await expect(chipA).not.toContainText(/\d+ \/ \d+/);
 
@@ -164,6 +164,7 @@ test('Chris mode: no budget cap, chip toggles manual "done voting"', async ({ br
 	await chipA.click();
 	await expect(chipA).toContainText(/Done voting!/i);
 	await expect(chipA).toHaveAttribute('aria-pressed', 'true');
+	await expect(chipA).toHaveAttribute('aria-label', /mark voting incomplete/i);
 
 	// B is still not done — only one click required from each side to reach
 	// everyone-done. Bob marks himself done too.
@@ -175,6 +176,7 @@ test('Chris mode: no budget cap, chip toggles manual "done voting"', async ({ br
 	await chipA.click();
 	await expect(chipA).toContainText(/I'm done/i);
 	await expect(chipA).toHaveAttribute('aria-pressed', 'false');
+	await expect(chipA).toHaveAttribute('aria-label', /mark voting complete/i);
 
 	await ctxA.close();
 	await ctxB.close();
@@ -197,7 +199,7 @@ test('deleting a voted card refunds the budget on the next Vote phase', async ({
 	await pageA.getByRole('button', { name: 'Advance: Vote' }).click();
 	await castOn(pageA, 'card one');
 	await castOn(pageA, 'card one');
-	await expect(pageA.getByLabel(/votes remaining/i)).toContainText('1 / 3');
+	await expect(pageA.locator('.budget')).toContainText('1 / 3');
 
 	// Step back to Collect and delete card one — votes should refund.
 	await pageA.getByRole('button', { name: 'Go back: Collect' }).click();
@@ -207,7 +209,7 @@ test('deleting a voted card refunds the budget on the next Vote phase', async ({
 	await expect(pageA.getByText('card one')).toHaveCount(0);
 
 	await pageA.getByRole('button', { name: 'Advance: Vote' }).click();
-	await expect(pageA.getByLabel(/votes remaining/i)).toContainText('3 / 3');
+	await expect(pageA.locator('.budget')).toContainText('3 / 3');
 
 	await ctxA.close();
 });
