@@ -577,6 +577,46 @@ describe('ballots: seed + helpers', () => {
 		expect(readVoteTotals(doc)[cid]).toBe(3);
 	});
 
+	it('chrisMode: castVote bypasses the budget cap', () => {
+		const doc = new Y.Doc();
+		seedRoom(doc, {
+			name: 'r',
+			columns: DEFAULT_COLUMNS,
+			votesPerParticipant: 2,
+			chrisMode: true
+		});
+		const colId = readColumns(doc)[0].id;
+		const cid = addAndVote(doc, colId);
+		advancePhase(doc);
+		// Cast far more than the nominal budget of 2; all should succeed.
+		for (let i = 0; i < 25; i++) {
+			expect(castVote(doc, 'a', cid)).toBe(true);
+		}
+		expect(readVoteTotals(doc)[cid]).toBe(25);
+	});
+
+	it('chrisMode: still gates by phase (no cast outside vote)', () => {
+		const doc = new Y.Doc();
+		seedRoom(doc, { name: 'r', columns: DEFAULT_COLUMNS, chrisMode: true });
+		const colId = readColumns(doc)[0].id;
+		const card = addCard(doc, { columnId: colId, text: 'c', author: 'A', authorId: 'a' })!;
+		expect(castVote(doc, 'a', card.id)).toBe(false);
+		advancePhase(doc); // → vote
+		expect(castVote(doc, 'a', card.id)).toBe(true);
+		advancePhase(doc); // → discuss
+		expect(castVote(doc, 'a', card.id)).toBe(false);
+	});
+
+	it('seedRoom persists chrisMode in meta; readRoomMeta defaults missing flag to false', () => {
+		const doc = new Y.Doc();
+		seedRoom(doc, { name: 'r', columns: DEFAULT_COLUMNS, chrisMode: true });
+		expect(readRoomMeta(doc)?.chrisMode).toBe(true);
+
+		const doc2 = new Y.Doc();
+		seedRoom(doc2, { name: 'r', columns: DEFAULT_COLUMNS });
+		expect(readRoomMeta(doc2)?.chrisMode).toBe(false);
+	});
+
 	it('retractVote decrements; clamps at 0; drops key at 0', () => {
 		const { doc, colId } = seededVotingDoc();
 		const cid = addAndVote(doc, colId);

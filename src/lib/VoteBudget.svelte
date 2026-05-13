@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Infinity from 'lucide-svelte/icons/infinity';
+	import InfinityIcon from 'lucide-svelte/icons/infinity';
 	import CheckCircle2 from 'lucide-svelte/icons/check-circle-2';
 	import { tooltip } from './tooltip';
 
@@ -27,7 +27,7 @@
 		<CheckCircle2 />
 		<span class="done-label">Done voting!</span>
 	{:else if unlimited}
-		<span class="numbers"><Infinity /></span>
+		<span class="numbers"><InfinityIcon /></span>
 		<span class="caption">votes — I'm done</span>
 	{:else}
 		<span class="numbers">{remaining} / {total}</span>

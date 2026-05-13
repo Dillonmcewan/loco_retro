@@ -110,6 +110,76 @@ test('two-client dot voting flow with reclamation on delete', async ({ browser }
 	await ctxB.close();
 });
 
+test('Chris mode: no budget cap, chip toggles manual "done voting"', async ({ browser }) => {
+	const ctxA = await browser.newContext();
+	const ctxB = await browser.newContext();
+	const pageA = await ctxA.newPage();
+	const pageB = await ctxB.newPage();
+
+	// Client A creates a Chris-mode retro.
+	await pageA.goto('/');
+	await pageA.getByRole('button', { name: /create a new retro/i }).click();
+	await pageA.getByLabel('Room name').fill('Chris mode retro');
+	await pageA.getByText('Start / Stop / Continue').click();
+
+	const votesInput = pageA.getByLabel('Votes per participant');
+	await expect(votesInput).toBeEnabled();
+	const chrisToggle = pageA.getByRole('button', { name: /chris mode/i });
+	await expect(chrisToggle).toHaveAttribute('aria-pressed', 'false');
+	await chrisToggle.click();
+	await expect(chrisToggle).toHaveAttribute('aria-pressed', 'true');
+	await expect(votesInput).toBeDisabled();
+
+	await pageA.getByRole('button', { name: /create retro/i }).click();
+	await expect(pageA).toHaveURL(/\/r\/[0-9a-f-]{36}$/i);
+	const roomUrl = pageA.url();
+
+	await joinRoom(pageA, 'Alice');
+	await addCardUnder(pageA, 'Start', 'unlimited vibes');
+
+	await pageB.goto(roomUrl);
+	await joinRoom(pageB, 'Bob');
+	await expect(pageB.getByText('unlimited vibes')).toBeVisible();
+
+	await pageA.getByRole('button', { name: 'Advance: Vote' }).click();
+	// Budget chip is interactive, shows "I'm done" affordance (no X / N count).
+	const chipA = pageA.getByLabel(/votes remaining/i);
+	const chipB = pageB.getByLabel(/votes remaining/i);
+	await expect(chipA).toContainText(/I'm done/i);
+	await expect(chipA).not.toContainText(/\d+ \/ \d+/);
+
+	// Cast far more votes than any nominal budget would allow.
+	for (let i = 0; i < 10; i++) {
+		await castOn(pageA, 'unlimited vibes');
+	}
+	// Cast button stays enabled — no auto "Done voting!".
+	await expect(
+		cardLocator(pageA, 'unlimited vibes').getByRole('button', { name: /cast a vote/i })
+	).toBeEnabled();
+	await expect(chipA).not.toContainText(/Done voting!/i);
+
+	// A manually marks done via the chip; chip flips state, B sees it via the
+	// participant ready indicator (Advance button glow is the canonical signal
+	// — we just verify the chip toggle is operative).
+	await chipA.click();
+	await expect(chipA).toContainText(/Done voting!/i);
+	await expect(chipA).toHaveAttribute('aria-pressed', 'true');
+
+	// B is still not done — only one click required from each side to reach
+	// everyone-done. Bob marks himself done too.
+	await expect(chipB).toContainText(/I'm done/i);
+	await chipB.click();
+	await expect(chipB).toContainText(/Done voting!/i);
+
+	// Click chip again on A: un-marks.
+	await chipA.click();
+	await expect(chipA).toContainText(/I'm done/i);
+	await expect(chipA).toHaveAttribute('aria-pressed', 'false');
+
+	await ctxA.close();
+	await ctxB.close();
+});
+
 test('deleting a voted card refunds the budget on the next Vote phase', async ({ browser }) => {
 	const ctxA = await browser.newContext();
 	const pageA = await ctxA.newPage();

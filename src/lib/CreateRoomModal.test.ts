@@ -73,7 +73,8 @@ describe('CreateRoomModal', () => {
 		expect(seedRoom).toHaveBeenCalledWith(expect.anything(), {
 			name: 'Sprint 42',
 			columns: startStop.columns.map((c) => ({ title: c.title })),
-			votesPerParticipant: 5
+			votesPerParticipant: 5,
+			chrisMode: false
 		});
 
 		expect(goto).toHaveBeenCalledTimes(1);
@@ -187,6 +188,39 @@ describe('CreateRoomModal', () => {
 		const newEntry = rooms.find((r) => r.name === 'New retro');
 		expect(newEntry?.templateName).toBe('My ritual');
 		expect(newEntry?.columnTitles).toEqual(['Mind', 'Body', 'Soul']);
+	});
+
+	it('toggling Chris mode disables the votes input and submits chrisMode: true', async () => {
+		const user = userEvent.setup();
+		render(CreateRoomModal, { open: true, onClose: () => {} });
+
+		const votes = screen.getByLabelText(/votes per participant/i) as HTMLInputElement;
+		expect(votes.disabled).toBe(false);
+
+		const toggle = screen.getByRole('button', { name: /chris mode/i });
+		expect(toggle.getAttribute('aria-pressed')).toBe('false');
+		await user.click(toggle);
+		expect(toggle.getAttribute('aria-pressed')).toBe('true');
+		expect(votes.disabled).toBe(true);
+
+		await user.type(screen.getByLabelText(/room name/i), 'Movie Night');
+		await user.click(screen.getByRole('button', { name: /^create retro/i }));
+
+		expect(seedRoom).toHaveBeenCalledWith(
+			expect.anything(),
+			expect.objectContaining({ chrisMode: true })
+		);
+	});
+
+	it('omits chrisMode (false) when the toggle is off', async () => {
+		const user = userEvent.setup();
+		render(CreateRoomModal, { open: true, onClose: () => {} });
+		await user.type(screen.getByLabelText(/room name/i), 'X');
+		await user.click(screen.getByRole('button', { name: /^create retro/i }));
+		expect(seedRoom).toHaveBeenCalledWith(
+			expect.anything(),
+			expect.objectContaining({ chrisMode: false })
+		);
 	});
 
 	it('"More templates" button opens the picker dialog', async () => {

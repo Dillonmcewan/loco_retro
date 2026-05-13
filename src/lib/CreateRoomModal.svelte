@@ -12,7 +12,7 @@
 	import { listRooms, upsertRoom } from '$lib/rooms';
 	import TemplatePickerModal from '$lib/TemplatePickerModal.svelte';
 	import { tooltip } from '$lib/tooltip';
-	import Infinity from 'lucide-svelte/icons/infinity';
+	import InfinityIcon from 'lucide-svelte/icons/infinity';
 
 	type Props = {
 		open: boolean;
@@ -162,42 +162,44 @@
 				</div>
 			</fieldset>
 
-			<label>
-				<span class="votes-label">
-					<span>Votes per participant</span>
-					<button
-						type="button"
-						class="chris-toggle"
-						class:on={chrisMode}
-						aria-pressed={chrisMode}
-						onclick={() => (chrisMode = !chrisMode)}
-						use:tooltip={"Everything's made up and the points don't matter"}
-					>
-						Chris mode
-					</button>
-				</span>
-				<span class="votes-input-wrap" class:chris={chrisMode}>
-					<input
-						type="number"
-						name="votes-per-participant"
-						min="1"
-						step="1"
-						bind:value={votesPerParticipant}
-						aria-invalid={!chrisMode && !!fieldErrors.votes}
-						aria-describedby={fieldErrors.votes ? 'votes-error' : undefined}
-						disabled={chrisMode}
-						required={!chrisMode}
-					/>
-					{#if chrisMode}
-						<span class="infinity-overlay" aria-label="Unlimited votes">
-							<Infinity />
-						</span>
+			<div class="votes-row">
+				<label class="votes-label">
+					<span class="votes-label-header">
+						<span>Votes per participant</span>
+					</span>
+					<span class="votes-input-wrap" class:chris={chrisMode}>
+						<input
+							type="number"
+							name="votes-per-participant"
+							min="1"
+							step="1"
+							bind:value={votesPerParticipant}
+							aria-invalid={!chrisMode && !!fieldErrors.votes}
+							aria-describedby={fieldErrors.votes ? 'votes-error' : undefined}
+							disabled={chrisMode}
+							required={!chrisMode}
+						/>
+						{#if chrisMode}
+							<span class="infinity-overlay" aria-hidden="true">
+								<InfinityIcon />
+							</span>
+						{/if}
+					</span>
+					{#if fieldErrors.votes && !chrisMode}
+						<span id="votes-error" class="error" role="alert">{fieldErrors.votes}</span>
 					{/if}
-				</span>
-				{#if fieldErrors.votes && !chrisMode}
-					<span id="votes-error" class="error" role="alert">{fieldErrors.votes}</span>
-				{/if}
-			</label>
+				</label>
+				<button
+					type="button"
+					class="chris-toggle"
+					class:on={chrisMode}
+					aria-pressed={chrisMode}
+					onclick={() => (chrisMode = !chrisMode)}
+					use:tooltip={"Everything's made up and the points don't matter"}
+				>
+					Chris mode
+				</button>
+			</div>
 
 			<div class="actions">
 				<button type="button" class="secondary" onclick={() => dialogEl?.close()}>Cancel</button>
@@ -438,7 +440,20 @@
 		margin-top: var(--space-1);
 	}
 
+	.votes-row {
+		display: flex;
+		align-items: flex-end;
+		gap: var(--space-3);
+	}
+
 	.votes-label {
+		flex: 1 1 auto;
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+	}
+
+	.votes-label-header {
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
