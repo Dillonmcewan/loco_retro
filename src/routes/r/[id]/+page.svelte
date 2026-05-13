@@ -72,14 +72,17 @@
 	let voteTotals = $state<VoteTotals>({});
 	let votesSpentByAuthor = $state<VotesSpentByAuthor>({});
 	let localReady = $state(false);
+	let prevPhase: Phase | undefined;
 
 	const participantColors = $derived(colorsByParticipant(people));
 	const phase = $derived<Phase>(meta?.phase ?? 'collect');
 	const votesTotal = $derived(meta?.votesPerParticipant ?? 5);
+	const chrisMode = $derived(meta?.chrisMode ?? false);
 	const votesSpent = $derived(Object.values(myBallot).reduce((acc, n) => acc + n, 0));
 	const votesRemaining = $derived(Math.max(votesTotal - votesSpent, 0));
-	const canCastVote = $derived(phase === 'vote' && votesRemaining > 0);
+	const canCastVote = $derived(phase === 'vote' && (chrisMode || votesRemaining > 0));
 	const showProgress = $derived(phase === 'collect' || phase === 'vote');
+	const voteDone = $derived(localReady || (!chrisMode && phase === 'vote' && votesRemaining <= 0));
 	const doneByClientId = $derived.by(() => {
 		const out = new Map<number, boolean>();
 		for (const p of people) {
@@ -87,7 +90,8 @@
 				out.set(p.clientId, p.ready);
 			} else if (phase === 'vote') {
 				const spent = p.authorId ? (votesSpentByAuthor[p.authorId] ?? 0) : 0;
-				out.set(p.clientId, p.authorId !== '' && spent >= votesTotal);
+				const autoDone = !chrisMode && p.authorId !== '' && spent >= votesTotal;
+				out.set(p.clientId, autoDone || p.ready);
 			} else {
 				out.set(p.clientId, false);
 			}
@@ -97,6 +101,18 @@
 	const everyoneDone = $derived(
 		showProgress && people.length > 0 && people.every((p) => doneByClientId.get(p.clientId))
 	);
+
+	// Reset the per-phase "I'm done" flag whenever the phase transitions, so a
+	// participant marked ready in Collect doesn't enter Vote already done (and
+	// vice versa). Skip the initial observation: mounting into an in-progress
+	// phase must not clobber an already-set flag.
+	$effect.pre(() => {
+		const current = phase;
+		if (prevPhase !== undefined && prevPhase !== current && localReady) {
+			setReady(false);
+		}
+		prevPhase = current;
+	});
 
 	// During Discuss/Closed, sort each column's cards by vote total descending,
 	// tie-broken by createdAt ascending. Other phases keep insertion order.
@@ -307,7 +323,13 @@
 				/>
 				<div class="vote-budget-slot">
 					{#if phase === 'vote'}
-						<VoteBudget remaining={votesRemaining} total={votesTotal} />
+						<VoteBudget
+							remaining={votesRemaining}
+							total={votesTotal}
+							unlimited={chrisMode}
+							done={voteDone}
+							onToggleDone={() => setReady(!localReady)}
+						/>
 					{:else if phase === 'collect'}
 						<CollectStatus ready={localReady} onToggle={() => setReady(!localReady)} />
 					{/if}
