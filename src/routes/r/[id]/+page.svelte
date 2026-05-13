@@ -480,8 +480,8 @@
 	}
 
 	.link :global(svg) {
-		width: 1.375rem;
-		height: 1.375rem;
+		width: var(--icon-size-md);
+		height: var(--icon-size-md);
 	}
 
 	.participants {

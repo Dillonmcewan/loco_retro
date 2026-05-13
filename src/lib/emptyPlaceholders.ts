@@ -28,7 +28,6 @@ type PlaceholderEntry = { Icon: typeof Sparkles; text: string };
 
 const ENTRIES: readonly PlaceholderEntry[] = [
 	{ Icon: FlameKindling, text: 'Spark the conversation.' },
-	{ Icon: Ghost, text: "It's quiet in here… too quiet." },
 	{ Icon: Music, text: 'Be the opening note.' },
 	{ Icon: Compass, text: 'Point us in the right direction.' },
 	{ Icon: Rocket, text: 'Launch the discussion.' },

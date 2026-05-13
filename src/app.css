@@ -43,9 +43,11 @@
 	--radius-md: 0.5rem;
 	--radius-lg: 0.875rem;
 
-	/* Icon sizes — for inline glyphs sized alongside text. Standalone
-	   button glyphs and brand marks keep their own raw dimensions. */
+	/* Icon sizes — for inline glyphs sized alongside text and for
+	   clickable icon-button glyphs. Standalone CTA / brand marks keep
+	   their own raw dimensions. */
 	--icon-size-sm: 1rem;
+	--icon-size-md: 1.375rem;
 
 	/* Spacing — strict 4px scale. Half-step values in legacy CSS snap to
 	   the nearest token (round-half-up). */
