@@ -38,6 +38,21 @@
 	--shadow-card-sm: 0 1px 2px rgba(42, 36, 32, 0.06);
 	--shadow-button: 0 1px 2px rgba(42, 36, 32, 0.18);
 
+	/* Cards — shared interactive-card visual language. Compose via CardSurface;
+	   override --card-accent per consumer (e.g. RoomTile sets it to the phase color). */
+	--card-radius: var(--radius-md);
+	--card-border-width: 1.5px;
+	--card-shadow-rest: var(--shadow-card-sm);
+	--card-shadow-hover: var(--shadow-card);
+	--card-lift: -2px;
+	--card-accent: var(--color-primary);
+	--card-transition:
+		border-color 0.12s ease,
+		background 0.12s ease,
+		color 0.12s ease,
+		box-shadow 0.15s ease,
+		transform 0.1s ease;
+
 	/* Radii */
 	--radius-sm: 0.375rem;
 	--radius-md: 0.5rem;
