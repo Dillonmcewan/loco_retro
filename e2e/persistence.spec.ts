@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { createRoom, joinRoom } from './helpers';
 
 // Weaker than the planned "offline-reload" — Playwright 1.47 doesn't ship
 // page.routeWebSocket, so we can't cleanly disable the PartyKit WebSocket
@@ -6,14 +7,8 @@ import { test, expect } from '@playwright/test';
 // (state comes from IndexedDB, the DO, or both — either way: it doesn't
 // get lost).
 test('room state survives a reload', async ({ page }) => {
-	await page.goto('/');
-	await page.getByRole('button', { name: /create a new retro/i }).click();
-	await page.getByLabel('Room name').fill('Persistence check');
-	await page.getByRole('button', { name: /create retro/i }).click();
-	await expect(page).toHaveURL(/\/r\/[0-9a-f-]{36}$/i);
-
-	await page.getByLabel('Display name').fill('Solo');
-	await page.getByRole('button', { name: 'Join' }).click();
+	await createRoom(page, { name: 'Persistence check' });
+	await joinRoom(page, 'Solo');
 	await expect(page.getByRole('heading', { name: 'Persistence check' })).toBeVisible();
 
 	await page.reload();

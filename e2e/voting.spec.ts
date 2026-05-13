@@ -1,52 +1,26 @@
-import { test, expect, type Page } from '@playwright/test';
-
-async function joinRoom(page: Page, name: string) {
-	await page.getByLabel('Display name').fill(name);
-	await page.getByRole('button', { name: 'Join' }).click();
-	await expect(page.getByRole('heading', { name: /retro/i }).first()).toBeVisible();
-}
-
-async function addCardUnder(page: Page, columnTitle: string, text: string) {
-	const column = page
-		.locator('article.column')
-		.filter({ has: page.getByRole('heading', { name: columnTitle, exact: true }) });
-	await column.getByLabel('New card text').fill(text);
-	await column.getByRole('button', { name: /add/i }).click();
-}
-
-function cardLocator(page: Page, text: string) {
-	return page.locator('article.card', { hasText: text });
-}
-
-async function castOn(page: Page, cardText: string) {
-	await cardLocator(page, cardText)
-		.getByRole('button', { name: /cast a vote/i })
-		.click();
-}
-
-async function retractOn(page: Page, cardText: string) {
-	await cardLocator(page, cardText)
-		.getByRole('button', { name: /retract a vote/i })
-		.click();
-}
+import { test, expect } from '@playwright/test';
+import {
+	addCardUnder,
+	advancePhase,
+	cardLocator,
+	castVoteOn,
+	createRoom,
+	goBackToPhase,
+	joinRoom,
+	retractVoteOn,
+	setupTwoClients
+} from './helpers';
 
 test('two-client dot voting flow with reclamation on delete', async ({ browser }) => {
-	const ctxA = await browser.newContext();
-	const ctxB = await browser.newContext();
-	const pageA = await ctxA.newPage();
-	const pageB = await ctxB.newPage();
+	const { pageA, pageB, closeAll } = await setupTwoClients(browser);
 
 	// Client A creates a room with a 3-vote budget and the Start/Stop/Continue
 	// preset.
-	await pageA.goto('/');
-	await pageA.getByRole('button', { name: /create a new retro/i }).click();
-	await pageA.getByLabel('Room name').fill('Voting retro');
-	await pageA.getByText('Start / Stop / Continue').click();
-	const votes = pageA.getByLabel('Votes per participant');
-	await votes.fill('3');
-	await pageA.getByRole('button', { name: /create retro/i }).click();
-	await expect(pageA).toHaveURL(/\/r\/[0-9a-f-]{36}$/i);
-	const roomUrl = pageA.url();
+	const roomUrl = await createRoom(pageA, {
+		name: 'Voting retro',
+		template: 'Start / Stop / Continue',
+		votesPerParticipant: 3
+	});
 
 	await joinRoom(pageA, 'Alice');
 	await addCardUnder(pageA, 'Start', 'pair more often');
@@ -58,7 +32,7 @@ test('two-client dot voting flow with reclamation on delete', async ({ browser }
 	await expect(pageB.getByText('late standups')).toBeVisible();
 
 	// A advances to Vote. B sees the budget chip too.
-	await pageA.getByRole('button', { name: 'Advance: Vote' }).click();
+	await advancePhase(pageA, 'Vote');
 	await expect(pageA.locator('.budget')).toContainText('3 / 3');
 	await expect(pageB.locator('.budget')).toContainText('3 / 3');
 
@@ -67,9 +41,9 @@ test('two-client dot voting flow with reclamation on delete', async ({ browser }
 	await expect(pageB.getByLabel(/total votes/i)).toHaveCount(0);
 
 	// A casts 2 on "pair more often", 1 on "late standups".
-	await castOn(pageA, 'pair more often');
-	await castOn(pageA, 'pair more often');
-	await castOn(pageA, 'late standups');
+	await castVoteOn(pageA, 'pair more often');
+	await castVoteOn(pageA, 'pair more often');
+	await castVoteOn(pageA, 'late standups');
 	await expect(pageA.locator('.budget')).toContainText(/Done voting!/i);
 
 	// A's + buttons are now disabled (budget spent).
@@ -80,17 +54,17 @@ test('two-client dot voting flow with reclamation on delete', async ({ browser }
 	}
 
 	// B casts 3 on "late standups".
-	await castOn(pageB, 'late standups');
-	await castOn(pageB, 'late standups');
-	await castOn(pageB, 'late standups');
+	await castVoteOn(pageB, 'late standups');
+	await castVoteOn(pageB, 'late standups');
+	await castVoteOn(pageB, 'late standups');
 	await expect(pageB.locator('.budget')).toContainText(/Done voting!/i);
 
 	// A retracts one from "late standups" and re-allocates to "pair more often".
-	await retractOn(pageA, 'late standups');
-	await castOn(pageA, 'pair more often');
+	await retractVoteOn(pageA, 'late standups');
+	await castVoteOn(pageA, 'pair more often');
 
 	// Advance to Discuss. Controls + budget chip disappear on both sides.
-	await pageA.getByRole('button', { name: 'Advance: Discuss' }).click();
+	await advancePhase(pageA, 'Discuss');
 	await expect(pageA.locator('.budget')).toHaveCount(0);
 	await expect(pageB.locator('.budget')).toHaveCount(0);
 	await expect(pageA.getByRole('button', { name: /cast a vote/i })).toHaveCount(0);
@@ -106,17 +80,15 @@ test('two-client dot voting flow with reclamation on delete', async ({ browser }
 	await expect(pairBadgeB).toHaveText(/Votes:\s*3/);
 	await expect(lateBadgeB).toHaveText(/Votes:\s*3/);
 
-	await ctxA.close();
-	await ctxB.close();
+	await closeAll();
 });
 
 test('Chris mode: no budget cap, chip toggles manual "done voting"', async ({ browser }) => {
-	const ctxA = await browser.newContext();
-	const ctxB = await browser.newContext();
-	const pageA = await ctxA.newPage();
-	const pageB = await ctxB.newPage();
+	const { pageA, pageB, closeAll } = await setupTwoClients(browser);
 
-	// Client A creates a Chris-mode retro.
+	// Client A creates a Chris-mode retro. Walk through the modal manually here
+	// so we can assert the votes-input disable behavior toggles with the
+	// checkbox before submitting.
 	await pageA.goto('/');
 	await pageA.getByRole('button', { name: /create a new retro/i }).click();
 	await pageA.getByLabel('Room name').fill('Chris mode retro');
@@ -141,7 +113,7 @@ test('Chris mode: no budget cap, chip toggles manual "done voting"', async ({ br
 	await joinRoom(pageB, 'Bob');
 	await expect(pageB.getByText('unlimited vibes')).toBeVisible();
 
-	await pageA.getByRole('button', { name: 'Advance: Vote' }).click();
+	await advancePhase(pageA, 'Vote');
 	// Budget chip is interactive, shows "I'm done" affordance (no X / N count).
 	const chipA = pageA.locator('.budget');
 	const chipB = pageB.locator('.budget');
@@ -150,7 +122,7 @@ test('Chris mode: no budget cap, chip toggles manual "done voting"', async ({ br
 
 	// Cast far more votes than any nominal budget would allow.
 	for (let i = 0; i < 10; i++) {
-		await castOn(pageA, 'unlimited vibes');
+		await castVoteOn(pageA, 'unlimited vibes');
 	}
 	// Cast button stays enabled — no auto "Done voting!".
 	await expect(
@@ -178,37 +150,35 @@ test('Chris mode: no budget cap, chip toggles manual "done voting"', async ({ br
 	await expect(chipA).toHaveAttribute('aria-pressed', 'false');
 	await expect(chipA).toHaveAttribute('aria-label', /mark voting complete/i);
 
-	await ctxA.close();
-	await ctxB.close();
+	await closeAll();
 });
 
 test('deleting a voted card refunds the budget on the next Vote phase', async ({ browser }) => {
 	const ctxA = await browser.newContext();
 	const pageA = await ctxA.newPage();
 
-	await pageA.goto('/');
-	await pageA.getByRole('button', { name: /create a new retro/i }).click();
-	await pageA.getByLabel('Room name').fill('Reclaim retro');
-	await pageA.getByText('Start / Stop / Continue').click();
-	await pageA.getByLabel('Votes per participant').fill('3');
-	await pageA.getByRole('button', { name: /create retro/i }).click();
+	await createRoom(pageA, {
+		name: 'Reclaim retro',
+		template: 'Start / Stop / Continue',
+		votesPerParticipant: 3
+	});
 	await joinRoom(pageA, 'Alice');
 	await addCardUnder(pageA, 'Start', 'card one');
 	await addCardUnder(pageA, 'Start', 'card two');
 
-	await pageA.getByRole('button', { name: 'Advance: Vote' }).click();
-	await castOn(pageA, 'card one');
-	await castOn(pageA, 'card one');
+	await advancePhase(pageA, 'Vote');
+	await castVoteOn(pageA, 'card one');
+	await castVoteOn(pageA, 'card one');
 	await expect(pageA.locator('.budget')).toContainText('1 / 3');
 
 	// Step back to Collect and delete card one — votes should refund.
-	await pageA.getByRole('button', { name: 'Go back: Collect' }).click();
+	await goBackToPhase(pageA, 'Collect');
 	await cardLocator(pageA, 'card one')
 		.getByRole('button', { name: /delete card/i })
 		.click();
 	await expect(pageA.getByText('card one')).toHaveCount(0);
 
-	await pageA.getByRole('button', { name: 'Advance: Vote' }).click();
+	await advancePhase(pageA, 'Vote');
 	await expect(pageA.locator('.budget')).toContainText('3 / 3');
 
 	await ctxA.close();

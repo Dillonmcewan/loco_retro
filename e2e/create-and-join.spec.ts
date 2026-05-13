@@ -1,23 +1,17 @@
 import { test, expect } from '@playwright/test';
+import { createRoom, joinRoom, setupTwoClients } from './helpers';
 
 test('two clients can create and join the same room', async ({ browser }) => {
-	const ctxA = await browser.newContext();
-	const ctxB = await browser.newContext();
-	const pageA = await ctxA.newPage();
-	const pageB = await ctxB.newPage();
+	const { pageA, pageB, closeAll } = await setupTwoClients(browser);
 
 	// A: create the room with the Start/Stop/Continue template.
-	await pageA.goto('/');
-	await pageA.getByRole('button', { name: /create a new retro/i }).click();
-	await pageA.getByLabel('Room name').fill('Sprint 42');
-	await pageA.getByText('Start / Stop / Continue').click();
-	await pageA.getByRole('button', { name: /create retro/i }).click();
-	await expect(pageA).toHaveURL(/\/r\/[0-9a-f-]{36}$/i);
-	const roomUrl = pageA.url();
+	const roomUrl = await createRoom(pageA, {
+		name: 'Sprint 42',
+		template: 'Start / Stop / Continue'
+	});
 
 	// A: name themselves.
-	await pageA.getByLabel('Display name').fill('Alice');
-	await pageA.getByRole('button', { name: 'Join' }).click();
+	await joinRoom(pageA, 'Alice');
 
 	// A sees the room shell.
 	await expect(pageA.getByRole('heading', { name: 'Sprint 42' })).toBeVisible();
@@ -27,8 +21,7 @@ test('two clients can create and join the same room', async ({ browser }) => {
 
 	// B opens the same URL — gate appears (separate context = separate localStorage).
 	await pageB.goto(roomUrl);
-	await pageB.getByLabel('Display name').fill('Bob');
-	await pageB.getByRole('button', { name: 'Join' }).click();
+	await joinRoom(pageB, 'Bob');
 
 	// B sees the same room name + columns synced via the PartyKit DO.
 	await expect(pageB.getByRole('heading', { name: 'Sprint 42' })).toBeVisible();
@@ -42,6 +35,5 @@ test('two clients can create and join the same room', async ({ browser }) => {
 	await expect(participantsB).toContainText('Alice');
 	await expect(participantsB).toContainText('Bob');
 
-	await ctxA.close();
-	await ctxB.close();
+	await closeAll();
 });

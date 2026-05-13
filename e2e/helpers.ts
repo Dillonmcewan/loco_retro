@@ -1,4 +1,10 @@
-import { expect, type Browser, type BrowserContext, type Locator, type Page } from '@playwright/test';
+import {
+	expect,
+	type Browser,
+	type BrowserContext,
+	type Locator,
+	type Page
+} from '@playwright/test';
 
 export const ROOM_URL_PATTERN = /\/r\/[0-9a-f-]{36}$/i;
 
@@ -29,11 +35,11 @@ export async function createRoom(page: Page, opts: CreateRoomOptions): Promise<s
 	return page.url();
 }
 
-/** Fill the display-name gate and assert the room shell renders. */
+/** Fill the display-name gate and wait for it to dismiss. */
 export async function joinRoom(page: Page, name: string): Promise<void> {
 	await page.getByLabel('Display name').fill(name);
 	await page.getByRole('button', { name: 'Join' }).click();
-	await expect(page.getByRole('heading', { name: /retro/i }).first()).toBeVisible();
+	await expect(page.getByRole('button', { name: 'Join' })).toHaveCount(0);
 }
 
 /** Locate a column article by its heading text. */

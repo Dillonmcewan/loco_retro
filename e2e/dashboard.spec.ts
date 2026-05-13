@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { ROOM_URL_PATTERN, createRoom, joinRoom } from './helpers';
 
 test('a created retro appears as a tile on the dashboard', async ({ page }) => {
 	await page.goto('/');
@@ -8,18 +9,12 @@ test('a created retro appears as a tile on the dashboard', async ({ page }) => {
 	await expect(page.getByRole('button', { name: /open retro/i })).toHaveCount(0);
 
 	// Create a retro through the modal.
-	await page.getByRole('button', { name: /create a new retro/i }).click();
-	await expect(page.getByRole('heading', { name: /create a retro/i })).toBeVisible();
-	await page.getByLabel('Room name').fill('Dashboard demo');
-	await page.getByText('Start / Stop / Continue').click();
-	await page.getByRole('button', { name: /create retro/i }).click();
-	await expect(page).toHaveURL(/\/r\/[0-9a-f-]{36}$/i);
+	await createRoom(page, { name: 'Dashboard demo', template: 'Start / Stop / Continue' });
 
 	// Join the room — this is what makes the room route observe `meta` and
 	// upsert into the sidecar index (covers the "joined via shared link" path
 	// in addition to the "created" path that the modal already covered).
-	await page.getByLabel('Display name').fill('Alice');
-	await page.getByRole('button', { name: 'Join' }).click();
+	await joinRoom(page, 'Alice');
 	await expect(page.getByRole('heading', { name: 'Dashboard demo' })).toBeVisible();
 
 	// Back to the dashboard — tile is present with the expected metadata.
@@ -31,7 +26,7 @@ test('a created retro appears as a tile on the dashboard', async ({ page }) => {
 
 	// Clicking the tile navigates back to the room.
 	await tile.click();
-	await expect(page).toHaveURL(/\/r\/[0-9a-f-]{36}$/i);
+	await expect(page).toHaveURL(ROOM_URL_PATTERN);
 	await expect(page.getByRole('heading', { name: 'Dashboard demo' })).toBeVisible();
 
 	// Reload preserves the tile.

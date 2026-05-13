@@ -1,33 +1,14 @@
-import { test, expect, type Page } from '@playwright/test';
-
-async function joinRoom(page: Page, name: string) {
-	await page.getByLabel('Display name').fill(name);
-	await page.getByRole('button', { name: 'Join' }).click();
-	await expect(page.getByRole('heading', { name: /retro/i }).first()).toBeVisible();
-}
-
-async function addCardUnder(page: Page, columnTitle: string, text: string) {
-	const column = page
-		.locator('article.column')
-		.filter({ has: page.getByRole('heading', { name: columnTitle, exact: true }) });
-	await column.getByLabel('New card text').fill(text);
-	await column.getByRole('button', { name: /add/i }).click();
-}
+import { test, expect } from '@playwright/test';
+import { addCardUnder, cardLocator, createRoom, joinRoom, setupTwoClients } from './helpers';
 
 test('two clients can add, edit, and delete cards with ownership gating', async ({ browser }) => {
-	const ctxA = await browser.newContext();
-	const ctxB = await browser.newContext();
-	const pageA = await ctxA.newPage();
-	const pageB = await ctxB.newPage();
+	const { pageA, pageB, closeAll } = await setupTwoClients(browser);
 
 	// A: create the room.
-	await pageA.goto('/');
-	await pageA.getByRole('button', { name: /create a new retro/i }).click();
-	await pageA.getByLabel('Room name').fill('Cards retro');
-	await pageA.getByText('Start / Stop / Continue').click();
-	await pageA.getByRole('button', { name: /create retro/i }).click();
-	await expect(pageA).toHaveURL(/\/r\/[0-9a-f-]{36}$/i);
-	const roomUrl = pageA.url();
+	const roomUrl = await createRoom(pageA, {
+		name: 'Cards retro',
+		template: 'Start / Stop / Continue'
+	});
 
 	await joinRoom(pageA, 'Alice');
 
@@ -38,7 +19,7 @@ test('two clients can add, edit, and delete cards with ownership gating', async 
 	// B opens the URL, joins, sees A's card with A's name.
 	await pageB.goto(roomUrl);
 	await joinRoom(pageB, 'Bob');
-	const aliceCard = pageB.locator('article.card', { hasText: 'pair more often' });
+	const aliceCard = cardLocator(pageB, 'pair more often');
 	await expect(aliceCard).toBeVisible();
 	await expect(aliceCard).toContainText('Alice');
 
@@ -53,8 +34,7 @@ test('two clients can add, edit, and delete cards with ownership gating', async 
 	// A edits their own card; B sees the update.
 	// Re-locate before each step — clicking Edit replaces the text node with a
 	// textarea, so a hasText locator captured beforehand would stop matching.
-	await pageA
-		.locator('article.card', { hasText: 'pair more often' })
+	await cardLocator(pageA, 'pair more often')
 		.getByRole('button', { name: /edit card/i })
 		.click();
 	const editor = pageA.getByRole('textbox', { name: /edit card/i });
@@ -63,8 +43,7 @@ test('two clients can add, edit, and delete cards with ownership gating', async 
 	await expect(pageB.getByText('pair more often (every PR)')).toBeVisible();
 
 	// A deletes their card; B sees it disappear.
-	await pageA
-		.locator('article.card', { hasText: 'pair more often (every PR)' })
+	await cardLocator(pageA, 'pair more often (every PR)')
 		.getByRole('button', { name: /delete card/i })
 		.click();
 	await expect(pageB.getByText('pair more often (every PR)')).toHaveCount(0);
@@ -73,6 +52,5 @@ test('two clients can add, edit, and delete cards with ownership gating', async 
 	await expect(pageB.getByText('demo days')).toBeVisible();
 	await expect(pageA.getByText('demo days')).toBeVisible();
 
-	await ctxA.close();
-	await ctxB.close();
+	await closeAll();
 });

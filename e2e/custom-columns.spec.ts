@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { ROOM_URL_PATTERN, joinRoom } from './helpers';
 
 test('facilitator creates a custom-column template and reuses it', async ({ page }) => {
 	await page.goto('/');
@@ -28,11 +29,10 @@ test('facilitator creates a custom-column template and reuses it', async ({ page
 	await page.getByRole('button', { name: /^create retro/i }).click();
 
 	// Lands on the room URL.
-	await expect(page).toHaveURL(/\/r\/[0-9a-f-]{36}$/i);
+	await expect(page).toHaveURL(ROOM_URL_PATTERN);
 
 	// Join the room and verify the four custom columns render.
-	await page.getByLabel('Display name').fill('Alice');
-	await page.getByRole('button', { name: 'Join' }).click();
+	await joinRoom(page, 'Alice');
 	for (const title of ['Mind', 'Body', 'Soul', 'Vibe']) {
 		await expect(page.getByRole('heading', { name: title })).toBeVisible();
 	}

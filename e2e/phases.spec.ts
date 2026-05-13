@@ -1,32 +1,21 @@
-import { test, expect, type Page } from '@playwright/test';
-
-async function joinRoom(page: Page, name: string) {
-	await page.getByLabel('Display name').fill(name);
-	await page.getByRole('button', { name: 'Join' }).click();
-	await expect(page.getByRole('heading', { name: /retro/i }).first()).toBeVisible();
-}
-
-async function addCardUnder(page: Page, columnTitle: string, text: string) {
-	const column = page
-		.locator('article.column')
-		.filter({ has: page.getByRole('heading', { name: columnTitle, exact: true }) });
-	await column.getByLabel('New card text').fill(text);
-	await column.getByRole('button', { name: /add/i }).click();
-}
+import { test, expect } from '@playwright/test';
+import {
+	addCardUnder,
+	advancePhase,
+	cardLocator,
+	createRoom,
+	goBackToPhase,
+	joinRoom,
+	setupTwoClients
+} from './helpers';
 
 test('phase advances sync across two clients and gate card mutations', async ({ browser }) => {
-	const ctxA = await browser.newContext();
-	const ctxB = await browser.newContext();
-	const pageA = await ctxA.newPage();
-	const pageB = await ctxB.newPage();
+	const { pageA, pageB, closeAll } = await setupTwoClients(browser);
 
-	await pageA.goto('/');
-	await pageA.getByRole('button', { name: /create a new retro/i }).click();
-	await pageA.getByLabel('Room name').fill('Phases retro');
-	await pageA.getByText('Start / Stop / Continue').click();
-	await pageA.getByRole('button', { name: /create retro/i }).click();
-	await expect(pageA).toHaveURL(/\/r\/[0-9a-f-]{36}$/i);
-	const roomUrl = pageA.url();
+	const roomUrl = await createRoom(pageA, {
+		name: 'Phases retro',
+		template: 'Start / Stop / Continue'
+	});
 
 	await joinRoom(pageA, 'Alice');
 	await addCardUnder(pageA, 'Start', 'pair more often');
@@ -41,27 +30,27 @@ test('phase advances sync across two clients and gate card mutations', async ({ 
 	await expect(pageB.getByLabel('New card text').first()).toBeVisible();
 
 	// A advances to Vote; B sees the change and the form vanishes for them too.
-	await pageA.getByRole('button', { name: 'Advance: Vote' }).click();
+	await advancePhase(pageA, 'Vote');
 	await expect(pageA.getByLabel(/current phase/i)).toContainText('Vote');
 	await expect(pageB.getByLabel(/current phase/i)).toContainText('Vote');
 	await expect(pageB.getByLabel('New card text')).toHaveCount(0);
 	await expect(pageA.getByLabel('New card text')).toHaveCount(0);
 
 	// In Vote, even the author sees no edit/delete affordances.
-	const aliceCardA = pageA.locator('article.card', { hasText: 'pair more often' });
+	const aliceCardA = cardLocator(pageA, 'pair more often');
 	await expect(aliceCardA.getByRole('button', { name: /edit card/i })).toHaveCount(0);
 	await expect(aliceCardA.getByRole('button', { name: /delete card/i })).toHaveCount(0);
 
 	// Step back to Collect — affordances and form return on both sides.
-	await pageA.getByRole('button', { name: 'Go back: Collect' }).click();
+	await goBackToPhase(pageA, 'Collect');
 	await expect(pageB.getByLabel(/current phase/i)).toContainText('Collect');
 	await expect(pageB.getByLabel('New card text').first()).toBeVisible();
 	await expect(aliceCardA.getByRole('button', { name: /edit card/i })).toHaveCount(1);
 
 	// Walk all the way to Closed.
-	await pageA.getByRole('button', { name: 'Advance: Vote' }).click();
-	await pageA.getByRole('button', { name: 'Advance: Discuss' }).click();
-	await pageA.getByRole('button', { name: 'Advance: Closed' }).click();
+	await advancePhase(pageA, 'Vote');
+	await advancePhase(pageA, 'Discuss');
+	await advancePhase(pageA, 'Closed');
 
 	await expect(pageA.getByLabel(/current phase/i)).toContainText('Closed');
 	await expect(pageB.getByLabel(/current phase/i)).toContainText('Closed');
@@ -76,6 +65,5 @@ test('phase advances sync across two clients and gate card mutations', async ({ 
 	// Card content is still visible (read-only, not deleted).
 	await expect(pageB.getByText('pair more often')).toBeVisible();
 
-	await ctxA.close();
-	await ctxB.close();
+	await closeAll();
 });
