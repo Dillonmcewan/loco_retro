@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onDestroy } from 'svelte';
 	import type { Phase } from '$lib/room';
 	import { celebrationFor, celebrationById, type Celebration } from '$lib/celebrations';
 
@@ -18,11 +17,13 @@
 		const current = phase;
 		if (prevPhase !== undefined && prevPhase !== 'closed' && current === 'closed') {
 			playing = pickCelebration();
-			if (dismissTimer) clearTimeout(dismissTimer);
-			dismissTimer = setTimeout(() => {
+			const t = setTimeout(() => {
 				playing = null;
 				dismissTimer = null;
 			}, TOTAL_MS);
+			dismissTimer = t;
+			prevPhase = current;
+			return () => clearTimeout(t);
 		}
 		prevPhase = current;
 	});
@@ -45,10 +46,6 @@
 		}
 		playing = null;
 	}
-
-	onDestroy(() => {
-		if (dismissTimer) clearTimeout(dismissTimer);
-	});
 </script>
 
 {#if playing}
