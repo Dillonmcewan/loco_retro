@@ -15,31 +15,38 @@
 	let { remaining, total, unlimited, done, onToggleDone }: Props = $props();
 </script>
 
-<button
-	type="button"
-	class="budget"
-	class:done
-	aria-pressed={done}
-	aria-label="Votes remaining"
-	onclick={onToggleDone}
-	use:tooltip={done ? 'Click to keep voting' : "Click when you're done voting"}
->
-	{#if done}
-		<CheckCircle2 />
-		<span class="done-label">Done voting!</span>
-	{:else}
-		<Circle />
-		<span class="done-label">I'm done</span>
-		<span class="separator" aria-hidden="true">·</span>
-		{#if unlimited}
+{#if unlimited}
+	<button
+		type="button"
+		class="budget"
+		class:done
+		aria-pressed={done}
+		aria-label={done ? 'Mark voting incomplete' : 'Mark voting complete'}
+		onclick={onToggleDone}
+		use:tooltip={done ? 'Click to keep voting' : "Click when you're done voting"}
+	>
+		{#if done}
+			<CheckCircle2 />
+			<span class="done-label">Done voting!</span>
+		{:else}
+			<Circle />
+			<span class="done-label">I'm done</span>
+			<span class="separator" aria-hidden="true">·</span>
 			<span class="numbers"><InfinityIcon /></span>
 			<span class="caption">votes</span>
+		{/if}
+	</button>
+{:else}
+	<span class="budget" class:done aria-label="Votes remaining">
+		{#if done}
+			<CheckCircle2 />
+			<span class="done-label">Done voting!</span>
 		{:else}
 			<span class="numbers">{remaining} / {total}</span>
-			<span class="caption">votes</span>
+			<span class="caption">votes remaining</span>
 		{/if}
-	{/if}
-</button>
+	</span>
+{/if}
 
 <style>
 	.budget {
@@ -53,6 +60,9 @@
 		color: var(--color-text);
 		font: inherit;
 		font-size: var(--font-size-sm);
+	}
+
+	button.budget {
 		cursor: pointer;
 		transition:
 			border-color 0.15s ease,
@@ -60,12 +70,12 @@
 			color 0.15s ease;
 	}
 
-	.budget:hover {
+	button.budget:hover {
 		border-color: var(--color-primary);
 		color: var(--color-primary);
 	}
 
-	.budget:focus-visible {
+	button.budget:focus-visible {
 		outline: 2px solid var(--color-primary);
 		outline-offset: 2px;
 	}
@@ -90,8 +100,8 @@
 		color: var(--color-muted);
 	}
 
-	.budget:hover .caption,
-	.budget:hover .separator {
+	button.budget:hover .caption,
+	button.budget:hover .separator {
 		color: var(--color-primary);
 	}
 
@@ -101,7 +111,7 @@
 		color: var(--color-success);
 	}
 
-	.budget.done:hover {
+	button.budget.done:hover {
 		border-color: var(--color-success);
 		color: var(--color-success);
 	}

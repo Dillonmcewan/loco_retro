@@ -82,16 +82,21 @@
 	const votesRemaining = $derived(Math.max(votesTotal - votesSpent, 0));
 	const canCastVote = $derived(phase === 'vote' && (chrisMode || votesRemaining > 0));
 	const showProgress = $derived(phase === 'collect' || phase === 'vote');
-	const voteDone = $derived(localReady || (!chrisMode && phase === 'vote' && votesRemaining <= 0));
+	const voteDone = $derived(
+		phase === 'vote' && (chrisMode ? localReady : votesRemaining <= 0)
+	);
 	const doneByClientId = $derived.by(() => {
 		const out = new Map<number, boolean>();
 		for (const p of people) {
 			if (phase === 'collect') {
 				out.set(p.clientId, p.ready);
 			} else if (phase === 'vote') {
-				const spent = p.authorId ? (votesSpentByAuthor[p.authorId] ?? 0) : 0;
-				const autoDone = !chrisMode && p.authorId !== '' && spent >= votesTotal;
-				out.set(p.clientId, autoDone || p.ready);
+				if (chrisMode) {
+					out.set(p.clientId, p.ready);
+				} else {
+					const spent = p.authorId ? (votesSpentByAuthor[p.authorId] ?? 0) : 0;
+					out.set(p.clientId, p.authorId !== '' && spent >= votesTotal);
+				}
 			} else {
 				out.set(p.clientId, false);
 			}
