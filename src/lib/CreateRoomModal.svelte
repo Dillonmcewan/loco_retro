@@ -8,8 +8,14 @@
 		DEFAULT_VOTES_PER_PARTICIPANT,
 		isValidVoteCount
 	} from '$lib/room';
-	import { PRESET_TEMPLATES, DEFAULT_TEMPLATE_ID } from '$lib/templates';
-	import { upsertRoom } from '$lib/rooms';
+	import {
+		recentTemplates,
+		DEFAULT_TEMPLATE,
+		PRESET_TEMPLATES,
+		type Template
+	} from '$lib/templates';
+	import { listRooms, upsertRoom } from '$lib/rooms';
+	import TemplatePickerModal from '$lib/TemplatePickerModal.svelte';
 
 	type Props = {
 		open: boolean;
@@ -20,15 +26,24 @@
 
 	let dialogEl = $state<HTMLDialogElement | null>(null);
 	let name = $state('');
-	let templateId = $state<string>(DEFAULT_TEMPLATE_ID);
+	const initialRecents = recentTemplates(listRooms(), 3);
+	let recents = $state<Template[]>(initialRecents);
+	let selectedTemplate = $state<Template>(initialRecents[0] ?? DEFAULT_TEMPLATE);
+	let templateUserNamed = $state<boolean>(false);
 	let votesPerParticipant = $state<number>(DEFAULT_VOTES_PER_PARTICIPANT);
 	let submitting = $state(false);
-	let fieldErrors = $state<{ roomName?: string; templateId?: string; votes?: string }>({});
+	let fieldErrors = $state<{ roomName?: string; votes?: string }>({});
+	let pickerOpen = $state(false);
+
+	const PRESET_KEYS = new Set(PRESET_TEMPLATES.map((t) => t.key));
 
 	$effect(() => {
 		const el = dialogEl;
 		if (!el) return;
 		if (open && !el.open) {
+			recents = recentTemplates(listRooms(), 3);
+			selectedTemplate = recents[0] ?? DEFAULT_TEMPLATE;
+			templateUserNamed = false;
 			el.showModal();
 		} else if (!open && el.open) {
 			el.close();
@@ -37,15 +52,34 @@
 
 	function resetForm() {
 		name = '';
-		templateId = DEFAULT_TEMPLATE_ID;
+		recents = [];
+		selectedTemplate = DEFAULT_TEMPLATE;
+		templateUserNamed = false;
 		votesPerParticipant = DEFAULT_VOTES_PER_PARTICIPANT;
 		submitting = false;
 		fieldErrors = {};
+		pickerOpen = false;
 	}
 
 	function handleDialogClose() {
 		resetForm();
 		onClose();
+	}
+
+	function selectRecent(t: Template) {
+		selectedTemplate = t;
+		// A "recent" card only counts as user-named if the template's label
+		// isn't derivable from titles (i.e. carries a real custom name).
+		templateUserNamed = false;
+	}
+
+	function handlePickerSelect(t: Template, opts: { userNamed: boolean }) {
+		selectedTemplate = t;
+		templateUserNamed = opts.userNamed;
+		// Promote into recents so the user immediately sees it.
+		const next = [t, ...recents.filter((r) => r.key !== t.key)].slice(0, 3);
+		recents = next;
+		pickerOpen = false;
 	}
 
 	async function handleSubmit(event: SubmitEvent) {
@@ -65,8 +99,19 @@
 		const id = generateRoomId();
 		try {
 			const room = ensureRoom(id);
-			seedRoom(room.doc, { name: trimmed, templateId, votesPerParticipant });
-			upsertRoom({ id, name: trimmed, templateId, lastOpenedAt: Date.now() });
+			const columns = selectedTemplate.columns.map((c) => ({ title: c.title }));
+			seedRoom(room.doc, { name: trimmed, columns, votesPerParticipant });
+			const columnTitles = columns.map((c) => c.title);
+			const isPreset = PRESET_KEYS.has(selectedTemplate.key);
+			const templateName =
+				templateUserNamed && !isPreset ? selectedTemplate.label : undefined;
+			upsertRoom({
+				id,
+				name: trimmed,
+				columnTitles,
+				templateName,
+				lastOpenedAt: Date.now()
+			});
 			await goto(`/r/${id}`);
 		} catch (err) {
 			leaveRoom();
@@ -105,21 +150,31 @@
 			<fieldset class="template-picker">
 				<legend>Template</legend>
 				<div class="template-grid">
-					{#each PRESET_TEMPLATES as template (template.id)}
-						<label class="template-card" class:selected={templateId === template.id}>
-							<input type="radio" name="templateId" value={template.id} bind:group={templateId} />
+					{#each recents as template (template.key)}
+						<button
+							type="button"
+							aria-pressed={selectedTemplate.key === template.key}
+							class="template-card"
+							class:selected={selectedTemplate.key === template.key}
+							onclick={() => selectRecent(template)}
+						>
 							<span class="template-name">{template.label}</span>
 							<span class="template-cols">
-								{#each template.columns as col (col.id)}
+								{#each template.columns as col, i (i)}
 									<span class="col-chip">{col.title}</span>
 								{/each}
 							</span>
-						</label>
+						</button>
 					{/each}
+					<button
+						type="button"
+						class="template-card more"
+						onclick={() => (pickerOpen = true)}
+					>
+						<span class="template-name">More templates…</span>
+						<span class="more-sub">Browse all, or create your own</span>
+					</button>
 				</div>
-				{#if fieldErrors.templateId}
-					<span class="error" role="alert">{fieldErrors.templateId}</span>
-				{/if}
 			</fieldset>
 
 			<label>
@@ -148,6 +203,12 @@
 		</form>
 	</div>
 </dialog>
+
+<TemplatePickerModal
+	open={pickerOpen}
+	onSelect={handlePickerSelect}
+	onClose={() => (pickerOpen = false)}
+/>
 
 <style>
 	dialog {
@@ -252,6 +313,9 @@
 		border: 1.5px solid var(--color-border-strong);
 		border-radius: var(--radius-md);
 		cursor: pointer;
+		text-align: left;
+		font: inherit;
+		color: inherit;
 		transition:
 			border-color 0.12s ease,
 			background 0.12s ease,
@@ -271,17 +335,16 @@
 		box-shadow: 0 0 0 3px var(--color-primary-soft);
 	}
 
-	.template-card input {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		margin: -1px;
-		padding: 0;
-		border: 0;
-		overflow: hidden;
-		clip: rect(0, 0, 0, 0);
-		white-space: nowrap;
-		outline: none;
+	.template-card.more {
+		border-style: dashed;
+		justify-content: center;
+		align-items: center;
+		text-align: center;
+		color: var(--color-muted);
+	}
+
+	.more-sub {
+		font-size: var(--font-size-xs);
 	}
 
 	.template-name {
@@ -354,6 +417,14 @@
 
 	button.secondary:hover {
 		background: var(--color-surface-soft);
+	}
+
+	.actions button {
+		flex: 1;
+	}
+
+	.template-card {
+		box-shadow: none;
 	}
 
 	.error {

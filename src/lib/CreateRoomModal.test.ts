@@ -20,6 +20,11 @@ import CreateRoomModal from './CreateRoomModal.svelte';
 import { goto } from '$app/navigation';
 import { ensureRoom, seedRoom } from '$lib/room';
 import { listRooms } from './rooms';
+import { PRESET_TEMPLATES } from './templates';
+
+function escapeRegex(s: string): string {
+	return s.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&');
+}
 
 describe('CreateRoomModal', () => {
 	beforeEach(() => {
@@ -30,7 +35,7 @@ describe('CreateRoomModal', () => {
 	it('blocks submit when name is empty', async () => {
 		const user = userEvent.setup();
 		render(CreateRoomModal, { open: true, onClose: () => {} });
-		const submit = screen.getByRole('button', { name: /create/i });
+		const submit = screen.getByRole('button', { name: /^create retro/i });
 		await user.click(submit);
 		expect(goto).not.toHaveBeenCalled();
 		expect(ensureRoom).not.toHaveBeenCalled();
@@ -38,22 +43,34 @@ describe('CreateRoomModal', () => {
 		expect(screen.getByRole('alert')).toHaveTextContent(/required/i);
 	});
 
-	it('on valid submit: opens doc, seeds it, navigates to /r/<uuid>', async () => {
+	it('with no history, shows the first three presets as recent cards', () => {
+		render(CreateRoomModal, { open: true, onClose: () => {} });
+		const labels = PRESET_TEMPLATES.slice(0, 3).map((t) => t.label);
+		for (const label of labels) {
+			expect(
+				screen.getByRole('button', { name: new RegExp(escapeRegex(label)) })
+			).toBeInTheDocument();
+		}
+		expect(screen.getByRole('button', { name: /more templates/i })).toBeInTheDocument();
+	});
+
+	it('on valid submit: opens doc, seeds it with columns, navigates to /r/<uuid>', async () => {
 		const user = userEvent.setup();
 		render(CreateRoomModal, { open: true, onClose: () => {} });
 
 		const nameInput = screen.getByLabelText(/room name/i);
 		await user.type(nameInput, 'Sprint 42');
 
-		await user.click(screen.getByRole('radio', { name: /start \/ stop \/ continue/i }));
+		const startStop = PRESET_TEMPLATES.find((t) => t.label === 'Start / Stop / Continue')!;
+		await user.click(screen.getByRole('button', { name: new RegExp(escapeRegex(startStop.label)) }));
 
-		await user.click(screen.getByRole('button', { name: /create/i }));
+		await user.click(screen.getByRole('button', { name: /^create retro/i }));
 
 		expect(ensureRoom).toHaveBeenCalledTimes(1);
 		expect(seedRoom).toHaveBeenCalledTimes(1);
 		expect(seedRoom).toHaveBeenCalledWith(expect.anything(), {
 			name: 'Sprint 42',
-			templateId: 'start-stop-continue',
+			columns: startStop.columns.map((c) => ({ title: c.title })),
 			votesPerParticipant: 5
 		});
 
@@ -64,20 +81,22 @@ describe('CreateRoomModal', () => {
 		);
 	});
 
-	it('records the new room in the sidecar index on submit', async () => {
+	it('records the new room with columnTitles in the sidecar index', async () => {
 		const user = userEvent.setup();
 		render(CreateRoomModal, { open: true, onClose: () => {} });
 
+		const startStop = PRESET_TEMPLATES.find((t) => t.label === 'Start / Stop / Continue')!;
 		await user.type(screen.getByLabelText(/room name/i), 'Sprint 42');
-		await user.click(screen.getByRole('radio', { name: /start \/ stop \/ continue/i }));
-		await user.click(screen.getByRole('button', { name: /create/i }));
+		await user.click(screen.getByRole('button', { name: new RegExp(escapeRegex(startStop.label)) }));
+		await user.click(screen.getByRole('button', { name: /^create retro/i }));
 
 		const rooms = listRooms();
 		expect(rooms).toHaveLength(1);
 		expect(rooms[0]).toMatchObject({
 			name: 'Sprint 42',
-			templateId: 'start-stop-continue'
+			columnTitles: startStop.columns.map((c) => c.title)
 		});
+		expect(rooms[0].templateName).toBeUndefined();
 		expect(rooms[0].id).toMatch(
 			/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 		);
@@ -91,7 +110,7 @@ describe('CreateRoomModal', () => {
 		expect(votes.value).toBe('5');
 
 		await user.type(screen.getByLabelText(/room name/i), 'X');
-		await user.click(screen.getByRole('button', { name: /create/i }));
+		await user.click(screen.getByRole('button', { name: /^create retro/i }));
 
 		expect(seedRoom).toHaveBeenCalledWith(
 			expect.anything(),
@@ -108,7 +127,7 @@ describe('CreateRoomModal', () => {
 		await user.type(votes, '12');
 
 		await user.type(screen.getByLabelText(/room name/i), 'X');
-		await user.click(screen.getByRole('button', { name: /create/i }));
+		await user.click(screen.getByRole('button', { name: /^create retro/i }));
 
 		expect(seedRoom).toHaveBeenCalledWith(
 			expect.anything(),
@@ -125,7 +144,7 @@ describe('CreateRoomModal', () => {
 		await user.type(votes, '0');
 
 		await user.type(screen.getByLabelText(/room name/i), 'X');
-		await user.click(screen.getByRole('button', { name: /create/i }));
+		await user.click(screen.getByRole('button', { name: /^create retro/i }));
 
 		expect(seedRoom).not.toHaveBeenCalled();
 		expect(goto).not.toHaveBeenCalled();
@@ -137,11 +156,21 @@ describe('CreateRoomModal', () => {
 		render(CreateRoomModal, { open: true, onClose: () => {} });
 
 		await user.type(screen.getByLabelText(/room name/i), '   Sprint 42   ');
-		await user.click(screen.getByRole('button', { name: /create/i }));
+		await user.click(screen.getByRole('button', { name: /^create retro/i }));
 
 		expect(seedRoom).toHaveBeenCalledWith(
 			expect.anything(),
 			expect.objectContaining({ name: 'Sprint 42' })
 		);
+	});
+
+	it('"More templates" button opens the picker dialog', async () => {
+		const user = userEvent.setup();
+		render(CreateRoomModal, { open: true, onClose: () => {} });
+		await user.click(screen.getByRole('button', { name: /more templates/i }));
+		// Picker dialog has a heading
+		expect(
+			await screen.findByRole('heading', { name: /choose a template/i })
+		).toBeInTheDocument();
 	});
 });
