@@ -45,10 +45,8 @@
 		border-radius: var(--card-radius);
 		box-shadow: var(--card-shadow-rest);
 		color: inherit;
-		text-align: left;
 		font: inherit;
 		cursor: pointer;
-		padding: var(--card-padding, 0);
 		transition: var(--card-transition);
 	}
 

@@ -110,7 +110,7 @@
 		align-items: center;
 		justify-content: center;
 		gap: var(--space-2);
-		--card-padding: var(--space-5);
+		padding: var(--space-5);
 		min-height: 8rem;
 		font-weight: 600;
 		font-size: var(--font-size-md);

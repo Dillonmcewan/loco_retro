@@ -58,6 +58,7 @@
 	:global(.room-tile) {
 		position: relative;
 		display: flex;
+		padding: 0;
 		min-height: 8rem;
 		color: var(--color-text);
 		overflow: hidden;

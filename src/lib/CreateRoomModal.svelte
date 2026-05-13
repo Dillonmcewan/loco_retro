@@ -10,8 +10,7 @@
 	} from '$lib/room';
 	import { recentTemplates, DEFAULT_TEMPLATE, isPresetKey, type Template } from '$lib/templates';
 	import { listRooms, upsertRoom } from '$lib/rooms';
-	import CardSurface from '$lib/CardSurface.svelte';
-	import SelectableCard from '$lib/SelectableCard.svelte';
+	import TemplateCard from '$lib/TemplateCard.svelte';
 	import TemplatePickerModal from '$lib/TemplatePickerModal.svelte';
 	import { tooltip } from '$lib/tooltip';
 	import InfinityIcon from 'lucide-svelte/icons/infinity';
@@ -160,10 +159,9 @@
 				<legend>Template</legend>
 				<div class="template-grid">
 					{#each recents as template (template.key)}
-						<SelectableCard
+						<TemplateCard
 							selected={selectedTemplate.key === template.key}
 							onclick={() => selectRecent(template)}
-							class="template-card"
 						>
 							<span class="template-name">{template.label}</span>
 							<span class="template-cols">
@@ -171,16 +169,12 @@
 									<span class="col-chip">{col.title}</span>
 								{/each}
 							</span>
-						</SelectableCard>
+						</TemplateCard>
 					{/each}
-					<CardSurface
-						variant="dashed"
-						onclick={() => (pickerOpen = true)}
-						class="template-card more"
-					>
+					<TemplateCard variant="dashed" onclick={() => (pickerOpen = true)}>
 						<span class="template-name">More templates…</span>
 						<span class="more-sub">Browse all, or create your own</span>
-					</CardSurface>
+					</TemplateCard>
 				</div>
 			</fieldset>
 
@@ -329,47 +323,8 @@
 		gap: var(--space-3);
 	}
 
-	:global(.template-card) {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-3);
-		--card-padding: var(--space-4);
-	}
-
-	:global(.template-card.more) {
-		justify-content: center;
-		align-items: center;
-		text-align: center;
-	}
-
 	.more-sub {
 		font-size: var(--font-size-xs);
-	}
-
-	.template-name {
-		font-weight: 600;
-		font-size: var(--font-size-md);
-		line-height: 1.3;
-	}
-
-	.template-cols {
-		display: flex;
-		flex-wrap: wrap;
-		gap: var(--space-1);
-	}
-
-	.col-chip {
-		padding: var(--space-1) var(--space-2);
-		background: var(--color-surface-soft);
-		color: var(--color-muted);
-		border-radius: 1rem;
-		font-size: var(--font-size-xs);
-		font-weight: 500;
-	}
-
-	:global(.template-card.is-selected) .col-chip {
-		background: white;
-		color: var(--color-text);
 	}
 
 	.actions {
