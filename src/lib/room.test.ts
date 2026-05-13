@@ -134,15 +134,13 @@ describe('seedRoom', () => {
 			columns: [{ title: '  Custom ' }, { title: 'Two' }]
 		});
 		expect(readColumns(doc).map((c) => c.title)).toEqual(['Custom', 'Two']);
-		expect(() =>
-			seedRoom(new Y.Doc(), { name: 'r', columns: [{ title: '   ' }] })
-		).toThrow(/non-empty/);
+		expect(() => seedRoom(new Y.Doc(), { name: 'r', columns: [{ title: '   ' }] })).toThrow(
+			/non-empty/
+		);
 	});
 
 	it('rejects column counts outside 1–6', () => {
-		expect(() => seedRoom(new Y.Doc(), { name: 'r', columns: [] })).toThrow(
-			/columns\.length/
-		);
+		expect(() => seedRoom(new Y.Doc(), { name: 'r', columns: [] })).toThrow(/columns\.length/);
 		expect(() =>
 			seedRoom(new Y.Doc(), {
 				name: 'r',

@@ -103,8 +103,7 @@
 			seedRoom(room.doc, { name: trimmed, columns, votesPerParticipant });
 			const columnTitles = columns.map((c) => c.title);
 			const isPreset = PRESET_KEYS.has(selectedTemplate.key);
-			const templateName =
-				templateUserNamed && !isPreset ? selectedTemplate.label : undefined;
+			const templateName = templateUserNamed && !isPreset ? selectedTemplate.label : undefined;
 			upsertRoom({
 				id,
 				name: trimmed,
@@ -166,11 +165,7 @@
 							</span>
 						</button>
 					{/each}
-					<button
-						type="button"
-						class="template-card more"
-						onclick={() => (pickerOpen = true)}
-					>
+					<button type="button" class="template-card more" onclick={() => (pickerOpen = true)}>
 						<span class="template-name">More templates…</span>
 						<span class="more-sub">Browse all, or create your own</span>
 					</button>

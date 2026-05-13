@@ -40,9 +40,7 @@ describe('TemplatePickerModal', () => {
 			onClose: vi.fn()
 		});
 		expect(screen.getByRole('heading', { name: /^yours$/i })).toBeInTheDocument();
-		expect(
-			screen.getByRole('button', { name: /Mind \/ Body \/ Soul/ })
-		).toBeInTheDocument();
+		expect(screen.getByRole('button', { name: /Mind \/ Body \/ Soul/ })).toBeInTheDocument();
 	});
 
 	it('clicking a row calls onSelect with the template and userNamed=false', async () => {
@@ -54,9 +52,7 @@ describe('TemplatePickerModal', () => {
 			onClose: vi.fn()
 		});
 		const preset = PRESET_TEMPLATES[1];
-		await user.click(
-			screen.getByRole('button', { name: new RegExp(escapeRegex(preset.label)) })
-		);
+		await user.click(screen.getByRole('button', { name: new RegExp(escapeRegex(preset.label)) }));
 		expect(onSelect).toHaveBeenCalledTimes(1);
 		const [t, opts] = onSelect.mock.calls[0] as [Template, { userNamed: boolean }];
 		expect(t.key).toBe(preset.key);

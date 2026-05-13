@@ -33,12 +33,9 @@ describe('RoomTile', () => {
 	});
 
 	it('prefers explicit templateName when present', () => {
-		render(
-			RoomTile,
-			{
-				entry: makeEntry({ columnTitles: ['A', 'B', 'C'], templateName: 'My ritual' })
-			}
-		);
+		render(RoomTile, {
+			entry: makeEntry({ columnTitles: ['A', 'B', 'C'], templateName: 'My ritual' })
+		});
 		expect(screen.getByText('My ritual')).toBeInTheDocument();
 	});
 

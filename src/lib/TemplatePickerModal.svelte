@@ -49,10 +49,7 @@
 		<h2 id="template-picker-title">Choose a template</h2>
 
 		{#if editorOpen}
-			<ColumnEditor
-				onSave={handleEditorSave}
-				onCancel={() => (editorOpen = false)}
-			/>
+			<ColumnEditor onSave={handleEditorSave} onCancel={() => (editorOpen = false)} />
 		{:else}
 			{#if yours.length > 0}
 				<section aria-labelledby="yours-heading" class="section">

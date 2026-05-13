@@ -62,7 +62,9 @@ describe('CreateRoomModal', () => {
 		await user.type(nameInput, 'Sprint 42');
 
 		const startStop = PRESET_TEMPLATES.find((t) => t.label === 'Start / Stop / Continue')!;
-		await user.click(screen.getByRole('button', { name: new RegExp(escapeRegex(startStop.label)) }));
+		await user.click(
+			screen.getByRole('button', { name: new RegExp(escapeRegex(startStop.label)) })
+		);
 
 		await user.click(screen.getByRole('button', { name: /^create retro/i }));
 
@@ -87,7 +89,9 @@ describe('CreateRoomModal', () => {
 
 		const startStop = PRESET_TEMPLATES.find((t) => t.label === 'Start / Stop / Continue')!;
 		await user.type(screen.getByLabelText(/room name/i), 'Sprint 42');
-		await user.click(screen.getByRole('button', { name: new RegExp(escapeRegex(startStop.label)) }));
+		await user.click(
+			screen.getByRole('button', { name: new RegExp(escapeRegex(startStop.label)) })
+		);
 		await user.click(screen.getByRole('button', { name: /^create retro/i }));
 
 		const rooms = listRooms();
@@ -169,8 +173,6 @@ describe('CreateRoomModal', () => {
 		render(CreateRoomModal, { open: true, onClose: () => {} });
 		await user.click(screen.getByRole('button', { name: /more templates/i }));
 		// Picker dialog has a heading
-		expect(
-			await screen.findByRole('heading', { name: /choose a template/i })
-		).toBeInTheDocument();
+		expect(await screen.findByRole('heading', { name: /choose a template/i })).toBeInTheDocument();
 	});
 });

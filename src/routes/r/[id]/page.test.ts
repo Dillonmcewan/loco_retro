@@ -188,7 +188,7 @@ describe('Room page', () => {
 		expect(screen.getByRole('button', { name: 'Advance: Closed' })).toBeDisabled();
 	});
 
-	it("writes the current phase into the rooms sidecar on every advance (dashboard relies on it)", async () => {
+	it('writes the current phase into the rooms sidecar on every advance (dashboard relies on it)', async () => {
 		const user = userEvent.setup();
 		setDisplayName('Dillon');
 		render(RoomPage, { props: { data: { id: VALID_ID } } });

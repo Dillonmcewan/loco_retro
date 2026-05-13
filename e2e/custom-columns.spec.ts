@@ -45,8 +45,6 @@ test('facilitator creates a custom-column template and reuses it', async ({ page
 	// Open the create modal again: the custom template now appears as a recent card.
 	await page.getByRole('button', { name: /create a new retro/i }).click();
 	await expect(
-		page
-			.locator('button.template-card')
-			.filter({ hasText: /Mind \/ Body \/ Soul \/ Vibe/ })
+		page.locator('button.template-card').filter({ hasText: /Mind \/ Body \/ Soul \/ Vibe/ })
 	).toBeVisible();
 });

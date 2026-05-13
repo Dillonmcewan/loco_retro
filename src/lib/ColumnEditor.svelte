@@ -1,9 +1,5 @@
 <script lang="ts">
-	import {
-		templateKeyFromTitles,
-		deriveTemplateLabel,
-		type Template
-	} from '$lib/templates';
+	import { templateKeyFromTitles, deriveTemplateLabel, type Template } from '$lib/templates';
 	import { MIN_COLUMNS, MAX_COLUMNS } from '$lib/room';
 	import X from 'lucide-svelte/icons/x';
 
@@ -94,12 +90,7 @@
 				</li>
 			{/each}
 		</ul>
-		<button
-			type="button"
-			class="add"
-			onclick={addRow}
-			disabled={titles.length >= MAX_COLUMNS}
-		>
+		<button type="button" class="add" onclick={addRow} disabled={titles.length >= MAX_COLUMNS}>
 			Add column
 		</button>
 	</fieldset>
