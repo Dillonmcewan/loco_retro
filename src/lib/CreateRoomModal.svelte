@@ -21,8 +21,17 @@
 
 	let { open, onClose }: Props = $props();
 
+	function defaultRoomName(): string {
+		const d = new Date();
+		const yyyy = d.getFullYear();
+		const mm = String(d.getMonth() + 1).padStart(2, '0');
+		const dd = String(d.getDate()).padStart(2, '0');
+		return `Retro ${yyyy}-${mm}-${dd}`;
+	}
+
 	let dialogEl = $state<HTMLDialogElement | null>(null);
-	let name = $state('');
+	let nameInputEl = $state<HTMLInputElement | null>(null);
+	let name = $state(defaultRoomName());
 	const initialRecents = recentTemplates(listRooms(), 3);
 	let recents = $state<Template[]>(initialRecents);
 	let selectedTemplate = $state<Template>(initialRecents[0] ?? DEFAULT_TEMPLATE);
@@ -38,14 +47,22 @@
 		if (open && !el.open) {
 			recents = recentTemplates(listRooms(), 3);
 			selectedTemplate = recents[0] ?? DEFAULT_TEMPLATE;
+			name = defaultRoomName();
 			el.showModal();
+			// Focus + select the prefilled name so the user can either accept
+			// it or start typing to replace it. Defer to the next frame so
+			// the dialog has finished opening and applying its default focus.
+			requestAnimationFrame(() => {
+				nameInputEl?.focus();
+				nameInputEl?.select();
+			});
 		} else if (!open && el.open) {
 			el.close();
 		}
 	});
 
 	function resetForm() {
-		name = '';
+		name = defaultRoomName();
 		selectedTemplate = DEFAULT_TEMPLATE;
 		votesPerParticipant = DEFAULT_VOTES_PER_PARTICIPANT;
 		chrisMode = false;
@@ -121,6 +138,7 @@
 				<input
 					type="text"
 					name="room-name"
+					bind:this={nameInputEl}
 					bind:value={name}
 					placeholder="Sprint 42 retro"
 					autocomplete="off"
@@ -162,13 +180,12 @@
 				</div>
 			</fieldset>
 
-			<div class="votes-row">
-				<label class="votes-label">
-					<span class="votes-label-header">
-						<span>Votes per participant</span>
-					</span>
+			<div class="votes-block">
+				<label for="votes-per-participant" class="votes-header">Votes per participant</label>
+				<div class="votes-row">
 					<span class="votes-input-wrap" class:chris={chrisMode}>
 						<input
+							id="votes-per-participant"
 							type="number"
 							name="votes-per-participant"
 							min="1"
@@ -185,20 +202,17 @@
 							</span>
 						{/if}
 					</span>
-					{#if fieldErrors.votes && !chrisMode}
-						<span id="votes-error" class="error" role="alert">{fieldErrors.votes}</span>
-					{/if}
-				</label>
-				<button
-					type="button"
-					class="chris-toggle"
-					class:on={chrisMode}
-					aria-pressed={chrisMode}
-					onclick={() => (chrisMode = !chrisMode)}
-					use:tooltip={"Everything's made up and the points don't matter"}
-				>
-					Chris mode
-				</button>
+					<label
+						class="chris-checkbox"
+						use:tooltip={"Everything's made up and the points don't matter"}
+					>
+						<input type="checkbox" bind:checked={chrisMode} />
+						<span>Chris mode</span>
+					</label>
+				</div>
+				{#if fieldErrors.votes && !chrisMode}
+					<span id="votes-error" class="error" role="alert">{fieldErrors.votes}</span>
+				{/if}
 			</div>
 
 			<div class="actions">
@@ -440,64 +454,52 @@
 		margin-top: var(--space-1);
 	}
 
-	.votes-row {
-		display: flex;
-		align-items: flex-end;
-		gap: var(--space-3);
-	}
-
-	.votes-label {
-		flex: 1 1 auto;
+	.votes-block {
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-2);
+		font-weight: 500;
+		font-size: var(--font-size-sm);
 	}
 
-	.votes-label-header {
-		display: flex;
+	.votes-header {
+		font-weight: 500;
+		font-size: var(--font-size-sm);
+	}
+
+	.votes-row {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
 		align-items: center;
-		justify-content: space-between;
 		gap: var(--space-3);
 	}
 
-	.chris-toggle {
-		flex: none;
-		padding: var(--space-1) var(--space-3);
-		background: var(--color-surface);
-		color: var(--color-text);
-		border: 1px solid var(--color-border-strong);
-		border-radius: var(--radius-sm);
-		font: inherit;
-		font-size: var(--font-size-xs);
-		font-weight: 600;
-		box-shadow: none;
+	.chris-checkbox {
+		justify-self: center;
+		display: inline-flex;
+		flex-direction: row;
+		align-items: center;
+		gap: var(--space-2);
+		font-weight: 500;
+		font-size: var(--font-size-sm);
 		cursor: pointer;
-		transition:
-			border-color 0.12s ease,
-			background 0.12s ease,
-			color 0.12s ease;
+		user-select: none;
 	}
 
-	.chris-toggle:hover {
-		border-color: var(--color-primary);
-		color: var(--color-primary);
-		background: var(--color-surface);
-	}
-
-	.chris-toggle.on {
-		border-color: var(--color-primary);
-		background: var(--color-primary-soft);
-		color: var(--color-primary);
-	}
-
-	.chris-toggle:focus-visible {
-		outline: 2px solid var(--color-primary);
-		outline-offset: 2px;
+	.chris-checkbox input {
+		width: 1rem;
+		height: 1rem;
+		accent-color: var(--color-primary);
+		cursor: pointer;
 	}
 
 	.votes-input-wrap {
 		position: relative;
 		display: block;
+	}
+
+	.votes-input-wrap input {
+		width: 100%;
 	}
 
 	.votes-input-wrap input:disabled {

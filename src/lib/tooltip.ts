@@ -1,12 +1,22 @@
 /**
  * Svelte action: shows a small floating hint after a hover delay. Uses the
  * passed label, or falls back to the element's aria-label / title. The
- * tooltip element is appended to <body> so it can escape overflow:hidden
- * containers; styling lives in app.css under `.tooltip`.
+ * tooltip element is appended to the nearest open <dialog> ancestor — so it
+ * shares the dialog's top-layer stacking context — or to <body> otherwise;
+ * styling lives in app.css under `.tooltip`.
  */
 const DELAY_MS = 500;
 const VERTICAL_OFFSET_PX = 6;
 const VIEWPORT_PADDING_PX = 4;
+
+function nearestOpenDialog(node: HTMLElement): HTMLDialogElement | null {
+	let cur: HTMLElement | null = node.parentElement;
+	while (cur) {
+		if (cur instanceof HTMLDialogElement && cur.open) return cur;
+		cur = cur.parentElement;
+	}
+	return null;
+}
 
 export function tooltip(node: HTMLElement, label?: string) {
 	let timer: ReturnType<typeof setTimeout> | null = null;
@@ -23,7 +33,7 @@ export function tooltip(node: HTMLElement, label?: string) {
 		tip.className = 'tooltip';
 		tip.setAttribute('role', 'tooltip');
 		tip.textContent = t;
-		document.body.appendChild(tip);
+		(nearestOpenDialog(node) ?? document.body).appendChild(tip);
 
 		const r = node.getBoundingClientRect();
 		const tr = tip.getBoundingClientRect();

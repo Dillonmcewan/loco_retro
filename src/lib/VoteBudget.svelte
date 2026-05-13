@@ -1,6 +1,7 @@
 <script lang="ts">
 	import InfinityIcon from 'lucide-svelte/icons/infinity';
 	import CheckCircle2 from 'lucide-svelte/icons/check-circle-2';
+	import Circle from 'lucide-svelte/icons/circle';
 	import { tooltip } from './tooltip';
 
 	type Props = {
@@ -26,12 +27,17 @@
 	{#if done}
 		<CheckCircle2 />
 		<span class="done-label">Done voting!</span>
-	{:else if unlimited}
-		<span class="numbers"><InfinityIcon /></span>
-		<span class="caption">votes — I'm done</span>
 	{:else}
-		<span class="numbers">{remaining} / {total}</span>
-		<span class="caption">votes — I'm done</span>
+		<Circle />
+		<span class="done-label">I'm done</span>
+		<span class="separator" aria-hidden="true">·</span>
+		{#if unlimited}
+			<span class="numbers"><InfinityIcon /></span>
+			<span class="caption">votes</span>
+		{:else}
+			<span class="numbers">{remaining} / {total}</span>
+			<span class="caption">votes</span>
+		{/if}
 	{/if}
 </button>
 
@@ -80,7 +86,12 @@
 		color: var(--color-muted);
 	}
 
-	.budget:hover .caption {
+	.separator {
+		color: var(--color-muted);
+	}
+
+	.budget:hover .caption,
+	.budget:hover .separator {
 		color: var(--color-primary);
 	}
 
