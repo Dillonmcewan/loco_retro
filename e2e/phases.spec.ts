@@ -7,7 +7,9 @@ async function joinRoom(page: Page, name: string) {
 }
 
 async function addCardUnder(page: Page, columnTitle: string, text: string) {
-	const column = page.locator('article.column', { hasText: columnTitle });
+	const column = page
+		.locator('article.column')
+		.filter({ has: page.getByRole('heading', { name: columnTitle, exact: true }) });
 	await column.getByLabel('New card text').fill(text);
 	await column.getByRole('button', { name: /add/i }).click();
 }

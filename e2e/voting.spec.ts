@@ -7,7 +7,9 @@ async function joinRoom(page: Page, name: string) {
 }
 
 async function addCardUnder(page: Page, columnTitle: string, text: string) {
-	const column = page.locator('article.column', { hasText: columnTitle });
+	const column = page
+		.locator('article.column')
+		.filter({ has: page.getByRole('heading', { name: columnTitle, exact: true }) });
 	await column.getByLabel('New card text').fill(text);
 	await column.getByRole('button', { name: /add/i }).click();
 }
@@ -68,7 +70,7 @@ test('two-client dot voting flow with reclamation on delete', async ({ browser }
 	await castOn(pageA, 'pair more often');
 	await castOn(pageA, 'pair more often');
 	await castOn(pageA, 'late standups');
-	await expect(pageA.getByLabel(/votes remaining/i)).toContainText('0 / 3');
+	await expect(pageA.getByLabel(/votes remaining/i)).toContainText(/Done voting!/i);
 
 	// A's + buttons are now disabled (budget spent).
 	for (const text of ['pair more often', 'late standups']) {
@@ -81,7 +83,7 @@ test('two-client dot voting flow with reclamation on delete', async ({ browser }
 	await castOn(pageB, 'late standups');
 	await castOn(pageB, 'late standups');
 	await castOn(pageB, 'late standups');
-	await expect(pageB.getByLabel(/votes remaining/i)).toContainText('0 / 3');
+	await expect(pageB.getByLabel(/votes remaining/i)).toContainText(/Done voting!/i);
 
 	// A retracts one from "late standups" and re-allocates to "pair more often".
 	await retractOn(pageA, 'late standups');

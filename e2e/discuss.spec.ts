@@ -7,7 +7,9 @@ async function joinRoom(page: Page, name: string) {
 }
 
 async function addCardUnder(page: Page, columnTitle: string, text: string) {
-	const column = page.locator('article.column', { hasText: columnTitle });
+	const column = page
+		.locator('article.column')
+		.filter({ has: page.getByRole('heading', { name: columnTitle, exact: true }) });
 	await column.getByLabel('New card text').fill(text);
 	await column.getByRole('button', { name: /add/i }).click();
 }
@@ -64,12 +66,18 @@ test('two-client Discuss: cards sort by votes and discussed toggle replicates', 
 
 	// Sort within the Start column: c2 (2 votes), then a 1-vote tie between
 	// c1 (added first) and c3 (added third) — older createdAt wins the tie.
-	const startCardsA = pageA.locator('article.column', { hasText: 'Start' }).locator('article.card');
+	const startCardsA = pageA
+		.locator('article.column')
+		.filter({ has: pageA.getByRole('heading', { name: 'Start', exact: true }) })
+		.locator('article.card');
 	await expect(startCardsA.nth(0)).toContainText('c2');
 	await expect(startCardsA.nth(1)).toContainText('c1');
 	await expect(startCardsA.nth(2)).toContainText('c3');
 
-	const startCardsB = pageB.locator('article.column', { hasText: 'Start' }).locator('article.card');
+	const startCardsB = pageB
+		.locator('article.column')
+		.filter({ has: pageB.getByRole('heading', { name: 'Start', exact: true }) })
+		.locator('article.card');
 	await expect(startCardsB.nth(0)).toContainText('c2');
 	await expect(startCardsB.nth(1)).toContainText('c1');
 	await expect(startCardsB.nth(2)).toContainText('c3');
