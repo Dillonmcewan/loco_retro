@@ -86,7 +86,8 @@ describe('seedRoom', () => {
 		expect(readRoomMeta(doc)).toEqual({
 			name: 'Sprint 42',
 			phase: 'collect',
-			votesPerParticipant: 5
+			votesPerParticipant: 5,
+			chrisMode: false
 		});
 		expect(readColumns(doc).map((c) => c.title)).toEqual(DEFAULT_TITLES);
 	});
@@ -103,7 +104,8 @@ describe('seedRoom', () => {
 		expect(readRoomMeta(doc)).toEqual({
 			name: 'Sprint 42',
 			phase: 'collect',
-			votesPerParticipant: 5
+			votesPerParticipant: 5,
+			chrisMode: false
 		});
 		expect(readColumns(doc).map((c) => c.title)).toEqual(DEFAULT_TITLES);
 	});

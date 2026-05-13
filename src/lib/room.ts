@@ -37,6 +37,7 @@ export type SeedParams = {
 	name: string;
 	columns: { title: string }[];
 	votesPerParticipant?: number;
+	chrisMode?: boolean;
 };
 
 export const MIN_COLUMNS = 1;
@@ -59,6 +60,7 @@ export type RoomMetaSnapshot = {
 	name: string;
 	phase: Phase;
 	votesPerParticipant: number;
+	chrisMode: boolean;
 };
 
 export type Participant = {
@@ -115,6 +117,7 @@ type MetaShape = {
 	name: string;
 	phase: Phase;
 	votesPerParticipant: number;
+	chrisMode: boolean;
 };
 
 function makeAccess<Shape>() {
@@ -211,6 +214,7 @@ export function seedRoom(doc: Y.Doc, params: SeedParams): boolean {
 		metaAcc.set(meta, 'name', params.name);
 		metaAcc.set(meta, 'phase', 'collect');
 		metaAcc.set(meta, 'votesPerParticipant', requested);
+		metaAcc.set(meta, 'chrisMode', params.chrisMode === true);
 		columns.push(
 			trimmedTitles.map((title) => {
 				const col = new Y.Map<unknown>();
@@ -235,7 +239,8 @@ export function readRoomMeta(doc: Y.Doc): RoomMetaSnapshot | null {
 	const phase: Phase = isPhase(rawPhase) ? rawPhase : 'collect';
 	const rawVotes = metaAcc.get(meta, 'votesPerParticipant');
 	const votesPerParticipant = isValidVoteCount(rawVotes) ? rawVotes : DEFAULT_VOTES_PER_PARTICIPANT;
-	return { name, phase, votesPerParticipant };
+	const chrisMode = metaAcc.get(meta, 'chrisMode') === true;
+	return { name, phase, votesPerParticipant, chrisMode };
 }
 
 // ─── Phase machine ─────────────────────────────────────────────────────────
@@ -426,13 +431,18 @@ function readVotesPerParticipant(doc: Y.Doc): number {
 	return isValidVoteCount(raw) ? raw : DEFAULT_VOTES_PER_PARTICIPANT;
 }
 
+function readChrisMode(doc: Y.Doc): boolean {
+	return metaAcc.get(metaMap(doc), 'chrisMode') === true;
+}
+
 export function castVote(doc: Y.Doc, authorId: string, cardId: string): boolean {
 	if (getPhase(doc) !== 'vote') return false;
+	const unlimited = readChrisMode(doc);
 	const budget = readVotesPerParticipant(doc);
 	const ballots = ballotsMap(doc);
 	const existing = ballots.get(authorId);
 	const spent = existing ? ballotSpent(existing) : 0;
-	if (spent >= budget) return false;
+	if (!unlimited && spent >= budget) return false;
 	doc.transact(() => {
 		let b = ballots.get(authorId);
 		if (!b) {
