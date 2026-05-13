@@ -11,6 +11,8 @@
 	import { recentTemplates, DEFAULT_TEMPLATE, isPresetKey, type Template } from '$lib/templates';
 	import { listRooms, upsertRoom } from '$lib/rooms';
 	import TemplatePickerModal from '$lib/TemplatePickerModal.svelte';
+	import { tooltip } from '$lib/tooltip';
+	import Infinity from 'lucide-svelte/icons/infinity';
 
 	type Props = {
 		open: boolean;
@@ -25,6 +27,7 @@
 	let recents = $state<Template[]>(initialRecents);
 	let selectedTemplate = $state<Template>(initialRecents[0] ?? DEFAULT_TEMPLATE);
 	let votesPerParticipant = $state<number>(DEFAULT_VOTES_PER_PARTICIPANT);
+	let chrisMode = $state(false);
 	let submitting = $state(false);
 	let fieldErrors = $state<{ roomName?: string; votes?: string }>({});
 	let pickerOpen = $state(false);
@@ -45,6 +48,7 @@
 		name = '';
 		selectedTemplate = DEFAULT_TEMPLATE;
 		votesPerParticipant = DEFAULT_VOTES_PER_PARTICIPANT;
+		chrisMode = false;
 		submitting = false;
 		fieldErrors = {};
 		pickerOpen = false;
@@ -74,7 +78,7 @@
 			fieldErrors = { roomName: 'Room name is required.' };
 			return;
 		}
-		if (!isValidVoteCount(votesPerParticipant)) {
+		if (!chrisMode && !isValidVoteCount(votesPerParticipant)) {
 			fieldErrors = { votes: 'Votes per participant must be a positive integer.' };
 			return;
 		}
@@ -84,7 +88,7 @@
 		try {
 			const room = ensureRoom(id);
 			const columns = selectedTemplate.columns.map((c) => ({ title: c.title }));
-			seedRoom(room.doc, { name: trimmed, columns, votesPerParticipant });
+			seedRoom(room.doc, { name: trimmed, columns, votesPerParticipant, chrisMode });
 			const columnTitles = columns.map((c) => c.title);
 			const templateName =
 				selectedTemplate.userNamed && !isPresetKey(selectedTemplate.key)
@@ -159,18 +163,38 @@
 			</fieldset>
 
 			<label>
-				<span>Votes per participant</span>
-				<input
-					type="number"
-					name="votes-per-participant"
-					min="1"
-					step="1"
-					bind:value={votesPerParticipant}
-					aria-invalid={!!fieldErrors.votes}
-					aria-describedby={fieldErrors.votes ? 'votes-error' : undefined}
-					required
-				/>
-				{#if fieldErrors.votes}
+				<span class="votes-label">
+					<span>Votes per participant</span>
+					<button
+						type="button"
+						class="chris-toggle"
+						class:on={chrisMode}
+						aria-pressed={chrisMode}
+						onclick={() => (chrisMode = !chrisMode)}
+						use:tooltip={"Everything's made up and the points don't matter"}
+					>
+						Chris mode
+					</button>
+				</span>
+				<span class="votes-input-wrap" class:chris={chrisMode}>
+					<input
+						type="number"
+						name="votes-per-participant"
+						min="1"
+						step="1"
+						bind:value={votesPerParticipant}
+						aria-invalid={!chrisMode && !!fieldErrors.votes}
+						aria-describedby={fieldErrors.votes ? 'votes-error' : undefined}
+						disabled={chrisMode}
+						required={!chrisMode}
+					/>
+					{#if chrisMode}
+						<span class="infinity-overlay" aria-label="Unlimited votes">
+							<Infinity />
+						</span>
+					{/if}
+				</span>
+				{#if fieldErrors.votes && !chrisMode}
 					<span id="votes-error" class="error" role="alert">{fieldErrors.votes}</span>
 				{/if}
 			</label>
@@ -412,5 +436,73 @@
 		color: var(--color-danger);
 		font-size: var(--font-size-sm);
 		margin-top: var(--space-1);
+	}
+
+	.votes-label {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-3);
+	}
+
+	.chris-toggle {
+		flex: none;
+		padding: var(--space-1) var(--space-3);
+		background: var(--color-surface);
+		color: var(--color-text);
+		border: 1px solid var(--color-border-strong);
+		border-radius: var(--radius-sm);
+		font: inherit;
+		font-size: var(--font-size-xs);
+		font-weight: 600;
+		box-shadow: none;
+		cursor: pointer;
+		transition:
+			border-color 0.12s ease,
+			background 0.12s ease,
+			color 0.12s ease;
+	}
+
+	.chris-toggle:hover {
+		border-color: var(--color-primary);
+		color: var(--color-primary);
+		background: var(--color-surface);
+	}
+
+	.chris-toggle.on {
+		border-color: var(--color-primary);
+		background: var(--color-primary-soft);
+		color: var(--color-primary);
+	}
+
+	.chris-toggle:focus-visible {
+		outline: 2px solid var(--color-primary);
+		outline-offset: 2px;
+	}
+
+	.votes-input-wrap {
+		position: relative;
+		display: block;
+	}
+
+	.votes-input-wrap input:disabled {
+		background: var(--color-surface-soft);
+		color: transparent;
+		cursor: not-allowed;
+	}
+
+	.infinity-overlay {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		align-items: center;
+		padding: 0 var(--space-3);
+		color: var(--color-primary);
+		pointer-events: none;
+	}
+
+	.infinity-overlay :global(svg) {
+		width: var(--icon-size-md);
+		height: var(--icon-size-md);
 	}
 </style>
