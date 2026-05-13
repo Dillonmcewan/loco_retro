@@ -66,21 +66,34 @@
 		color: var(--color-text);
 		min-height: 8rem;
 		overflow: hidden;
+		--tile-phase-color: var(--color-phase-collect);
 		transition:
 			border-color 0.12s ease,
 			box-shadow 0.15s ease,
 			transform 0.1s ease;
 	}
 
+	.tile[data-phase='vote'] {
+		--tile-phase-color: var(--color-phase-vote);
+	}
+
+	.tile[data-phase='discuss'] {
+		--tile-phase-color: var(--color-phase-discuss);
+	}
+
+	.tile[data-phase='closed'] {
+		--tile-phase-color: var(--color-phase-closed);
+	}
+
 	.tile:hover {
-		border-color: var(--color-primary);
+		border-color: var(--tile-phase-color);
 		box-shadow: var(--shadow-card);
 		transform: translateY(-2px);
 	}
 
 	.tile:focus-visible {
 		outline: none;
-		border-color: var(--color-primary);
+		border-color: var(--tile-phase-color);
 		box-shadow: 0 0 0 3px var(--color-primary-soft);
 	}
 
@@ -92,19 +105,7 @@
 	.stripe {
 		flex: none;
 		width: 6px;
-		background: var(--color-phase-collect);
-	}
-
-	.tile[data-phase='vote'] .stripe {
-		background: var(--color-phase-vote);
-	}
-
-	.tile[data-phase='discuss'] .stripe {
-		background: var(--color-phase-discuss);
-	}
-
-	.tile[data-phase='closed'] .stripe {
-		background: var(--color-phase-closed);
+		background: var(--tile-phase-color);
 	}
 
 	.body {
@@ -139,19 +140,7 @@
 	.phase-icon {
 		display: inline-flex;
 		align-items: center;
-		color: var(--color-phase-collect);
-	}
-
-	.tile[data-phase='vote'] .phase-icon {
-		color: var(--color-phase-vote);
-	}
-
-	.tile[data-phase='discuss'] .phase-icon {
-		color: var(--color-phase-discuss);
-	}
-
-	.tile[data-phase='closed'] .phase-icon {
-		color: var(--color-phase-closed);
+		color: var(--tile-phase-color);
 	}
 
 	.phase-icon :global(svg) {
