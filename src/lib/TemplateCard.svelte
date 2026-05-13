@@ -3,6 +3,7 @@
 	import CardSurface from './CardSurface.svelte';
 
 	type Props = {
+		/** Omit when the card isn't part of a toggle group — then no aria-pressed is emitted. */
 		selected?: boolean;
 		variant?: 'solid' | 'dashed';
 		ariaLabel?: string;
@@ -10,10 +11,10 @@
 		children: Snippet;
 	};
 
-	let { selected = false, variant = 'solid', ariaLabel, onclick, children }: Props = $props();
+	let { selected, variant = 'solid', ariaLabel, onclick, children }: Props = $props();
 
 	const composedClass = $derived(
-		['template-card', selected && 'is-selected', variant === 'dashed' && 'template-card-dashed']
+		['template-card', selected === true && 'is-selected', variant === 'dashed' && 'is-dashed']
 			.filter(Boolean)
 			.join(' ')
 	);
@@ -35,14 +36,14 @@
 		text-align: left;
 	}
 
-	:global(.template-card.template-card-dashed) {
+	:global(.template-card.is-dashed) {
 		align-items: center;
 		justify-content: center;
 		text-align: center;
 		gap: var(--space-2);
 	}
 
-	:global(.template-card-dashed svg) {
+	:global(.template-card.is-dashed svg) {
 		width: var(--icon-size-md);
 		height: var(--icon-size-md);
 	}
