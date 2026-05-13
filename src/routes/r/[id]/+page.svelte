@@ -289,7 +289,15 @@
 		<form onsubmit={submitName}>
 			<label>
 				<span>Display name</span>
-				<input bind:value={nameInput} type="text" autocomplete="name" required />
+				<!-- svelte-ignore a11y_autofocus -->
+				<input
+					bind:value={nameInput}
+					type="text"
+					autocomplete="name"
+					required
+					autofocus
+					onfocus={(e) => e.currentTarget.select()}
+				/>
 			</label>
 			<button type="submit">Join</button>
 		</form>
@@ -396,7 +404,7 @@
 								</li>
 							{/each}
 						</ul>
-						{#if cardsFor(column.id).length === 0}
+						{#if phase === 'collect' && cardsFor(column.id).length === 0}
 							{@const placeholder = placeholderFor(data.id, columnIndex)}
 							<div
 								class="empty"
