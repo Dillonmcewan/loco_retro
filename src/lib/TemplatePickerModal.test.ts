@@ -43,7 +43,7 @@ describe('TemplatePickerModal', () => {
 		expect(screen.getByRole('button', { name: /Mind \/ Body \/ Soul/ })).toBeInTheDocument();
 	});
 
-	it('clicking a row calls onSelect with the template and userNamed=false', async () => {
+	it('clicking a preset row calls onSelect with the template', async () => {
 		const user = userEvent.setup();
 		const onSelect = vi.fn();
 		render(TemplatePickerModal, {
@@ -54,9 +54,26 @@ describe('TemplatePickerModal', () => {
 		const preset = PRESET_TEMPLATES[1];
 		await user.click(screen.getByRole('button', { name: new RegExp(escapeRegex(preset.label)) }));
 		expect(onSelect).toHaveBeenCalledTimes(1);
-		const [t, opts] = onSelect.mock.calls[0] as [Template, { userNamed: boolean }];
+		const [t] = onSelect.mock.calls[0] as [Template];
 		expect(t.key).toBe(preset.key);
-		expect(opts.userNamed).toBe(false);
+		expect(t.userNamed).toBeFalsy();
+	});
+
+	it('preserves userNamed when selecting a named template from "Yours"', async () => {
+		upsertRoom({
+			id: '22222222-2222-4222-8222-222222222222',
+			name: 'r',
+			columnTitles: ['Alpha', 'Beta', 'Gamma'],
+			templateName: 'My ritual',
+			lastOpenedAt: 1
+		});
+		const user = userEvent.setup();
+		const onSelect = vi.fn();
+		render(TemplatePickerModal, { open: true, onSelect, onClose: vi.fn() });
+		await user.click(screen.getByRole('button', { name: /My ritual/ }));
+		const [t] = onSelect.mock.calls[0] as [Template];
+		expect(t.label).toBe('My ritual');
+		expect(t.userNamed).toBe(true);
 	});
 
 	it('"Create new template" reveals the column editor', async () => {
@@ -86,10 +103,10 @@ describe('TemplatePickerModal', () => {
 		await user.click(screen.getByRole('button', { name: /save template/i }));
 
 		expect(onSelect).toHaveBeenCalledTimes(1);
-		const [t, opts] = onSelect.mock.calls[0] as [Template, { userNamed: boolean }];
+		const [t] = onSelect.mock.calls[0] as [Template];
 		expect(t.columns.map((c) => c.title)).toEqual(['Alpha', 'Beta']);
 		expect(t.key).toBe(templateKeyFromTitles(['Alpha', 'Beta']));
-		expect(opts.userNamed).toBe(false);
+		expect(t.userNamed).toBe(false);
 	});
 });
 

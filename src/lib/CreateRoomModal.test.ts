@@ -168,6 +168,27 @@ describe('CreateRoomModal', () => {
 		);
 	});
 
+	it('preserves templateName when re-using a named template from recents', async () => {
+		const { upsertRoom } = await import('./rooms');
+		upsertRoom({
+			id: '33333333-3333-4333-8333-333333333333',
+			name: 'Older',
+			columnTitles: ['Mind', 'Body', 'Soul'],
+			templateName: 'My ritual',
+			lastOpenedAt: 1
+		});
+		const user = userEvent.setup();
+		render(CreateRoomModal, { open: true, onClose: () => {} });
+		await user.click(screen.getByRole('button', { name: /My ritual/ }));
+		await user.type(screen.getByLabelText(/room name/i), 'New retro');
+		await user.click(screen.getByRole('button', { name: /^create retro/i }));
+
+		const rooms = listRooms();
+		const newEntry = rooms.find((r) => r.name === 'New retro');
+		expect(newEntry?.templateName).toBe('My ritual');
+		expect(newEntry?.columnTitles).toEqual(['Mind', 'Body', 'Soul']);
+	});
+
 	it('"More templates" button opens the picker dialog', async () => {
 		const user = userEvent.setup();
 		render(CreateRoomModal, { open: true, onClose: () => {} });

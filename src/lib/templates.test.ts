@@ -53,6 +53,11 @@ describe('templateKeyFromTitles', () => {
 	it('returns the same key for the same titles in the same order', () => {
 		expect(templateKeyFromTitles(['x', 'y', 'z'])).toBe(templateKeyFromTitles(['x', 'y', 'z']));
 	});
+
+	it('distinguishes title-boundary shifts (no naive empty-string join)', () => {
+		expect(templateKeyFromTitles(['ab', 'c'])).not.toBe(templateKeyFromTitles(['a', 'bc']));
+		expect(templateKeyFromTitles(['ab', 'cd'])).not.toBe(templateKeyFromTitles(['abc', 'd']));
+	});
 });
 
 describe('deriveTemplateLabel', () => {

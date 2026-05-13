@@ -4,7 +4,7 @@
 	import X from 'lucide-svelte/icons/x';
 
 	type Props = {
-		onSave: (t: Template, opts: { userNamed: boolean }) => void;
+		onSave: (t: Template) => void;
 		onCancel: () => void;
 	};
 
@@ -19,12 +19,14 @@
 		if (titles.length >= MAX_COLUMNS) return;
 		titles = [...titles, ''];
 		rowErrors = [...rowErrors, false];
+		formError = null;
 	}
 
 	function removeRow(i: number) {
 		if (titles.length <= MIN_COLUMNS) return;
 		titles = titles.filter((_, idx) => idx !== i);
 		rowErrors = rowErrors.filter((_, idx) => idx !== i);
+		formError = null;
 	}
 
 	function handleSubmit(event: SubmitEvent) {
@@ -49,9 +51,10 @@
 		const template: Template = {
 			key: templateKeyFromTitles(kept),
 			label,
-			columns: kept.map((title) => ({ title }))
+			columns: kept.map((title) => ({ title })),
+			userNamed: name.length > 0
 		};
-		onSave(template, { userNamed: name.length > 0 });
+		onSave(template);
 	}
 </script>
 

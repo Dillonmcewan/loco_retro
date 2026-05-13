@@ -53,11 +53,11 @@ describe('ColumnEditor', () => {
 		await user.type(screen.getByLabelText(/column 2 title/i), 'Beta');
 		await user.click(screen.getByRole('button', { name: /save template/i }));
 
-		const [t, opts] = onSave.mock.calls[0] as [Template, { userNamed: boolean }];
+		const [t] = onSave.mock.calls[0] as [Template];
 		expect(t.columns.map((c) => c.title)).toEqual(['Alpha', 'Beta']);
 		expect(t.label).toBe('Alpha / Beta');
 		expect(t.key).toBe(templateKeyFromTitles(['Alpha', 'Beta']));
-		expect(opts.userNamed).toBe(false);
+		expect(t.userNamed).toBe(false);
 	});
 
 	it('emits the user-supplied template name as the label, with userNamed=true', async () => {
@@ -68,8 +68,17 @@ describe('ColumnEditor', () => {
 		await user.type(screen.getByLabelText(/column 1 title/i), 'Only');
 		await user.click(screen.getByRole('button', { name: /save template/i }));
 
-		const [t, opts] = onSave.mock.calls[0] as [Template, { userNamed: boolean }];
+		const [t] = onSave.mock.calls[0] as [Template];
 		expect(t.label).toBe('My ritual');
-		expect(opts.userNamed).toBe(true);
+		expect(t.userNamed).toBe(true);
+	});
+
+	it('clears the form error when the user adds or removes a row', async () => {
+		const user = userEvent.setup();
+		render(ColumnEditor, { onSave: vi.fn(), onCancel: vi.fn() });
+		await user.click(screen.getByRole('button', { name: /save template/i }));
+		expect(screen.getByRole('alert')).toBeInTheDocument();
+		await user.click(screen.getByRole('button', { name: /add column/i }));
+		expect(screen.queryByRole('alert')).not.toBeInTheDocument();
 	});
 });

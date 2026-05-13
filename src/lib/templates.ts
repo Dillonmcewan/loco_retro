@@ -9,6 +9,10 @@ export type Template = {
 	key: string;
 	label: string;
 	columns: TemplateColumn[];
+	// True when `label` came from a user-supplied template name (vs derived
+	// from titles). Lets the recent / picker reuse path persist that name
+	// into the new room's index entry.
+	userNamed?: boolean;
 };
 
 function normalizeTitles(titles: readonly string[]): string[] {
@@ -16,7 +20,7 @@ function normalizeTitles(titles: readonly string[]): string[] {
 }
 
 export function templateKeyFromTitles(titles: readonly string[]): string {
-	const joined = normalizeTitles(titles).join('');
+	const joined = normalizeTitles(titles).join('\n');
 	return hashString(joined).toString(36);
 }
 
@@ -50,11 +54,17 @@ const PRESET_KEYS = new Set(PRESET_TEMPLATES.map((t) => t.key));
 function templateFromEntry(entry: RoomIndexEntry): Template | null {
 	if (!entry.columnTitles || entry.columnTitles.length === 0) return null;
 	const key = templateKeyFromTitles(entry.columnTitles);
+	const named = entry.templateName?.trim();
 	return {
 		key,
-		label: entry.templateName?.trim() || deriveTemplateLabel(entry.columnTitles),
-		columns: entry.columnTitles.map((title) => ({ title }))
+		label: named || deriveTemplateLabel(entry.columnTitles),
+		columns: entry.columnTitles.map((title) => ({ title })),
+		userNamed: !!named
 	};
+}
+
+export function isPresetKey(key: string): boolean {
+	return PRESET_KEYS.has(key);
 }
 
 function uniqueHistoryTemplates(rooms: readonly RoomIndexEntry[]): Template[] {

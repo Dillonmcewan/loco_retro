@@ -8,12 +8,7 @@
 		DEFAULT_VOTES_PER_PARTICIPANT,
 		isValidVoteCount
 	} from '$lib/room';
-	import {
-		recentTemplates,
-		DEFAULT_TEMPLATE,
-		PRESET_TEMPLATES,
-		type Template
-	} from '$lib/templates';
+	import { recentTemplates, DEFAULT_TEMPLATE, isPresetKey, type Template } from '$lib/templates';
 	import { listRooms, upsertRoom } from '$lib/rooms';
 	import TemplatePickerModal from '$lib/TemplatePickerModal.svelte';
 
@@ -29,13 +24,10 @@
 	const initialRecents = recentTemplates(listRooms(), 3);
 	let recents = $state<Template[]>(initialRecents);
 	let selectedTemplate = $state<Template>(initialRecents[0] ?? DEFAULT_TEMPLATE);
-	let templateUserNamed = $state<boolean>(false);
 	let votesPerParticipant = $state<number>(DEFAULT_VOTES_PER_PARTICIPANT);
 	let submitting = $state(false);
 	let fieldErrors = $state<{ roomName?: string; votes?: string }>({});
 	let pickerOpen = $state(false);
-
-	const PRESET_KEYS = new Set(PRESET_TEMPLATES.map((t) => t.key));
 
 	$effect(() => {
 		const el = dialogEl;
@@ -43,7 +35,6 @@
 		if (open && !el.open) {
 			recents = recentTemplates(listRooms(), 3);
 			selectedTemplate = recents[0] ?? DEFAULT_TEMPLATE;
-			templateUserNamed = false;
 			el.showModal();
 		} else if (!open && el.open) {
 			el.close();
@@ -52,9 +43,7 @@
 
 	function resetForm() {
 		name = '';
-		recents = [];
 		selectedTemplate = DEFAULT_TEMPLATE;
-		templateUserNamed = false;
 		votesPerParticipant = DEFAULT_VOTES_PER_PARTICIPANT;
 		submitting = false;
 		fieldErrors = {};
@@ -68,17 +57,12 @@
 
 	function selectRecent(t: Template) {
 		selectedTemplate = t;
-		// A "recent" card only counts as user-named if the template's label
-		// isn't derivable from titles (i.e. carries a real custom name).
-		templateUserNamed = false;
 	}
 
-	function handlePickerSelect(t: Template, opts: { userNamed: boolean }) {
+	function handlePickerSelect(t: Template) {
 		selectedTemplate = t;
-		templateUserNamed = opts.userNamed;
 		// Promote into recents so the user immediately sees it.
-		const next = [t, ...recents.filter((r) => r.key !== t.key)].slice(0, 3);
-		recents = next;
+		recents = [t, ...recents.filter((r) => r.key !== t.key)].slice(0, 3);
 		pickerOpen = false;
 	}
 
@@ -102,8 +86,10 @@
 			const columns = selectedTemplate.columns.map((c) => ({ title: c.title }));
 			seedRoom(room.doc, { name: trimmed, columns, votesPerParticipant });
 			const columnTitles = columns.map((c) => c.title);
-			const isPreset = PRESET_KEYS.has(selectedTemplate.key);
-			const templateName = templateUserNamed && !isPreset ? selectedTemplate.label : undefined;
+			const templateName =
+				selectedTemplate.userNamed && !isPresetKey(selectedTemplate.key)
+					? selectedTemplate.label
+					: undefined;
 			upsertRoom({
 				id,
 				name: trimmed,

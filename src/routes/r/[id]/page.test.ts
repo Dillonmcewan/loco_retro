@@ -188,6 +188,22 @@ describe('Room page', () => {
 		expect(screen.getByRole('button', { name: 'Advance: Closed' })).toBeDisabled();
 	});
 
+	it('preserves an existing entry.templateName across reindex on open', async () => {
+		const { upsertRoom, listRooms } = await import('$lib/rooms');
+		upsertRoom({
+			id: VALID_ID,
+			name: 'Sprint 42',
+			columnTitles: ['Went well', "Didn't go well", 'Actions'],
+			templateName: 'Our ritual',
+			lastOpenedAt: 1
+		});
+		setDisplayName('Dillon');
+		render(RoomPage, { props: { data: { id: VALID_ID } } });
+		await tick();
+		const entry = listRooms().find((e) => e.id === VALID_ID);
+		expect(entry?.templateName).toBe('Our ritual');
+	});
+
 	it('writes the current phase into the rooms sidecar on every advance (dashboard relies on it)', async () => {
 		const user = userEvent.setup();
 		setDisplayName('Dillon');

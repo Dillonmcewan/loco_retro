@@ -5,7 +5,7 @@
 
 	type Props = {
 		open: boolean;
-		onSelect: (t: Template, opts: { userNamed: boolean }) => void;
+		onSelect: (t: Template) => void;
 		onClose: () => void;
 	};
 
@@ -36,11 +36,11 @@
 	}
 
 	function selectTemplate(t: Template) {
-		onSelect(t, { userNamed: false });
+		onSelect(t);
 	}
 
-	function handleEditorSave(t: Template, opts: { userNamed: boolean }) {
-		onSelect(t, opts);
+	function handleEditorSave(t: Template) {
+		onSelect(t);
 	}
 </script>
 
