@@ -116,11 +116,7 @@
 	.format-card-body :global(svg) {
 		width: var(--icon-size-lg);
 		height: var(--icon-size-lg);
-		color: var(--color-muted);
-	}
-
-	:global(.card-selector.is-selected) .format-card-body :global(svg) {
-		color: var(--color-primary);
+		color: var(--card-selector-accent);
 	}
 
 	.format-name {

@@ -34,6 +34,9 @@
 		gap: var(--space-3);
 		padding: var(--space-4);
 		text-align: left;
+		/* Consumers can read this in their own scope (e.g. to recolor an icon
+		   on selection) instead of reaching across the boundary with :global. */
+		--card-selector-accent: var(--color-muted);
 	}
 
 	:global(.card-selector.is-dashed) {
@@ -55,5 +58,6 @@
 		border-color: var(--color-primary);
 		box-shadow: 0 0 0 3px var(--color-primary-soft);
 		transform: none;
+		--card-selector-accent: var(--color-primary);
 	}
 </style>
