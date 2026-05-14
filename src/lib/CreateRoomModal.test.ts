@@ -26,11 +26,9 @@ function escapeRegex(s: string): string {
 	return s.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&');
 }
 
-// The modal prefills the room name with "Retro YYYY-MM-DD" on open and
-// focuses + selects it via requestAnimationFrame. Tests need to wait for that
-// rAF to fire — otherwise it interleaves with user.type, focus shifts back to
-// the name input, and characters meant for other fields get misdirected /
-// selections swallow them.
+// The modal focuses the name input on open via requestAnimationFrame. Tests
+// need to wait for that rAF to fire — otherwise it interleaves with user.type
+// and focus shifts back to the name input mid-typing.
 function waitForFrame(): Promise<void> {
 	return new Promise((resolve) => requestAnimationFrame(() => resolve()));
 }
@@ -57,8 +55,6 @@ describe('CreateRoomModal', () => {
 	it('blocks submit when name is empty', async () => {
 		const user = userEvent.setup();
 		await renderAndOpen();
-		// Clear the prefilled default to exercise the empty-name guard.
-		await user.clear(screen.getByLabelText(/room name/i));
 		const submit = screen.getByRole('button', { name: /^create retro/i });
 		await user.click(submit);
 		expect(goto).not.toHaveBeenCalled();

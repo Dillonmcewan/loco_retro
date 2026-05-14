@@ -14,6 +14,7 @@
 	import TemplatePickerModal from '$lib/TemplatePickerModal.svelte';
 	import { tooltip } from '$lib/tooltip';
 	import InfinityIcon from 'lucide-svelte/icons/infinity';
+	import HelpCircle from 'lucide-svelte/icons/help-circle';
 
 	type Props = {
 		open: boolean;
@@ -22,17 +23,9 @@
 
 	let { open, onClose }: Props = $props();
 
-	function defaultRoomName(): string {
-		const d = new Date();
-		const yyyy = d.getFullYear();
-		const mm = String(d.getMonth() + 1).padStart(2, '0');
-		const dd = String(d.getDate()).padStart(2, '0');
-		return `Retro ${yyyy}-${mm}-${dd}`;
-	}
-
 	let dialogEl = $state<HTMLDialogElement | null>(null);
 	let nameInputEl = $state<HTMLInputElement | null>(null);
-	let name = $state(defaultRoomName());
+	let name = $state('');
 	const initialRecents = recentTemplates(listRooms(), 3);
 	let recents = $state<Template[]>(initialRecents);
 	let selectedTemplate = $state<Template>(initialRecents[0] ?? DEFAULT_TEMPLATE);
@@ -48,14 +41,9 @@
 		if (open && !el.open) {
 			recents = recentTemplates(listRooms(), 3);
 			selectedTemplate = recents[0] ?? DEFAULT_TEMPLATE;
-			name = defaultRoomName();
 			el.showModal();
-			// Focus + select the prefilled name so the user can either accept
-			// it or start typing to replace it. Defer to the next frame so
-			// the dialog has finished opening and applying its default focus.
 			requestAnimationFrame(() => {
 				nameInputEl?.focus();
-				nameInputEl?.select();
 			});
 		} else if (!open && el.open) {
 			el.close();
@@ -63,7 +51,7 @@
 	});
 
 	function resetForm() {
-		name = defaultRoomName();
+		name = '';
 		selectedTemplate = DEFAULT_TEMPLATE;
 		votesPerParticipant = DEFAULT_VOTES_PER_PARTICIPANT;
 		chrisMode = false;
@@ -141,7 +129,7 @@
 					name="room-name"
 					bind:this={nameInputEl}
 					bind:value={name}
-					placeholder="Sprint 42 retro"
+					placeholder="Name this retro"
 					autocomplete="off"
 					data-1p-ignore
 					data-lpignore="true"
