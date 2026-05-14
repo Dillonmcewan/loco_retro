@@ -39,12 +39,7 @@
 
 <dialog bind:this={dialogEl} onclose={handleClose} aria-labelledby="closed-cta-title">
 	<div class="content">
-		<button
-			type="button"
-			class="close"
-			aria-label="Close"
-			onclick={() => dialogEl?.close()}
-		>
+		<button type="button" class="close" aria-label="Close" onclick={() => dialogEl?.close()}>
 			<X />
 		</button>
 

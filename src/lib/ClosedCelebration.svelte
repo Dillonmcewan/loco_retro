@@ -2,11 +2,8 @@
 	import type { Phase } from '$lib/room';
 	import { celebrationFor, celebrationById, type Celebration } from '$lib/celebrations';
 
-	let {
-		phase,
-		roomId,
-		onDismiss
-	}: { phase: Phase; roomId: string; onDismiss?: () => void } = $props();
+	let { phase, roomId, onDismiss }: { phase: Phase; roomId: string; onDismiss?: () => void } =
+		$props();
 
 	const TOTAL_MS = 6500;
 
