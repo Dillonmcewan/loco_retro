@@ -42,12 +42,7 @@
 	<title>{snapshot?.roomName ? `${snapshot.roomName} · Export` : 'Export'}</title>
 </svelte:head>
 
-<button
-	type="button"
-	class="print-btn"
-	onclick={manualPrint}
-	aria-label="Open print dialog"
->
+<button type="button" class="print-btn" onclick={manualPrint} aria-label="Open print dialog">
 	<Printer />
 	<span>Print</span>
 </button>
@@ -59,9 +54,18 @@
 		<header>
 			<h1>{snapshot.roomName || 'Retro'}</h1>
 			<dl class="meta">
-				<div><dt>Template</dt><dd>{snapshot.templateLabel}</dd></div>
-				<div><dt>Phase</dt><dd>{snapshot.phase}</dd></div>
-				<div><dt>Exported</dt><dd>{fmtDate(snapshot.exportedAt)}</dd></div>
+				<div>
+					<dt>Template</dt>
+					<dd>{snapshot.templateLabel}</dd>
+				</div>
+				<div>
+					<dt>Phase</dt>
+					<dd>{snapshot.phase}</dd>
+				</div>
+				<div>
+					<dt>Exported</dt>
+					<dd>{fmtDate(snapshot.exportedAt)}</dd>
+				</div>
 			</dl>
 		</header>
 

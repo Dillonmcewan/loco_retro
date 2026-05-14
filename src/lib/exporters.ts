@@ -147,7 +147,11 @@ function ymd(date: Date): string {
 	return `${y}-${m}-${d}`;
 }
 
-export function exportFilename(roomName: string, ext: 'csv' | 'md', now: Date = new Date()): string {
+export function exportFilename(
+	roomName: string,
+	ext: 'csv' | 'md',
+	now: Date = new Date()
+): string {
 	return `${slugifyRoomName(roomName)}-${ymd(now)}.${ext}`;
 }
 
