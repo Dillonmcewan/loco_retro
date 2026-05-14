@@ -66,14 +66,17 @@ test('two-client Discuss: cards sort by votes and discussed toggle replicates', 
 		cardLocator(pageB, 'c2').getByRole('button', { name: /mark as not discussed/i })
 	).toBeVisible();
 
-	// Advance to Closed; toggles are still rendered but disabled in both browsers.
+	// Advance to Closed; discussed cards show a static indicator and the toggle
+	// button is gone for both discussed and non-discussed cards.
 	await advancePhase(pageA, 'Closed');
+	await expect(cardLocator(pageA, 'c2').locator('.discussed-indicator')).toBeVisible();
 	await expect(
-		cardLocator(pageA, 'c2').getByRole('button', { name: /mark as not discussed/i })
-	).toBeDisabled();
+		cardLocator(pageA, 'c2').getByRole('button', { name: /mark as (not )?discussed/i })
+	).toHaveCount(0);
 	await expect(
-		cardLocator(pageB, 'c1').getByRole('button', { name: /mark as discussed/i })
-	).toBeDisabled();
+		cardLocator(pageB, 'c1').getByRole('button', { name: /mark as (not )?discussed/i })
+	).toHaveCount(0);
+	await expect(cardLocator(pageB, 'c1').locator('.discussed-indicator')).toHaveCount(0);
 
 	await closeAll();
 });

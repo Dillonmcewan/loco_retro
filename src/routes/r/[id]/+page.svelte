@@ -106,9 +106,7 @@
 	const everyoneDone = $derived(
 		showProgress && people.length > 0 && people.every((p) => doneByClientId.get(p.clientId))
 	);
-	const shouldNudge = $derived(
-		!localReady && (phase === 'collect' || phase === 'vote') && idle
-	);
+	const shouldNudge = $derived(!localReady && (phase === 'collect' || phase === 'vote') && idle);
 
 	// Reset the per-phase "I'm done" flag whenever the phase transitions, so a
 	// participant marked ready in Collect doesn't enter Vote already done (and

@@ -165,13 +165,20 @@ describe('RetroCard.svelte', () => {
 		expect(container.querySelector('.retro-card.discussed')).not.toBeNull();
 	});
 
-	it('toggle is disabled in closed and does not fire on click', async () => {
-		const user = userEvent.setup();
-		const { onToggleDiscussed } = setup({ phase: 'closed', discussed: true });
-		const btn = screen.getByRole('button', { name: /mark as not discussed/i });
-		expect(btn).toBeDisabled();
-		await user.click(btn);
-		expect(onToggleDiscussed).not.toHaveBeenCalled();
+	it('closed phase: discussed card shows a static indicator with no toggle button', () => {
+		const { container } = setup({ phase: 'closed', discussed: true });
+		expect(
+			screen.queryByRole('button', { name: /mark as (not )?discussed/i })
+		).not.toBeInTheDocument();
+		expect(container.querySelector('.discussed-indicator')).not.toBeNull();
+	});
+
+	it('closed phase: non-discussed card shows neither indicator nor toggle', () => {
+		const { container } = setup({ phase: 'closed', discussed: false });
+		expect(
+			screen.queryByRole('button', { name: /mark as (not )?discussed/i })
+		).not.toBeInTheDocument();
+		expect(container.querySelector('.discussed-indicator')).toBeNull();
 	});
 
 	it('applies the .animating class when discussed flips false → true', async () => {
