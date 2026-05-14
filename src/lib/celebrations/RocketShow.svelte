@@ -179,6 +179,7 @@
 		inset: 0;
 		overflow: hidden;
 		pointer-events: none;
+		contain: layout paint;
 	}
 
 	/* ─── Rocket ──────────────────────────────────────────────────────────── */
@@ -229,22 +230,20 @@
 		opacity: 0;
 		transform: translate(-50%, -50%) scale(0.3) rotate(var(--rotation));
 		animation: sparkle-twinkle 950ms ease-out var(--delay) forwards;
+		will-change: transform, opacity;
 	}
 
 	/* Four-point CSS star (concave between points) — reads as a "twinkle" shape. */
 	.spark-star {
 		background: currentColor;
 		clip-path: polygon(50% 0%, 58% 42%, 100% 50%, 58% 58%, 50% 100%, 42% 58%, 0% 50%, 42% 42%);
-		filter: drop-shadow(0 0 6px currentColor) drop-shadow(0 0 14px currentColor);
+		filter: drop-shadow(0 0 8px currentColor);
 	}
 
 	.spark-dot {
 		background: currentColor;
 		border-radius: 50%;
-		box-shadow:
-			0 0 6px currentColor,
-			0 0 14px currentColor,
-			0 0 22px currentColor;
+		box-shadow: 0 0 12px currentColor;
 	}
 
 	.spark-streak {
@@ -297,6 +296,7 @@
 		border-radius: 50%;
 		opacity: 0;
 		animation: rain-fall var(--duration) linear var(--delay) forwards;
+		will-change: transform, opacity;
 	}
 
 	.drop.paper {
