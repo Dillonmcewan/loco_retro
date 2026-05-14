@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Circle from 'lucide-svelte/icons/circle';
 	import CheckCircle2 from 'lucide-svelte/icons/check-circle-2';
-	import { tooltip } from './tooltip';
+	import StatusBadge from './StatusBadge.svelte';
 
 	type Props = {
 		ready: boolean;
@@ -12,87 +12,23 @@
 	let { ready, onToggle, idle = false }: Props = $props();
 </script>
 
-<button
-	type="button"
-	class="status"
-	class:ready
-	class:idle
-	aria-pressed={ready}
-	onclick={onToggle}
-	use:tooltip={ready ? 'Click to keep adding cards' : 'Mark yourself done adding cards'}
+<StatusBadge
+	done={ready}
+	{idle}
+	onClick={onToggle}
+	tooltip={ready ? 'Click to keep adding cards' : 'Mark yourself done adding cards'}
 >
 	{#if ready}
 		<CheckCircle2 />
-		<span>Done adding cards</span>
+		<span class="label">Done adding cards</span>
 	{:else}
 		<Circle />
-		<span>I'm done</span>
+		<span class="label">I'm done</span>
 	{/if}
-</button>
+</StatusBadge>
 
 <style>
-	.status {
-		display: inline-flex;
-		align-items: center;
-		gap: var(--space-2);
-		padding: var(--space-1) var(--space-3);
-		border: 1px solid var(--color-border-strong);
-		border-radius: var(--radius-sm);
-		background: var(--color-surface);
-		color: var(--color-text);
-		font: inherit;
-		font-size: var(--font-size-sm);
+	.label {
 		font-weight: 600;
-		cursor: pointer;
-		transition:
-			border-color 0.15s ease,
-			background 0.15s ease,
-			color 0.15s ease;
-	}
-
-	.status:hover {
-		border-color: var(--color-primary);
-		color: var(--color-primary);
-	}
-
-	.status:focus-visible {
-		outline: 2px solid var(--color-primary);
-		outline-offset: 2px;
-	}
-
-	.status.ready {
-		border-color: var(--color-success);
-		background: var(--color-success-soft);
-		color: var(--color-success);
-	}
-
-	.status.ready:hover {
-		border-color: var(--color-success);
-		color: var(--color-success);
-	}
-
-	.status :global(svg) {
-		width: var(--icon-size-sm);
-		height: var(--icon-size-sm);
-	}
-
-	.status.idle {
-		animation: idle-pulse 1.6s ease-in-out infinite;
-	}
-
-	@keyframes idle-pulse {
-		0%,
-		100% {
-			box-shadow: 0 0 0 0 var(--color-primary-soft);
-		}
-		50% {
-			box-shadow: 0 0 0 6px var(--color-primary-soft);
-		}
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.status.idle {
-			animation: none;
-		}
 	}
 </style>

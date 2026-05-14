@@ -33,8 +33,8 @@ test('two-client dot voting flow with reclamation on delete', async ({ browser }
 
 	// A advances to Vote. B sees the budget chip too.
 	await advancePhase(pageA, 'Vote');
-	await expect(pageA.locator('.budget')).toContainText('3 / 3');
-	await expect(pageB.locator('.budget')).toContainText('3 / 3');
+	await expect(pageA.locator('.status-badge')).toContainText('3 / 3');
+	await expect(pageB.locator('.status-badge')).toContainText('3 / 3');
 
 	// No aggregate badges during Vote.
 	await expect(pageA.getByLabel(/total votes/i)).toHaveCount(0);
@@ -44,7 +44,7 @@ test('two-client dot voting flow with reclamation on delete', async ({ browser }
 	await castVoteOn(pageA, 'pair more often');
 	await castVoteOn(pageA, 'pair more often');
 	await castVoteOn(pageA, 'late standups');
-	await expect(pageA.locator('.budget')).toContainText(/Done voting!/i);
+	await expect(pageA.locator('.status-badge')).toContainText(/Done voting!/i);
 
 	// A's + buttons are now disabled (budget spent).
 	for (const text of ['pair more often', 'late standups']) {
@@ -57,7 +57,7 @@ test('two-client dot voting flow with reclamation on delete', async ({ browser }
 	await castVoteOn(pageB, 'late standups');
 	await castVoteOn(pageB, 'late standups');
 	await castVoteOn(pageB, 'late standups');
-	await expect(pageB.locator('.budget')).toContainText(/Done voting!/i);
+	await expect(pageB.locator('.status-badge')).toContainText(/Done voting!/i);
 
 	// A retracts one from "late standups" and re-allocates to "pair more often".
 	await retractVoteOn(pageA, 'late standups');
@@ -65,8 +65,8 @@ test('two-client dot voting flow with reclamation on delete', async ({ browser }
 
 	// Advance to Discuss. Controls + budget chip disappear on both sides.
 	await advancePhase(pageA, 'Discuss');
-	await expect(pageA.locator('.budget')).toHaveCount(0);
-	await expect(pageB.locator('.budget')).toHaveCount(0);
+	await expect(pageA.locator('.status-badge')).toHaveCount(0);
+	await expect(pageB.locator('.status-badge')).toHaveCount(0);
 	await expect(pageA.getByRole('button', { name: /cast a vote/i })).toHaveCount(0);
 	await expect(pageB.getByRole('button', { name: /cast a vote/i })).toHaveCount(0);
 
@@ -115,8 +115,8 @@ test('Chris mode: no budget cap, chip toggles manual "done voting"', async ({ br
 
 	await advancePhase(pageA, 'Vote');
 	// Budget chip is interactive, shows "I'm done" affordance (no X / N count).
-	const chipA = pageA.locator('.budget');
-	const chipB = pageB.locator('.budget');
+	const chipA = pageA.locator('.status-badge');
+	const chipB = pageB.locator('.status-badge');
 	await expect(chipA).toContainText(/I'm done/i);
 	await expect(chipA).not.toContainText(/\d+ \/ \d+/);
 
@@ -169,7 +169,7 @@ test('deleting a voted card refunds the budget on the next Vote phase', async ({
 	await advancePhase(pageA, 'Vote');
 	await castVoteOn(pageA, 'card one');
 	await castVoteOn(pageA, 'card one');
-	await expect(pageA.locator('.budget')).toContainText('1 / 3');
+	await expect(pageA.locator('.status-badge')).toContainText('1 / 3');
 
 	// Step back to Collect and delete card one — votes should refund.
 	await goBackToPhase(pageA, 'Collect');
@@ -179,7 +179,7 @@ test('deleting a voted card refunds the budget on the next Vote phase', async ({
 	await expect(pageA.getByText('card one')).toHaveCount(0);
 
 	await advancePhase(pageA, 'Vote');
-	await expect(pageA.locator('.budget')).toContainText('3 / 3');
+	await expect(pageA.locator('.status-badge')).toContainText('3 / 3');
 
 	await ctxA.close();
 });

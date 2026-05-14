@@ -2,7 +2,7 @@
 	import InfinityIcon from 'lucide-svelte/icons/infinity';
 	import CheckCircle2 from 'lucide-svelte/icons/check-circle-2';
 	import Circle from 'lucide-svelte/icons/circle';
-	import { tooltip } from './tooltip';
+	import StatusBadge from './StatusBadge.svelte';
 
 	type Props = {
 		remaining: number;
@@ -17,15 +17,12 @@
 </script>
 
 {#if unlimited}
-	<button
-		type="button"
-		class="budget"
-		class:done
-		class:idle
-		aria-pressed={done}
-		aria-label={done ? 'Mark voting incomplete' : 'Mark voting complete'}
-		onclick={onToggleDone}
-		use:tooltip={done ? 'Click to keep voting' : "Click when you're done voting"}
+	<StatusBadge
+		{done}
+		{idle}
+		onClick={onToggleDone}
+		ariaLabel={done ? 'Mark voting incomplete' : 'Mark voting complete'}
+		tooltip={done ? 'Click to keep voting' : "Click when you're done voting"}
 	>
 		{#if done}
 			<CheckCircle2 />
@@ -37,9 +34,9 @@
 			<span class="numbers"><InfinityIcon /></span>
 			<span class="caption">votes</span>
 		{/if}
-	</button>
+	</StatusBadge>
 {:else}
-	<span class="budget" class:done aria-label="Votes remaining">
+	<StatusBadge {done} {idle} ariaLabel="Votes remaining">
 		{#if done}
 			<CheckCircle2 />
 			<span class="done-label">Done voting!</span>
@@ -47,41 +44,10 @@
 			<span class="numbers">{remaining} / {total}</span>
 			<span class="caption">votes remaining</span>
 		{/if}
-	</span>
+	</StatusBadge>
 {/if}
 
 <style>
-	.budget {
-		display: inline-flex;
-		align-items: center;
-		gap: var(--space-2);
-		padding: var(--space-1) var(--space-3);
-		border: 1px solid var(--color-border-strong);
-		border-radius: var(--radius-sm);
-		background: var(--color-surface);
-		color: var(--color-text);
-		font: inherit;
-		font-size: var(--font-size-sm);
-	}
-
-	button.budget {
-		cursor: pointer;
-		transition:
-			border-color 0.15s ease,
-			background 0.15s ease,
-			color 0.15s ease;
-	}
-
-	button.budget:hover {
-		border-color: var(--color-primary);
-		color: var(--color-primary);
-	}
-
-	button.budget:focus-visible {
-		outline: 2px solid var(--color-primary);
-		outline-offset: 2px;
-	}
-
 	.numbers {
 		display: inline-flex;
 		align-items: center;
@@ -102,48 +68,14 @@
 		color: var(--color-muted);
 	}
 
-	button.budget:hover .caption,
-	button.budget:hover .separator {
-		color: var(--color-primary);
-	}
-
-	.budget.done {
-		border-color: var(--color-success);
-		background: var(--color-success-soft);
-		color: var(--color-success);
-	}
-
-	button.budget.done:hover {
-		border-color: var(--color-success);
-		color: var(--color-success);
-	}
-
 	.done-label {
 		font-weight: 600;
 	}
 
-	.budget :global(svg) {
-		width: var(--icon-size-sm);
-		height: var(--icon-size-sm);
-	}
-
-	button.budget.idle {
-		animation: idle-pulse 1.6s ease-in-out infinite;
-	}
-
-	@keyframes idle-pulse {
-		0%,
-		100% {
-			box-shadow: 0 0 0 0 var(--color-primary-soft);
-		}
-		50% {
-			box-shadow: 0 0 0 6px var(--color-primary-soft);
-		}
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		button.budget.idle {
-			animation: none;
-		}
+	/* Match the hover color of the surrounding badge so the muted helper text
+	   tracks with the rest of the button on hover. */
+	:global(button.status-badge:hover) .caption,
+	:global(button.status-badge:hover) .separator {
+		color: var(--color-primary);
 	}
 </style>

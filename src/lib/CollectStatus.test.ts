@@ -12,12 +12,12 @@ describe('CollectStatus.svelte', () => {
 		expect(button.classList.contains('ready')).toBe(false);
 	});
 
-	it('renders the ready state with done copy and the ready class', () => {
+	it('renders the ready state with done copy and the done class', () => {
 		const { container } = render(CollectStatus, { props: { ready: true, onToggle: () => {} } });
 		const button = screen.getByRole('button', { name: /done adding cards/i });
 		expect(button).toBeInTheDocument();
 		expect(button).toHaveAttribute('aria-pressed', 'true');
-		expect(container.querySelector('.status.ready')).not.toBeNull();
+		expect(container.querySelector('.status-badge.done')).not.toBeNull();
 	});
 
 	it('calls onToggle when clicked', async () => {
