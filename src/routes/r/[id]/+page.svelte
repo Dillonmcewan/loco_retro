@@ -45,6 +45,7 @@
 	import CollectStatus from '$lib/CollectStatus.svelte';
 	import Toast from '$lib/Toast.svelte';
 	import ClosedCelebration from '$lib/ClosedCelebration.svelte';
+	import ClosedCelebrationCTA from '$lib/ClosedCelebrationCTA.svelte';
 	import ExportModal from '$lib/ExportModal.svelte';
 	import {
 		buildSnapshot,
@@ -298,6 +299,7 @@
 	}
 
 	let showExportModal = $state(false);
+	let showClosedCTA = $state(false);
 
 	function openExport() {
 		showExportModal = true;
@@ -509,7 +511,19 @@
 		</section>
 
 		{#if meta}
-			<ClosedCelebration phase={meta.phase} roomId={data.id} />
+			<ClosedCelebration
+				phase={meta.phase}
+				roomId={data.id}
+				onDismiss={() => (showClosedCTA = true)}
+			/>
+			<ClosedCelebrationCTA
+				open={showClosedCTA}
+				onClose={() => (showClosedCTA = false)}
+				onExport={() => {
+					showClosedCTA = false;
+					showExportModal = true;
+				}}
+			/>
 		{/if}
 	</main>
 {/if}
