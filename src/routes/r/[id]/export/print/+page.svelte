@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy, tick } from 'svelte';
 	import Printer from 'lucide-svelte/icons/printer';
-	import { ensureRoom, type OpenRoom } from '$lib/room';
+	import { ensureRoom, leaveRoom, type OpenRoom } from '$lib/room';
 	import { buildSnapshot, type ExportSnapshot } from '$lib/exporters';
 	import type { PageData } from './$types';
 
@@ -26,7 +26,10 @@
 	});
 
 	onDestroy(() => {
-		// Leave the active session intact — the original room tab still owns it.
+		// The print tab owns its own module-scoped `active` session — the
+		// originating room tab has a separate one. Tear ours down so the
+		// y-partykit websocket + IndexedDB persistence don't leak.
+		leaveRoom();
 	});
 
 	function manualPrint() {
