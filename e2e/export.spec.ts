@@ -136,6 +136,13 @@ test('export works in the Closed phase', async ({ page }) => {
 	await seedRetro(page);
 	await advancePhase(page, 'Closed');
 
+	// Live transition into Closed plays the celebration and then the end-of-retro
+	// CTA (R13). Skip past both so the header export affordance is interactable.
+	await page.getByRole('button', { name: /dismiss celebration/i }).click();
+	await expect(page.getByRole('dialog', { name: /nice retro/i })).toBeVisible();
+	await page.keyboard.press('Escape');
+	await expect(page.getByRole('dialog', { name: /nice retro/i })).toBeHidden();
+
 	await openExportModal(page);
 	const downloadPromise = page.waitForEvent('download');
 	await chooseAndConfirm(page, 'CSV');
