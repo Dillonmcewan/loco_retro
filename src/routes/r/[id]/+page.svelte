@@ -306,13 +306,9 @@
 	<main class="room">
 		<header>
 			<div class="title">
-				<a
-					class="link back"
-					href="/"
-					aria-label="Back to dashboard"
-					use:tooltip={'Back to dashboard'}
-				>
+				<a class="link back" href="/" aria-label="Back to dashboard">
 					<ArrowLeft />
+					<span>Home</span>
 				</a>
 				<h1>{meta?.name ?? 'Untitled retro'}</h1>
 				<button
@@ -500,12 +496,14 @@
 	.link {
 		display: inline-flex;
 		align-items: center;
+		gap: var(--space-1);
 		padding: 0;
 		border: none;
 		background: transparent;
 		color: var(--color-muted);
 		cursor: pointer;
-		line-height: 0;
+		font-size: var(--font-size-sm);
+		font-weight: 500;
 	}
 
 	.link:hover {
