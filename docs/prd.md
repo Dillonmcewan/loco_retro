@@ -27,7 +27,6 @@ Distributed software teams run retros in tools that either require accounts and 
 - Async retros where cards are added over hours or days.
 - Card grouping / clustering during synthesis.
 - Formal action-item tracking, assignment, or external integrations (Jira, Slack, GitHub, etc.).
-- Exporting retros to Markdown / other formats — revisit in v2.
 - Native mobile apps — the web app should be responsive, but mobile-native is out of scope.
 - Long-term cloud archival. Data lives on participants' devices; any relay is best-effort and not a system of record.
 - Cross-device retro history. The R11 dashboard is per-browser; rooms are scoped to whatever's in the user's local IndexedDB + sidecar index on this device. Discovering retros across devices would require accounts, which v1 explicitly rejects.
@@ -47,6 +46,7 @@ _Numbered (R1, R2, …) so feature plans in `docs/features/` can trace back._
 - **R9 — Room lifecycle.** The facilitator can close a room. Closed rooms are read-only but remain viewable by anyone with the join code as long as the state exists on at least one participant's device or the relay's best-effort cache.
 - **R10 — Custom columns.** As an alternative to picking a preset, the facilitator may define their own columns (1–6, with custom titles) at room creation.
 - **R11 — Dashboard.** The root route `/` presents a tile grid of retros the user has on this device, sorted by most-recently-opened. Each tile shows the room name, template, and a relative "last opened" timestamp; clicking a tile loads `/r/<id>` in the room's last-known state (including *Closed*). The first tile is always a "New Retro" affordance that opens the room-creation modal (see R1). The dashboard reflects local state only — rooms appear once they've been created or opened from this browser.
+- **R12 — Export retro.** From an open room, any participant can download the current retro state in their choice of **PDF**, **CSV**, or **Markdown**. Exports include the room name, template/columns, cards (with author attribution), vote totals, and discussed indicators. Export is a local operation — it reflects the requester's current view of the CRDT state and does not require the room to be closed.
 
 ## Open questions
 
