@@ -2,7 +2,11 @@
 	import type { Phase } from '$lib/room';
 	import { celebrationFor, celebrationById, type Celebration } from '$lib/celebrations';
 
-	let { phase, roomId }: { phase: Phase; roomId: string } = $props();
+	let {
+		phase,
+		roomId,
+		onDismiss
+	}: { phase: Phase; roomId: string; onDismiss?: () => void } = $props();
 
 	const TOTAL_MS = 6500;
 
@@ -20,6 +24,7 @@
 			const t = setTimeout(() => {
 				playing = null;
 				dismissTimer = null;
+				onDismiss?.();
 			}, TOTAL_MS);
 			dismissTimer = t;
 			prevPhase = current;
@@ -45,6 +50,7 @@
 			dismissTimer = null;
 		}
 		playing = null;
+		onDismiss?.();
 	}
 </script>
 

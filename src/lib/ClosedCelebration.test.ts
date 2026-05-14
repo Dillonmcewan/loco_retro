@@ -85,6 +85,57 @@ describe('ClosedCelebration.svelte', () => {
 		expect(() => vi.advanceTimersByTime(7000)).not.toThrow();
 	});
 
+	it('calls onDismiss once after TOTAL_MS following a live transition', async () => {
+		const onDismiss = vi.fn();
+		const { rerender } = render(ClosedCelebration, {
+			props: { phase: 'discuss', roomId: 'room-1', onDismiss }
+		});
+		await rerender({ phase: 'closed', roomId: 'room-1', onDismiss });
+		await tick();
+		expect(onDismiss).not.toHaveBeenCalled();
+
+		vi.advanceTimersByTime(6500);
+		await tick();
+		expect(onDismiss).toHaveBeenCalledTimes(1);
+	});
+
+	it('calls onDismiss when the backdrop dismiss button is clicked', async () => {
+		vi.useRealTimers();
+		const user = userEvent.setup();
+		const onDismiss = vi.fn();
+		const { rerender } = render(ClosedCelebration, {
+			props: { phase: 'discuss', roomId: 'room-1', onDismiss }
+		});
+		await rerender({ phase: 'closed', roomId: 'room-1', onDismiss });
+		await tick();
+
+		await user.click(screen.getByRole('button', { name: /dismiss celebration/i }));
+		await tick();
+		expect(onDismiss).toHaveBeenCalledTimes(1);
+	});
+
+	it('does NOT call onDismiss when mounted directly into the closed phase', async () => {
+		const onDismiss = vi.fn();
+		render(ClosedCelebration, {
+			props: { phase: 'closed', roomId: 'room-1', onDismiss }
+		});
+		await tick();
+		vi.advanceTimersByTime(10000);
+		await tick();
+		expect(onDismiss).not.toHaveBeenCalled();
+	});
+
+	it('does NOT call onDismiss when mounted into a non-closed phase and never transitions', async () => {
+		const onDismiss = vi.fn();
+		render(ClosedCelebration, {
+			props: { phase: 'discuss', roomId: 'room-1', onDismiss }
+		});
+		await tick();
+		vi.advanceTimersByTime(10000);
+		await tick();
+		expect(onDismiss).not.toHaveBeenCalled();
+	});
+
 	it('clicking the dismiss backdrop removes the celebration', async () => {
 		// userEvent disagrees with fake timers; use real for this test.
 		vi.useRealTimers();
