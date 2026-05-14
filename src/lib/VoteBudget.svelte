@@ -10,9 +10,10 @@
 		unlimited: boolean;
 		done: boolean;
 		onToggleDone: () => void;
+		idle?: boolean;
 	};
 
-	let { remaining, total, unlimited, done, onToggleDone }: Props = $props();
+	let { remaining, total, unlimited, done, onToggleDone, idle = false }: Props = $props();
 </script>
 
 {#if unlimited}
@@ -20,6 +21,7 @@
 		type="button"
 		class="budget"
 		class:done
+		class:idle
 		aria-pressed={done}
 		aria-label={done ? 'Mark voting incomplete' : 'Mark voting complete'}
 		onclick={onToggleDone}
@@ -123,5 +125,25 @@
 	.budget :global(svg) {
 		width: var(--icon-size-sm);
 		height: var(--icon-size-sm);
+	}
+
+	button.budget.idle {
+		animation: idle-pulse 1.6s ease-in-out infinite;
+	}
+
+	@keyframes idle-pulse {
+		0%,
+		100% {
+			box-shadow: 0 0 0 0 var(--color-primary-soft);
+		}
+		50% {
+			box-shadow: 0 0 0 6px var(--color-primary-soft);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		button.budget.idle {
+			animation: none;
+		}
 	}
 </style>

@@ -73,6 +73,8 @@
 	let votesSpentByAuthor = $state<VotesSpentByAuthor>({});
 	let localReady = $state(false);
 	let prevPhase: Phase | undefined;
+	let idle = $state(false);
+	const IDLE_MS = 30_000;
 
 	const participantColors = $derived(colorsByParticipant(people));
 	const phase = $derived<Phase>(meta?.phase ?? 'collect');
@@ -103,6 +105,9 @@
 	});
 	const everyoneDone = $derived(
 		showProgress && people.length > 0 && people.every((p) => doneByClientId.get(p.clientId))
+	);
+	const shouldNudge = $derived(
+		!localReady && (phase === 'collect' || phase === 'vote') && idle
 	);
 
 	// Reset the per-phase "I'm done" flag whenever the phase transitions, so a
@@ -197,7 +202,27 @@
 			opened.awareness.setLocalStateField('user', { name: saved, authorId, ready: false });
 		}
 
-		return () => unsubs.forEach((fn) => fn());
+		let idleTimer: ReturnType<typeof setTimeout> | null = null;
+		const resetIdle = () => {
+			if (idleTimer) clearTimeout(idleTimer);
+			idle = false;
+			idleTimer = setTimeout(() => {
+				idle = true;
+			}, IDLE_MS);
+		};
+		const activityEvents = ['pointerdown', 'keydown', 'wheel', 'scroll'] as const;
+		for (const ev of activityEvents) {
+			window.addEventListener(ev, resetIdle, { passive: true });
+		}
+		resetIdle();
+
+		return () => {
+			unsubs.forEach((fn) => fn());
+			if (idleTimer) clearTimeout(idleTimer);
+			for (const ev of activityEvents) {
+				window.removeEventListener(ev, resetIdle);
+			}
+		};
 	});
 
 	onDestroy(() => {
@@ -336,9 +361,14 @@
 							unlimited={chrisMode}
 							done={voteDone}
 							onToggleDone={() => setReady(!localReady)}
+							idle={shouldNudge}
 						/>
 					{:else if phase === 'collect'}
-						<CollectStatus ready={localReady} onToggle={() => setReady(!localReady)} />
+						<CollectStatus
+							ready={localReady}
+							onToggle={() => setReady(!localReady)}
+							idle={shouldNudge}
+						/>
 					{/if}
 				</div>
 			</div>

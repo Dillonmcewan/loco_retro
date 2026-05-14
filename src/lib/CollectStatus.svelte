@@ -6,15 +6,17 @@
 	type Props = {
 		ready: boolean;
 		onToggle: () => void;
+		idle?: boolean;
 	};
 
-	let { ready, onToggle }: Props = $props();
+	let { ready, onToggle, idle = false }: Props = $props();
 </script>
 
 <button
 	type="button"
 	class="status"
 	class:ready
+	class:idle
 	aria-pressed={ready}
 	onclick={onToggle}
 	use:tooltip={ready ? 'Click to keep adding cards' : 'Mark yourself done adding cards'}
@@ -72,5 +74,25 @@
 	.status :global(svg) {
 		width: var(--icon-size-sm);
 		height: var(--icon-size-sm);
+	}
+
+	.status.idle {
+		animation: idle-pulse 1.6s ease-in-out infinite;
+	}
+
+	@keyframes idle-pulse {
+		0%,
+		100% {
+			box-shadow: 0 0 0 0 var(--color-primary-soft);
+		}
+		50% {
+			box-shadow: 0 0 0 6px var(--color-primary-soft);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.status.idle {
+			animation: none;
+		}
 	}
 </style>
