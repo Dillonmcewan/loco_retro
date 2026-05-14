@@ -12,9 +12,7 @@
 	let printed = false;
 
 	const isEmpty = $derived(
-		snapshot !== null &&
-			!snapshot.roomName &&
-			snapshot.columns.every((c) => c.cards.length === 0)
+		snapshot !== null && !snapshot.roomName && snapshot.columns.every((c) => c.cards.length === 0)
 	);
 
 	onMount(async () => {

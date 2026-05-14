@@ -20,9 +20,7 @@ import { addCard, leaveRoom, seedRoom, type OpenRoom } from '$lib/room';
 
 const VALID_ID = '11111111-1111-4111-8111-111111111111';
 
-function buildRoom(
-	whenSynced: Promise<void> = Promise.resolve()
-): Y.Doc {
+function buildRoom(whenSynced: Promise<void> = Promise.resolve()): Y.Doc {
 	const doc = new Y.Doc();
 	seedRoom(doc, {
 		name: 'Sprint 42',
