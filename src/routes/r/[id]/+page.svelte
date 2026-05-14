@@ -31,7 +31,7 @@
 	import { getDisplayName, setDisplayName, getAuthorId } from '$lib/displayName';
 	import { upsertRoom, getRoom } from '$lib/rooms';
 	import Share2 from 'lucide-svelte/icons/share-2';
-	import ArrowLeft from 'lucide-svelte/icons/arrow-left';
+	import Home from 'lucide-svelte/icons/home';
 	import Check from 'lucide-svelte/icons/check';
 	import { tooltip } from '$lib/tooltip';
 	import { placeholderFor } from '$lib/emptyPlaceholders';
@@ -329,9 +329,13 @@
 	<main class="room">
 		<header>
 			<div class="title">
-				<a class="link back" href="/" aria-label="Back to dashboard">
-					<ArrowLeft />
-					<span>Home</span>
+				<a
+					class="link back"
+					href="/"
+					aria-label="Back to dashboard"
+					use:tooltip={'Back to dashboard'}
+				>
+					<Home />
 				</a>
 				<h1>{meta?.name ?? 'Untitled retro'}</h1>
 				<button
@@ -524,14 +528,12 @@
 	.link {
 		display: inline-flex;
 		align-items: center;
-		gap: var(--space-1);
 		padding: 0;
 		border: none;
 		background: transparent;
 		color: var(--color-muted);
 		cursor: pointer;
-		font-size: var(--font-size-sm);
-		font-weight: 500;
+		line-height: 0;
 	}
 
 	.link:hover {
@@ -547,6 +549,11 @@
 	.link :global(svg) {
 		width: var(--icon-size-md);
 		height: var(--icon-size-md);
+	}
+
+	.link.back :global(svg) {
+		width: 2rem;
+		height: 2rem;
 	}
 
 	.participants {
