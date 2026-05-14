@@ -31,6 +31,7 @@
 	import { getDisplayName, setDisplayName, getAuthorId } from '$lib/displayName';
 	import { upsertRoom, getRoom } from '$lib/rooms';
 	import Share2 from 'lucide-svelte/icons/share-2';
+	import Download from 'lucide-svelte/icons/download';
 	import Home from 'lucide-svelte/icons/home';
 	import Check from 'lucide-svelte/icons/check';
 	import { tooltip } from '$lib/tooltip';
@@ -44,6 +45,15 @@
 	import CollectStatus from '$lib/CollectStatus.svelte';
 	import Toast from '$lib/Toast.svelte';
 	import ClosedCelebration from '$lib/ClosedCelebration.svelte';
+	import ExportModal from '$lib/ExportModal.svelte';
+	import {
+		buildSnapshot,
+		buildCsv,
+		buildMarkdown,
+		downloadBlob,
+		exportFilename,
+		type ExportFormat
+	} from '$lib/exporters';
 	import type { Column } from '$lib/room';
 	import type { PageData } from './$types';
 
@@ -287,6 +297,35 @@
 		return displayedCards[columnId] ?? [];
 	}
 
+	let showExportModal = $state(false);
+
+	function openExport() {
+		showExportModal = true;
+	}
+
+	function handleExport(format: ExportFormat) {
+		showExportModal = false;
+		if (!room) return;
+		const snap = buildSnapshot(room.doc);
+		const name = snap.roomName || 'retro';
+		try {
+			if (format === 'csv') {
+				const blob = new Blob([buildCsv(snap)], { type: 'text/csv;charset=utf-8' });
+				downloadBlob(blob, exportFilename(name, 'csv'));
+				showToast('success', 'CSV downloaded');
+			} else if (format === 'md') {
+				const url = typeof window !== 'undefined' ? window.location.href : undefined;
+				const blob = new Blob([buildMarkdown(snap, url)], { type: 'text/markdown;charset=utf-8' });
+				downloadBlob(blob, exportFilename(name, 'md'));
+				showToast('success', 'Markdown downloaded');
+			} else {
+				window.open(`/r/${data.id}/export/print`, '_blank', 'noopener');
+			}
+		} catch {
+			showToast('error', "Couldn't export retro");
+		}
+	}
+
 	async function copyUrl() {
 		if (typeof navigator === 'undefined' || !navigator.clipboard) {
 			showToast('error', "Couldn't copy link — clipboard unavailable");
@@ -347,6 +386,15 @@
 				>
 					<Share2 />
 				</button>
+				<button
+					type="button"
+					class="link"
+					onclick={openExport}
+					aria-label="Export retro"
+					use:tooltip={'Export retro'}
+				>
+					<Download />
+				</button>
 			</div>
 			<div class="phase-stack">
 				<PhaseControls
@@ -399,6 +447,12 @@
 		{#if toast}
 			<Toast kind={toast.kind} message={toast.message} />
 		{/if}
+
+		<ExportModal
+			open={showExportModal}
+			onClose={() => (showExportModal = false)}
+			onConfirm={handleExport}
+		/>
 
 		<section aria-label="Columns" class="columns">
 			{#each cols as column, columnIndex (column.id)}
