@@ -111,14 +111,12 @@ describe('buildCsv', () => {
 		expect(csv).toContain('final');
 	});
 
-	it('chrisMode is metadata only and does not change rows', () => {
+	it('chrisMode does not change the row shape', () => {
 		const doc = new Y.Doc();
 		seedRoom(doc, { name: 'Free', columns: DEFAULT_COLS, chrisMode: true });
 		const colId = readColumns(doc)[0].id;
 		addCard(doc, { columnId: colId, text: 'X', author: 'A', authorId: 'a' });
-		const snap = buildSnapshot(doc);
-		expect(snap.chrisMode).toBe(true);
-		const csv = buildCsv(snap);
+		const csv = buildCsv(buildSnapshot(doc));
 		expect(csv.split('\n').length).toBe(3); // header + 1 row + trailing newline
 	});
 });

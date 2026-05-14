@@ -23,8 +23,6 @@ export type ExportSnapshot = {
 	roomName: string;
 	templateLabel: string;
 	phase: Phase;
-	chrisMode: boolean;
-	votesPerParticipant: number;
 	columns: ExportColumn[];
 	exportedAt: number;
 };
@@ -53,8 +51,6 @@ export function buildSnapshot(doc: Y.Doc, now: number = Date.now()): ExportSnaps
 		roomName: meta?.name ?? '',
 		templateLabel: deriveTemplateLabel(columnsRaw.map((c) => c.title)),
 		phase: meta?.phase ?? 'collect',
-		chrisMode: meta?.chrisMode === true,
-		votesPerParticipant: meta?.votesPerParticipant ?? 0,
 		columns,
 		exportedAt: now
 	};
