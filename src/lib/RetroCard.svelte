@@ -69,8 +69,8 @@
 		{ angle: 338, distance: 90, color: 'var(--color-phase-closed)' }
 	] as const;
 
-	const showDiscussedToggle = $derived(phase === 'discuss' || phase === 'closed');
-	const discussedDisabled = $derived(phase === 'closed');
+	const showDiscussedToggle = $derived(phase === 'discuss');
+	const showDiscussedIndicator = $derived(phase === 'closed' && discussed);
 
 	// Aggregate totals are hidden during Vote to keep running tallies from
 	// biasing voters; they only appear from Discuss onward.
@@ -186,7 +186,6 @@
 					class:on={discussed}
 					aria-pressed={discussed}
 					aria-label={discussed ? 'Mark as not discussed' : 'Mark as discussed'}
-					disabled={discussedDisabled}
 					onclick={onToggleDiscussed}
 					use:tooltip={discussed ? 'Mark as not discussed' : 'Mark as discussed'}
 				>
@@ -196,6 +195,10 @@
 						<Circle />
 					{/if}
 				</button>
+			{:else if showDiscussedIndicator}
+				<span class="discussed-indicator" aria-label="Discussed">
+					<CheckCircle2 />
+				</span>
 			{/if}
 			<div class="owner-actions" class:editing>
 				{#if editing}
@@ -307,8 +310,15 @@
 		opacity: 1;
 	}
 
-	button.icon.discussed-toggle:disabled {
-		cursor: default;
+	.discussed-indicator {
+		display: inline-flex;
+		align-items: center;
+		color: var(--color-success);
+	}
+
+	.discussed-indicator :global(svg) {
+		width: var(--icon-size-sm);
+		height: var(--icon-size-sm);
 	}
 
 	.vote-total {
