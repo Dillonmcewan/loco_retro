@@ -197,7 +197,7 @@
 				</button>
 			{:else if showDiscussedIndicator}
 				<span class="discussed-indicator" aria-label="Discussed">
-					<CheckCircle2 />
+					<Check />
 				</span>
 			{/if}
 			<div class="owner-actions" class:editing>
@@ -317,8 +317,8 @@
 	}
 
 	.discussed-indicator :global(svg) {
-		width: var(--icon-size-sm);
-		height: var(--icon-size-sm);
+		width: var(--icon-size-md);
+		height: var(--icon-size-md);
 	}
 
 	.vote-total {
