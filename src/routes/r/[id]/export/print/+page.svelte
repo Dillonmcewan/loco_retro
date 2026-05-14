@@ -11,15 +11,23 @@
 	let snapshot = $state<ExportSnapshot | null>(null);
 	let printed = false;
 
+	const isEmpty = $derived(
+		snapshot !== null &&
+			!snapshot.roomName &&
+			snapshot.columns.every((c) => c.cards.length === 0)
+	);
+
 	onMount(async () => {
 		room = ensureRoom(data.id);
 		// Wait for IndexedDB to hydrate the doc, then take the snapshot.
 		await room.persistence.whenSynced;
 		await tick();
-		snapshot = buildSnapshot(room.doc);
+		const snap = buildSnapshot(room.doc);
+		snapshot = snap;
 		// One more tick so the layout renders before the print dialog opens.
 		await tick();
-		if (!printed) {
+		const empty = !snap.roomName && snap.columns.every((c) => c.cards.length === 0);
+		if (!printed && !empty) {
 			printed = true;
 			window.print();
 		}
@@ -53,6 +61,14 @@
 <main class="page">
 	{#if !snapshot}
 		<p class="loading">Loading retro…</p>
+	{:else if isEmpty}
+		<section class="empty-state">
+			<h1>No local data for this room</h1>
+			<p>
+				This browser doesn't have a copy of this retro's data. Open the room first so it can sync
+				from another participant, then try again.
+			</p>
+		</section>
 	{:else}
 		<header>
 			<h1>{snapshot.roomName || 'Retro'}</h1>
@@ -111,6 +127,18 @@
 
 	.loading {
 		color: var(--color-muted);
+	}
+
+	.empty-state {
+		color: var(--color-muted);
+		text-align: center;
+		margin-top: 4rem;
+	}
+
+	.empty-state h1 {
+		font-size: var(--font-size-xl);
+		margin: 0 0 0.5rem;
+		color: var(--color-text);
 	}
 
 	header {
