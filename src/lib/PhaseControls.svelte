@@ -42,7 +42,7 @@
 		onclick={onBack}
 		disabled={isAtStart}
 		aria-label={backTooltip}
-		use:tooltip={isAtStart ? undefined : backTooltip}
+		use:tooltip={backTooltip}
 	>
 		<ChevronLeft />
 	</button>
@@ -59,7 +59,7 @@
 		onclick={onAdvance}
 		disabled={isClosed}
 		aria-label={advanceTooltip}
-		use:tooltip={isClosed ? undefined : advanceTooltip}
+		use:tooltip={advanceTooltip}
 	>
 		<ChevronRight />
 	</button>

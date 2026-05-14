@@ -26,6 +26,7 @@ export function tooltip(node: HTMLElement, label?: string) {
 	const text = () => currentLabel ?? node.getAttribute('aria-label') ?? node.title ?? '';
 
 	function show() {
+		if (node.matches(':disabled')) return;
 		const t = text();
 		if (!t) return;
 		hide();
