@@ -1,5 +1,5 @@
 <script lang="ts">
-	import CardSurface from '$lib/CardSurface.svelte';
+	import CardSelector from '$lib/CardSelector.svelte';
 	import type { ExportFormat } from '$lib/exporters';
 	import FileText from 'lucide-svelte/icons/file-text';
 	import FileSpreadsheet from 'lucide-svelte/icons/file-spreadsheet';
@@ -40,10 +40,10 @@
 		onConfirm(selected);
 	}
 
-	const FORMATS: { key: ExportFormat; label: string; sub: string; Icon: typeof FileText }[] = [
-		{ key: 'pdf', label: 'PDF', sub: 'Print-ready layout', Icon: FileType2 },
-		{ key: 'csv', label: 'CSV', sub: 'One row per card', Icon: FileSpreadsheet },
-		{ key: 'md', label: 'Markdown', sub: 'Paste into docs', Icon: FileText }
+	const FORMATS: { key: ExportFormat; label: string; Icon: typeof FileText }[] = [
+		{ key: 'pdf', label: 'PDF', Icon: FileType2 },
+		{ key: 'csv', label: 'CSV', Icon: FileSpreadsheet },
+		{ key: 'md', label: 'Markdown', Icon: FileText }
 	];
 </script>
 
@@ -53,16 +53,12 @@
 
 		<div class="format-grid">
 			{#each FORMATS as f (f.key)}
-				<CardSurface
-					ariaLabel={`${f.label} — ${f.sub}`}
-					ariaPressed={selected === f.key}
-					class={selected === f.key ? 'format-card selected' : 'format-card'}
-					onclick={() => pick(f.key)}
-				>
-					<f.Icon />
-					<span class="format-name">{f.label}</span>
-					<span class="format-sub">{f.sub}</span>
-				</CardSurface>
+				<CardSelector ariaLabel={f.label} selected={selected === f.key} onclick={() => pick(f.key)}>
+					<span class="format-card-body">
+						<f.Icon />
+						<span class="format-name">{f.label}</span>
+					</span>
+				</CardSelector>
 			{/each}
 		</div>
 
@@ -108,39 +104,28 @@
 		gap: var(--space-3);
 	}
 
-	.format-grid :global(.format-card) {
+	/* Centered icon-over-label layout for export format options. */
+	.format-card-body {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		gap: var(--space-2);
-		padding: var(--space-5) var(--space-3);
 		text-align: center;
 	}
 
-	.format-grid :global(.format-card.selected) {
-		border-color: var(--color-primary);
-		box-shadow: 0 0 0 2px var(--color-primary-soft);
-	}
-
-	.format-grid :global(.format-card svg) {
-		width: 2rem;
-		height: 2rem;
-		stroke-width: 1.5;
+	.format-card-body :global(svg) {
+		width: var(--icon-size-lg);
+		height: var(--icon-size-lg);
 		color: var(--color-muted);
 	}
 
-	.format-grid :global(.format-card.selected svg) {
+	:global(.card-selector.is-selected) .format-card-body :global(svg) {
 		color: var(--color-primary);
 	}
 
 	.format-name {
 		font-weight: 600;
 		font-size: var(--font-size-md);
-	}
-
-	.format-sub {
-		font-size: var(--font-size-sm);
-		color: var(--color-muted);
 	}
 
 	.actions {

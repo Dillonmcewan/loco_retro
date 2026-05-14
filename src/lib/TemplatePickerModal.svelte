@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { aggregatedTemplates, type Template } from '$lib/templates';
 	import { listRooms } from '$lib/rooms';
-	import TemplateCard from '$lib/TemplateCard.svelte';
+	import CardSelector from '$lib/CardSelector.svelte';
 	import ColumnEditor from '$lib/ColumnEditor.svelte';
 	import Plus from 'lucide-svelte/icons/plus';
 
@@ -57,23 +57,23 @@
 				<h3 id="custom-heading">Custom</h3>
 				<div class="template-grid">
 					{#each yours as t (t.key)}
-						<TemplateCard onclick={() => selectTemplate(t)}>
+						<CardSelector onclick={() => selectTemplate(t)}>
 							<span class="template-name">{t.label}</span>
 							<span class="template-cols">
 								{#each t.columns as c, i (i)}
 									<span class="col-chip">{c.title}</span>
 								{/each}
 							</span>
-						</TemplateCard>
+						</CardSelector>
 					{/each}
-					<TemplateCard
+					<CardSelector
 						variant="dashed"
 						ariaLabel="Create new template"
 						onclick={() => (editorOpen = true)}
 					>
 						<Plus />
 						<span class="template-name">New template</span>
-					</TemplateCard>
+					</CardSelector>
 				</div>
 			</section>
 
@@ -81,14 +81,14 @@
 				<h3 id="presets-heading">Presets</h3>
 				<div class="template-grid">
 					{#each presets as t (t.key)}
-						<TemplateCard onclick={() => selectTemplate(t)}>
+						<CardSelector onclick={() => selectTemplate(t)}>
 							<span class="template-name">{t.label}</span>
 							<span class="template-cols">
 								{#each t.columns as c, i (i)}
 									<span class="col-chip">{c.title}</span>
 								{/each}
 							</span>
-						</TemplateCard>
+						</CardSelector>
 					{/each}
 				</div>
 			</section>
@@ -152,6 +152,32 @@
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
 		gap: var(--space-3);
+	}
+
+	.template-name {
+		font-weight: 600;
+		font-size: var(--font-size-md);
+		line-height: 1.3;
+	}
+
+	.template-cols {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-1);
+	}
+
+	.col-chip {
+		padding: var(--space-1) var(--space-2);
+		background: var(--color-surface-soft);
+		color: var(--color-muted);
+		border-radius: 1rem;
+		font-size: var(--font-size-xs);
+		font-weight: 500;
+	}
+
+	:global(.card-selector.is-selected) .col-chip {
+		background: white;
+		color: var(--color-text);
 	}
 
 	.actions {

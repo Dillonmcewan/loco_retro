@@ -10,7 +10,7 @@
 	} from '$lib/room';
 	import { recentTemplates, DEFAULT_TEMPLATE, isPresetKey, type Template } from '$lib/templates';
 	import { listRooms, upsertRoom } from '$lib/rooms';
-	import TemplateCard from '$lib/TemplateCard.svelte';
+	import CardSelector from '$lib/CardSelector.svelte';
 	import TemplatePickerModal from '$lib/TemplatePickerModal.svelte';
 	import { tooltip } from '$lib/tooltip';
 	import InfinityIcon from 'lucide-svelte/icons/infinity';
@@ -147,7 +147,7 @@
 				<legend>Template</legend>
 				<div class="template-grid">
 					{#each recents as template (template.key)}
-						<TemplateCard
+						<CardSelector
 							selected={selectedTemplate.key === template.key}
 							onclick={() => selectRecent(template)}
 						>
@@ -157,12 +157,12 @@
 									<span class="col-chip">{col.title}</span>
 								{/each}
 							</span>
-						</TemplateCard>
+						</CardSelector>
 					{/each}
-					<TemplateCard variant="dashed" onclick={() => (pickerOpen = true)}>
+					<CardSelector variant="dashed" onclick={() => (pickerOpen = true)}>
 						<span class="template-name">More templates…</span>
 						<span class="more-sub">Browse all, or create your own</span>
-					</TemplateCard>
+					</CardSelector>
 				</div>
 			</fieldset>
 
@@ -323,6 +323,32 @@
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
 		gap: var(--space-3);
+	}
+
+	.template-name {
+		font-weight: 600;
+		font-size: var(--font-size-md);
+		line-height: 1.3;
+	}
+
+	.template-cols {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-1);
+	}
+
+	.col-chip {
+		padding: var(--space-1) var(--space-2);
+		background: var(--color-surface-soft);
+		color: var(--color-muted);
+		border-radius: 1rem;
+		font-size: var(--font-size-xs);
+		font-weight: 500;
+	}
+
+	:global(.card-selector.is-selected) .col-chip {
+		background: white;
+		color: var(--color-text);
 	}
 
 	.more-sub {
