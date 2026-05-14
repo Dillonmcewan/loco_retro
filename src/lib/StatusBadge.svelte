@@ -21,14 +21,7 @@
 		children: Snippet;
 	};
 
-	let {
-		done,
-		idle = false,
-		onClick,
-		ariaLabel,
-		tooltip: tip,
-		children
-	}: Props = $props();
+	let { done, idle = false, onClick, ariaLabel, tooltip: tip, children }: Props = $props();
 
 	const pulse = $derived(idle && !done);
 </script>
@@ -47,13 +40,19 @@
 		{@render children()}
 	</button>
 {:else}
-	<span class="status-badge" class:done class:pulse aria-label={ariaLabel}>
+	<span class="status-badge" class:done class:pulse aria-label={ariaLabel} use:tooltipAction={tip}>
 		{@render children()}
 	</span>
 {/if}
 
 <style>
+	/*
+	 * `--badge-fg-muted` lets inner content (helper text, separators) track
+	 * the badge's hover/done color without each consumer re-implementing the
+	 * hover rule. Consumers reference it via `color: var(--badge-fg-muted)`.
+	 */
 	.status-badge {
+		--badge-fg-muted: var(--color-muted);
 		display: inline-flex;
 		align-items: center;
 		gap: var(--space-2);
@@ -77,6 +76,7 @@
 	button.status-badge:hover {
 		border-color: var(--color-primary);
 		color: var(--color-primary);
+		--badge-fg-muted: var(--color-primary);
 	}
 
 	button.status-badge:focus-visible {
@@ -88,11 +88,13 @@
 		border-color: var(--color-success);
 		background: var(--color-success-soft);
 		color: var(--color-success);
+		--badge-fg-muted: var(--color-success);
 	}
 
 	button.status-badge.done:hover {
 		border-color: var(--color-success);
 		color: var(--color-success);
+		--badge-fg-muted: var(--color-success);
 	}
 
 	.status-badge :global(svg) {

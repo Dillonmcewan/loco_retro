@@ -96,7 +96,7 @@ test('Chris mode: no budget cap, chip toggles manual "done voting"', async ({ br
 
 	const votesInput = pageA.getByLabel('Votes per participant');
 	await expect(votesInput).toBeEnabled();
-	const chrisToggle = pageA.getByLabel(/chris mode/i);
+	const chrisToggle = pageA.getByRole('checkbox', { name: 'Chris mode' });
 	await expect(chrisToggle).not.toBeChecked();
 	await chrisToggle.check();
 	await expect(chrisToggle).toBeChecked();

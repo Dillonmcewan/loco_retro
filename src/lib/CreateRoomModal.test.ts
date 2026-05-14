@@ -216,7 +216,7 @@ describe('CreateRoomModal', () => {
 		const votes = screen.getByLabelText(/votes per participant/i) as HTMLInputElement;
 		expect(votes.disabled).toBe(false);
 
-		const chrisCheckbox = screen.getByLabelText(/chris mode/i) as HTMLInputElement;
+		const chrisCheckbox = screen.getByLabelText(/^chris mode$/i) as HTMLInputElement;
 		expect(chrisCheckbox.checked).toBe(false);
 		await user.click(chrisCheckbox);
 		expect(chrisCheckbox.checked).toBe(true);

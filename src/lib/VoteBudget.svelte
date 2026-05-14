@@ -61,21 +61,14 @@
 
 	.caption {
 		font-size: var(--font-size-xs);
-		color: var(--color-muted);
+		color: var(--badge-fg-muted);
 	}
 
 	.separator {
-		color: var(--color-muted);
+		color: var(--badge-fg-muted);
 	}
 
 	.done-label {
 		font-weight: 600;
-	}
-
-	/* Match the hover color of the surrounding badge so the muted helper text
-	   tracks with the rest of the button on hover. */
-	:global(button.status-badge:hover) .caption,
-	:global(button.status-badge:hover) .separator {
-		color: var(--color-primary);
 	}
 </style>

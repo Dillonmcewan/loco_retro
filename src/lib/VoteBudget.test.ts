@@ -27,16 +27,16 @@ describe('VoteBudget.svelte (normal mode)', () => {
 		expect(screen.getByText('3 / 5')).toBeInTheDocument();
 		expect(screen.getByText(/votes remaining/i)).toBeInTheDocument();
 		// No interactive control in normal mode.
-		expect(container.querySelector('button.budget')).toBeNull();
-		expect(container.querySelector('span.budget')).not.toBeNull();
+		expect(container.querySelector('button.status-badge')).toBeNull();
+		expect(container.querySelector('span.status-badge')).not.toBeNull();
 	});
 
 	it('flips to "Done voting!" with .done styling when done is true', () => {
 		const { container } = render(VoteBudget, { props: baseProps({ done: true }) });
 		expect(screen.getByText(/Done voting!/i)).toBeInTheDocument();
-		expect(container.querySelector('.budget.done')).not.toBeNull();
+		expect(container.querySelector('.status-badge.done')).not.toBeNull();
 		// Still passive — no button.
-		expect(container.querySelector('button.budget')).toBeNull();
+		expect(container.querySelector('button.status-badge')).toBeNull();
 	});
 });
 
@@ -45,7 +45,7 @@ describe('VoteBudget.svelte (Chris mode)', () => {
 		const { container } = render(VoteBudget, {
 			props: baseProps({ unlimited: true })
 		});
-		const btn = container.querySelector('button.budget');
+		const btn = container.querySelector('button.status-badge');
 		expect(btn).not.toBeNull();
 		expect(screen.getByText(/I'm done/i)).toBeInTheDocument();
 	});
@@ -62,7 +62,7 @@ describe('VoteBudget.svelte (Chris mode)', () => {
 		const { container } = render(VoteBudget, {
 			props: baseProps({ unlimited: true, onToggleDone })
 		});
-		await fireEvent.click(container.querySelector('button.budget')!);
+		await fireEvent.click(container.querySelector('button.status-badge')!);
 		expect(onToggleDone).toHaveBeenCalledOnce();
 	});
 
@@ -70,7 +70,7 @@ describe('VoteBudget.svelte (Chris mode)', () => {
 		const { container, rerender } = render(VoteBudget, {
 			props: baseProps({ unlimited: true, done: false })
 		});
-		const btn = () => container.querySelector('button.budget')!;
+		const btn = () => container.querySelector('button.status-badge')!;
 		expect(btn().getAttribute('aria-pressed')).toBe('false');
 		expect(btn().getAttribute('aria-label')).toMatch(/mark voting complete/i);
 

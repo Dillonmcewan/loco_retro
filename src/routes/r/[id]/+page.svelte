@@ -516,6 +516,7 @@
 
 	h1 {
 		margin: 0;
+		font-size: var(--font-size-2xl);
 	}
 
 	.title {
@@ -552,8 +553,8 @@
 	}
 
 	.link.back :global(svg) {
-		width: 2rem;
-		height: 2rem;
+		width: var(--icon-size-lg);
+		height: var(--icon-size-lg);
 	}
 
 	.participants {
