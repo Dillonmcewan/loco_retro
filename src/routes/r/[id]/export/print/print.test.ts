@@ -16,11 +16,13 @@ vi.mock('$lib/room', async () => {
 });
 
 import PrintPage from './+page.svelte';
-import { addCard, seedRoom, type OpenRoom } from '$lib/room';
+import { addCard, leaveRoom, seedRoom, type OpenRoom } from '$lib/room';
 
 const VALID_ID = '11111111-1111-4111-8111-111111111111';
 
-function buildRoom(): Y.Doc {
+function buildRoom(
+	whenSynced: Promise<void> = Promise.resolve()
+): Y.Doc {
 	const doc = new Y.Doc();
 	seedRoom(doc, {
 		name: 'Sprint 42',
@@ -34,10 +36,18 @@ function buildRoom(): Y.Doc {
 		doc,
 		awareness: {} as OpenRoom['awareness'],
 		provider: {} as OpenRoom['provider'],
-		persistence: { whenSynced: Promise.resolve() } as unknown as OpenRoom['persistence'],
+		persistence: { whenSynced } as unknown as OpenRoom['persistence'],
 		destroy: vi.fn()
 	};
 	return doc;
+}
+
+function deferred<T>(): { promise: Promise<T>; resolve: (v: T) => void } {
+	let resolve!: (v: T) => void;
+	const promise = new Promise<T>((r) => {
+		resolve = r;
+	});
+	return { promise, resolve };
 }
 
 describe('Export print page', () => {
@@ -61,5 +71,30 @@ describe('Export print page', () => {
 	it('calls window.print after the snapshot resolves', async () => {
 		render(PrintPage, { props: { data: { id: VALID_ID } } });
 		await waitFor(() => expect(window.print).toHaveBeenCalledTimes(1));
+	});
+
+	it('holds the loading state until whenSynced resolves, then auto-prints', async () => {
+		const d = deferred<void>();
+		buildRoom(d.promise);
+		render(PrintPage, { props: { data: { id: VALID_ID } } });
+
+		await waitFor(() => expect(screen.getByText(/loading retro/i)).toBeInTheDocument());
+		expect(window.print).not.toHaveBeenCalled();
+
+		d.resolve();
+		await waitFor(() => expect(window.print).toHaveBeenCalledTimes(1));
+		expect(screen.queryByText(/loading retro/i)).not.toBeInTheDocument();
+	});
+
+	it('calls leaveRoom when unmounted before whenSynced resolves', async () => {
+		const d = deferred<void>();
+		buildRoom(d.promise);
+		const { unmount } = render(PrintPage, { props: { data: { id: VALID_ID } } });
+
+		await waitFor(() => expect(screen.getByText(/loading retro/i)).toBeInTheDocument());
+		expect(leaveRoom).not.toHaveBeenCalled();
+
+		unmount();
+		expect(leaveRoom).toHaveBeenCalled();
 	});
 });
