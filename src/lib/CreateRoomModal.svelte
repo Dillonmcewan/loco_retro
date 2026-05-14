@@ -188,17 +188,27 @@
 							</span>
 						{/if}
 					</span>
-					<label class="chris-checkbox">
-						<input type="checkbox" bind:checked={chrisMode} />
-						<span>Chris mode</span>
-						<span
+					<div class="chris-cell">
+						<label
+							class="chris-checkbox"
+							use:tooltip={"Everything's made up and the points don't matter"}
+						>
+							<input type="checkbox" bind:checked={chrisMode} />
+							<span>Chris mode</span>
+						</label>
+						<button
+							type="button"
 							class="chris-help"
-							aria-hidden="true"
-							use:tooltip={"Unlimited votes per person. Click 'I'm done' when finished instead of running out of votes."}
+							aria-label="What is Chris mode?"
+							use:tooltip={{
+								text: 'You can never have too many votes! Participants get unlimited votes',
+								delay: 2000,
+								showOnClick: true
+							}}
 						>
 							<HelpCircle />
-						</span>
-					</label>
+						</button>
+					</div>
 				</div>
 				{#if fieldErrors.votes && !chrisMode}
 					<span id="votes-error" class="error" role="alert">{fieldErrors.votes}</span>
@@ -395,8 +405,14 @@
 		gap: var(--space-3);
 	}
 
-	.chris-checkbox {
+	.chris-cell {
 		justify-self: center;
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+	}
+
+	.chris-checkbox {
 		display: inline-flex;
 		flex-direction: row;
 		align-items: center;
@@ -417,12 +433,30 @@
 	.chris-help {
 		display: inline-flex;
 		align-items: center;
+		justify-content: center;
+		padding: 0;
+		border: none;
+		background: transparent;
 		color: var(--color-muted);
+		cursor: pointer;
+		border-radius: 50%;
+		transition: color 0.15s ease;
+	}
+
+	.chris-help:hover:not(:disabled),
+	.chris-help:focus-visible {
+		background: transparent;
+		color: var(--color-text);
+	}
+
+	.chris-help:focus-visible {
+		outline: 2px solid var(--color-primary);
+		outline-offset: 2px;
 	}
 
 	.chris-help :global(svg) {
-		width: var(--icon-size-sm);
-		height: var(--icon-size-sm);
+		width: var(--icon-size-md);
+		height: var(--icon-size-md);
 	}
 
 	.votes-input-wrap {

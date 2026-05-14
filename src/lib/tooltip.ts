@@ -1,13 +1,35 @@
 /**
- * Svelte action: shows a small floating hint after a hover delay. Uses the
- * passed label, or falls back to the element's aria-label / title. The
- * tooltip element is appended to the nearest open <dialog> ancestor — so it
- * shares the dialog's top-layer stacking context — or to <body> otherwise;
- * styling lives in app.css under `.tooltip`.
+ * Svelte action: shows a small floating hint after a hover delay. Accepts a
+ * label string or an options object `{ text, delay, showOnClick }`. Falls back
+ * to the element's aria-label / title if no text is given. The tooltip is
+ * appended to the nearest open <dialog> ancestor — so it shares the dialog's
+ * top-layer stacking context — or to <body> otherwise; styling lives in
+ * app.css under `.tooltip`.
  */
-const DELAY_MS = 500;
+const DEFAULT_DELAY_MS = 500;
 const VERTICAL_OFFSET_PX = 6;
 const VIEWPORT_PADDING_PX = 4;
+
+export type TooltipOptions = {
+	text?: string;
+	delay?: number;
+	/** Clicking the element opens the tooltip instead of dismissing it. */
+	showOnClick?: boolean;
+};
+
+export type TooltipParam = string | TooltipOptions | undefined;
+
+type Normalized = { text?: string; delay: number; showOnClick: boolean };
+
+function normalize(p: TooltipParam): Normalized {
+	if (typeof p === 'string') return { text: p, delay: DEFAULT_DELAY_MS, showOnClick: false };
+	if (!p) return { text: undefined, delay: DEFAULT_DELAY_MS, showOnClick: false };
+	return {
+		text: p.text,
+		delay: p.delay ?? DEFAULT_DELAY_MS,
+		showOnClick: !!p.showOnClick
+	};
+}
 
 function nearestOpenDialog(node: HTMLElement): HTMLDialogElement | null {
 	let cur: HTMLElement | null = node.parentElement;
@@ -18,12 +40,12 @@ function nearestOpenDialog(node: HTMLElement): HTMLDialogElement | null {
 	return null;
 }
 
-export function tooltip(node: HTMLElement, label?: string) {
+export function tooltip(node: HTMLElement, param?: TooltipParam) {
+	let opts = normalize(param);
 	let timer: ReturnType<typeof setTimeout> | null = null;
 	let tip: HTMLDivElement | null = null;
-	let currentLabel = label;
 
-	const text = () => currentLabel ?? node.getAttribute('aria-label') ?? node.title ?? '';
+	const text = () => opts.text ?? node.getAttribute('aria-label') ?? node.title ?? '';
 
 	function show() {
 		if (node.matches(':disabled')) return;
@@ -60,18 +82,27 @@ export function tooltip(node: HTMLElement, label?: string) {
 
 	function start() {
 		hide();
-		timer = setTimeout(show, DELAY_MS);
+		timer = setTimeout(show, opts.delay);
+	}
+
+	function onClick() {
+		if (opts.showOnClick) {
+			// Click opens immediately, bypassing the hover delay.
+			show();
+		} else {
+			hide();
+		}
 	}
 
 	node.addEventListener('mouseenter', start);
 	node.addEventListener('mouseleave', hide);
 	node.addEventListener('focus', start);
 	node.addEventListener('blur', hide);
-	node.addEventListener('click', hide);
+	node.addEventListener('click', onClick);
 
 	return {
-		update(next?: string) {
-			currentLabel = next;
+		update(next?: TooltipParam) {
+			opts = normalize(next);
 		},
 		destroy() {
 			hide();
@@ -79,7 +110,7 @@ export function tooltip(node: HTMLElement, label?: string) {
 			node.removeEventListener('mouseleave', hide);
 			node.removeEventListener('focus', start);
 			node.removeEventListener('blur', hide);
-			node.removeEventListener('click', hide);
+			node.removeEventListener('click', onClick);
 		}
 	};
 }
