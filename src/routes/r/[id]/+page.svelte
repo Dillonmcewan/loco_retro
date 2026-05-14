@@ -305,7 +305,10 @@
 
 	function handleExport(format: ExportFormat) {
 		showExportModal = false;
-		if (!room) return;
+		if (!room) {
+			showToast('error', "Couldn't export retro");
+			return;
+		}
 		const snap = buildSnapshot(room.doc);
 		const name = snap.roomName || 'retro';
 		try {
