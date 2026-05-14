@@ -12,6 +12,7 @@ import {
 	addCard,
 	advancePhase,
 	castVote,
+	editCard,
 	readColumns,
 	seedRoom,
 	setPhase,
@@ -111,6 +112,18 @@ describe('buildCsv', () => {
 		expect(csv).toContain('final');
 	});
 
+	it('populates the Edited At column with an ISO timestamp when a card has been edited', () => {
+		const doc = seededDoc();
+		const colId = readColumns(doc)[0].id;
+		const card = addCard(doc, { columnId: colId, text: 'first', author: 'A', authorId: 'a' })!;
+		editCard(doc, colId, card.id, 'second');
+		const csv = buildCsv(buildSnapshot(doc));
+		const dataRow = csv.trim().split('\n')[1];
+		const cols = dataRow.split(',');
+		expect(cols.length).toBe(7);
+		expect(cols[6]).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+	});
+
 	it('chrisMode does not change the row shape', () => {
 		const doc = new Y.Doc();
 		seedRoom(doc, { name: 'Free', columns: DEFAULT_COLS, chrisMode: true });
@@ -148,6 +161,18 @@ describe('buildMarkdown', () => {
 	it('emits "(no cards)" for empty columns', () => {
 		const md = buildMarkdown(buildSnapshot(seededDoc()));
 		expect(md).toContain('_(no cards)_');
+	});
+
+	it('renders the closed phase in the metadata block', () => {
+		const doc = seededDoc();
+		const colId = readColumns(doc)[0].id;
+		addCard(doc, { columnId: colId, text: 'final', author: 'A', authorId: 'a' });
+		advancePhase(doc);
+		advancePhase(doc);
+		advancePhase(doc);
+		const md = buildMarkdown(buildSnapshot(doc));
+		expect(md).toContain('- **Phase:** closed');
+		expect(md).toContain('- final — _A_');
 	});
 
 	it('singularizes "vote" when count is 1', () => {
