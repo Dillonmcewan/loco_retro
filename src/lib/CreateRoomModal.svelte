@@ -188,12 +188,16 @@
 							</span>
 						{/if}
 					</span>
-					<label
-						class="chris-checkbox"
-						use:tooltip={"Everything's made up and the points don't matter"}
-					>
+					<label class="chris-checkbox">
 						<input type="checkbox" bind:checked={chrisMode} />
 						<span>Chris mode</span>
+						<span
+							class="chris-help"
+							aria-hidden="true"
+							use:tooltip={"Unlimited votes per person. Click 'I'm done' when finished instead of running out of votes."}
+						>
+							<HelpCircle />
+						</span>
 					</label>
 				</div>
 				{#if fieldErrors.votes && !chrisMode}
@@ -408,6 +412,17 @@
 		height: 1rem;
 		accent-color: var(--color-primary);
 		cursor: pointer;
+	}
+
+	.chris-help {
+		display: inline-flex;
+		align-items: center;
+		color: var(--color-muted);
+	}
+
+	.chris-help :global(svg) {
+		width: var(--icon-size-sm);
+		height: var(--icon-size-sm);
 	}
 
 	.votes-input-wrap {
