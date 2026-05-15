@@ -49,55 +49,57 @@
 	scrollable
 	dismissOnBackdrop={!editorOpen}
 >
-	<h2 id="template-picker-title">{editorOpen ? 'Create new template' : 'Choose a template'}</h2>
+	{#snippet children({ close })}
+		<h2 id="template-picker-title">{editorOpen ? 'Create new template' : 'Choose a template'}</h2>
 
-	{#if editorOpen}
-		<ColumnEditor onSave={handleEditorSave} onCancel={() => (editorOpen = false)} />
-	{:else}
-		<section aria-labelledby="custom-heading" class="section">
-			<h3 id="custom-heading">Custom</h3>
-			<div class="template-grid">
-				{#each yours as t (t.key)}
-					<CardSelector onclick={() => selectTemplate(t)}>
-						<span class="template-name">{t.label}</span>
-						<span class="template-cols">
-							{#each t.columns as c, i (i)}
-								<span class="col-chip">{c.title}</span>
-							{/each}
-						</span>
+		{#if editorOpen}
+			<ColumnEditor onSave={handleEditorSave} onCancel={() => (editorOpen = false)} />
+		{:else}
+			<section aria-labelledby="custom-heading" class="section">
+				<h3 id="custom-heading">Custom</h3>
+				<div class="template-grid">
+					{#each yours as t (t.key)}
+						<CardSelector onclick={() => selectTemplate(t)}>
+							<span class="template-name">{t.label}</span>
+							<span class="template-cols">
+								{#each t.columns as c, i (i)}
+									<span class="col-chip">{c.title}</span>
+								{/each}
+							</span>
+						</CardSelector>
+					{/each}
+					<CardSelector
+						variant="dashed"
+						ariaLabel="Create new template"
+						onclick={() => (editorOpen = true)}
+					>
+						<Plus />
+						<span class="template-name">New template</span>
 					</CardSelector>
-				{/each}
-				<CardSelector
-					variant="dashed"
-					ariaLabel="Create new template"
-					onclick={() => (editorOpen = true)}
-				>
-					<Plus />
-					<span class="template-name">New template</span>
-				</CardSelector>
-			</div>
-		</section>
+				</div>
+			</section>
 
-		<section aria-labelledby="presets-heading" class="section">
-			<h3 id="presets-heading">Presets</h3>
-			<div class="template-grid">
-				{#each presets as t (t.key)}
-					<CardSelector onclick={() => selectTemplate(t)}>
-						<span class="template-name">{t.label}</span>
-						<span class="template-cols">
-							{#each t.columns as c, i (i)}
-								<span class="col-chip">{c.title}</span>
-							{/each}
-						</span>
-					</CardSelector>
-				{/each}
-			</div>
-		</section>
+			<section aria-labelledby="presets-heading" class="section">
+				<h3 id="presets-heading">Presets</h3>
+				<div class="template-grid">
+					{#each presets as t (t.key)}
+						<CardSelector onclick={() => selectTemplate(t)}>
+							<span class="template-name">{t.label}</span>
+							<span class="template-cols">
+								{#each t.columns as c, i (i)}
+									<span class="col-chip">{c.title}</span>
+								{/each}
+							</span>
+						</CardSelector>
+					{/each}
+				</div>
+			</section>
 
-		<div class="actions">
-			<button type="button" class="secondary" onclick={onClose}>Cancel</button>
-		</div>
-	{/if}
+			<div class="actions">
+				<button type="button" class="secondary" onclick={close}>Cancel</button>
+			</div>
+		{/if}
+	{/snippet}
 </Modal>
 
 <style>

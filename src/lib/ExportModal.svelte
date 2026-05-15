@@ -37,23 +37,25 @@
 </script>
 
 <Modal {open} {onClose} labelledBy="export-title" maxWidth="34rem" dismissOnBackdrop>
-	<h2 id="export-title">Export retro</h2>
+	{#snippet children({ close })}
+		<h2 id="export-title">Export retro</h2>
 
-	<div class="format-grid">
-		{#each FORMATS as f (f.key)}
-			<CardSelector ariaLabel={f.label} selected={selected === f.key} onclick={() => pick(f.key)}>
-				<span class="format-card-body">
-					<f.Icon />
-					<span class="format-name">{f.label}</span>
-				</span>
-			</CardSelector>
-		{/each}
-	</div>
+		<div class="format-grid">
+			{#each FORMATS as f (f.key)}
+				<CardSelector ariaLabel={f.label} selected={selected === f.key} onclick={() => pick(f.key)}>
+					<span class="format-card-body">
+						<f.Icon />
+						<span class="format-name">{f.label}</span>
+					</span>
+				</CardSelector>
+			{/each}
+		</div>
 
-	<div class="actions">
-		<button type="button" class="secondary" onclick={onClose}>Cancel</button>
-		<button type="button" onclick={handleConfirm} disabled={!selected}>Export</button>
-	</div>
+		<div class="actions">
+			<button type="button" class="secondary" onclick={close}>Cancel</button>
+			<button type="button" onclick={handleConfirm} disabled={!selected}>Export</button>
+		</div>
+	{/snippet}
 </Modal>
 
 <style>

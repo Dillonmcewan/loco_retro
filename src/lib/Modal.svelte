@@ -19,7 +19,7 @@
 		/** Renders an X button in the corner that calls dialog.close(). */
 		showCloseButton?: boolean;
 		closeLabel?: string;
-		children: Snippet;
+		children: Snippet<[{ close: () => void }]>;
 	};
 
 	let {
@@ -73,7 +73,7 @@
 				<X />
 			</button>
 		{/if}
-		{@render children()}
+		{@render children({ close: () => dialogEl?.close() })}
 	</div>
 </dialog>
 

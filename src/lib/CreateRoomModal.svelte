@@ -124,109 +124,111 @@
 	maxWidth="36rem"
 	scrollable
 >
-	<h1 id="create-room-title">Create a retro</h1>
+	{#snippet children({ close })}
+		<h1 id="create-room-title">Create a retro</h1>
 
-	<form onsubmit={handleSubmit} novalidate>
-		<label>
-			<span>Room name</span>
-			<input
-				type="text"
-				name="room-name"
-				bind:this={nameInputEl}
-				bind:value={name}
-				placeholder="Name this retro"
-				autocomplete="off"
-				data-1p-ignore
-				data-lpignore="true"
-				data-form-type="other"
-				aria-invalid={!!fieldErrors.roomName}
-				aria-describedby={fieldErrors.roomName ? 'room-name-error' : undefined}
-				required
-			/>
-			{#if fieldErrors.roomName}
-				<span id="room-name-error" class="error" role="alert">{fieldErrors.roomName}</span>
-			{/if}
-		</label>
+		<form onsubmit={handleSubmit} novalidate>
+			<label>
+				<span>Room name</span>
+				<input
+					type="text"
+					name="room-name"
+					bind:this={nameInputEl}
+					bind:value={name}
+					placeholder="Name this retro"
+					autocomplete="off"
+					data-1p-ignore
+					data-lpignore="true"
+					data-form-type="other"
+					aria-invalid={!!fieldErrors.roomName}
+					aria-describedby={fieldErrors.roomName ? 'room-name-error' : undefined}
+					required
+				/>
+				{#if fieldErrors.roomName}
+					<span id="room-name-error" class="error" role="alert">{fieldErrors.roomName}</span>
+				{/if}
+			</label>
 
-		<fieldset class="template-picker">
-			<legend>Template</legend>
-			<div class="template-grid">
-				{#each recents as template (template.key)}
-					<CardSelector
-						selected={selectedTemplate.key === template.key}
-						onclick={() => selectRecent(template)}
-					>
-						<span class="template-name">{template.label}</span>
-						<span class="template-cols">
-							{#each template.columns as col, i (i)}
-								<span class="col-chip">{col.title}</span>
-							{/each}
-						</span>
+			<fieldset class="template-picker">
+				<legend>Template</legend>
+				<div class="template-grid">
+					{#each recents as template (template.key)}
+						<CardSelector
+							selected={selectedTemplate.key === template.key}
+							onclick={() => selectRecent(template)}
+						>
+							<span class="template-name">{template.label}</span>
+							<span class="template-cols">
+								{#each template.columns as col, i (i)}
+									<span class="col-chip">{col.title}</span>
+								{/each}
+							</span>
+						</CardSelector>
+					{/each}
+					<CardSelector variant="dashed" onclick={() => (pickerOpen = true)}>
+						<span class="template-name">More templates…</span>
+						<span class="more-sub">Browse all, or create your own</span>
 					</CardSelector>
-				{/each}
-				<CardSelector variant="dashed" onclick={() => (pickerOpen = true)}>
-					<span class="template-name">More templates…</span>
-					<span class="more-sub">Browse all, or create your own</span>
-				</CardSelector>
-			</div>
-		</fieldset>
-
-		<div class="votes-block">
-			<label for="votes-per-participant" class="votes-header">Votes per participant</label>
-			<div class="votes-row">
-				<span class="votes-input-wrap" class:chris={chrisMode}>
-					<input
-						id="votes-per-participant"
-						type="number"
-						name="votes-per-participant"
-						min="1"
-						step="1"
-						bind:value={votesPerParticipant}
-						aria-invalid={!chrisMode && !!fieldErrors.votes}
-						aria-describedby={fieldErrors.votes ? 'votes-error' : undefined}
-						disabled={chrisMode}
-						required={!chrisMode}
-					/>
-					{#if chrisMode}
-						<span class="infinity-overlay" aria-hidden="true">
-							<InfinityIcon />
-						</span>
-					{/if}
-				</span>
-				<div class="chris-cell">
-					<label
-						class="chris-checkbox"
-						use:tooltip={"Everything's made up and the points don't matter"}
-					>
-						<input type="checkbox" bind:checked={chrisMode} />
-						<span>Chris mode</span>
-					</label>
-					<button
-						type="button"
-						class="chris-help"
-						aria-label="What is Chris mode?"
-						use:tooltip={{
-							text: 'You can never have too many votes! Participants get unlimited votes',
-							delay: 2000,
-							showOnClick: true
-						}}
-					>
-						<HelpCircle />
-					</button>
 				</div>
-			</div>
-			{#if fieldErrors.votes && !chrisMode}
-				<span id="votes-error" class="error" role="alert">{fieldErrors.votes}</span>
-			{/if}
-		</div>
+			</fieldset>
 
-		<div class="actions">
-			<button type="button" class="secondary" onclick={onClose}>Cancel</button>
-			<button type="submit" disabled={submitting}>
-				{submitting ? 'Creating…' : 'Create retro'}
-			</button>
-		</div>
-	</form>
+			<div class="votes-block">
+				<label for="votes-per-participant" class="votes-header">Votes per participant</label>
+				<div class="votes-row">
+					<span class="votes-input-wrap" class:chris={chrisMode}>
+						<input
+							id="votes-per-participant"
+							type="number"
+							name="votes-per-participant"
+							min="1"
+							step="1"
+							bind:value={votesPerParticipant}
+							aria-invalid={!chrisMode && !!fieldErrors.votes}
+							aria-describedby={fieldErrors.votes ? 'votes-error' : undefined}
+							disabled={chrisMode}
+							required={!chrisMode}
+						/>
+						{#if chrisMode}
+							<span class="infinity-overlay" aria-hidden="true">
+								<InfinityIcon />
+							</span>
+						{/if}
+					</span>
+					<div class="chris-cell">
+						<label
+							class="chris-checkbox"
+							use:tooltip={"Everything's made up and the points don't matter"}
+						>
+							<input type="checkbox" bind:checked={chrisMode} />
+							<span>Chris mode</span>
+						</label>
+						<button
+							type="button"
+							class="chris-help"
+							aria-label="What is Chris mode?"
+							use:tooltip={{
+								text: 'You can never have too many votes! Participants get unlimited votes',
+								delay: 2000,
+								showOnClick: true
+							}}
+						>
+							<HelpCircle />
+						</button>
+					</div>
+				</div>
+				{#if fieldErrors.votes && !chrisMode}
+					<span id="votes-error" class="error" role="alert">{fieldErrors.votes}</span>
+				{/if}
+			</div>
+
+			<div class="actions">
+				<button type="button" class="secondary" onclick={close}>Cancel</button>
+				<button type="submit" disabled={submitting}>
+					{submitting ? 'Creating…' : 'Create retro'}
+				</button>
+			</div>
+		</form>
+	{/snippet}
 </Modal>
 
 <TemplatePickerModal

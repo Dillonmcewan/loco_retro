@@ -30,10 +30,10 @@ Because the CTA's appearance is *driven by* `onDismiss`, the transition-only sem
 
 **Modal content.** Header, short subtext, two equal-width buttons in an action row, and an X close in the corner.
 
-- Heading: **"Nice retro."**
-- Subtext: _"Save it for next time, or head back to your dashboard."_
+- Heading: **"Great work!"**
+- Subtext: _"Export your retro for analysis, or head back to your dashboard."_
 - Primary button: `Download` icon + **"Export retro"** → calls `onExport()` (parent closes CTA, opens `ExportModal`).
-- Secondary button: `Home` icon + **"Back to dashboard"** → calls `goto('/')`.
+- Secondary button: `Home` icon + **"Dashboard"** → calls `goto('/')`.
 - Close button: `X` icon top-right → `dialogEl.close()` → triggers the dialog's `onclose` → `onClose()`. ESC and backdrop click route through the same `onclose` path.
 
 **How it aligns with `docs/plan.md`:**

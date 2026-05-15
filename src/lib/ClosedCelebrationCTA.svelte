@@ -25,19 +25,21 @@
 	dismissOnBackdrop
 	showCloseButton
 >
-	<h2 id="closed-cta-title">Great work!</h2>
-	<p class="subtext">Export your retro for analysis, or head back to your dashboard.</p>
+	{#snippet children(_)}
+		<h2 id="closed-cta-title">Great work!</h2>
+		<p class="subtext">Export your retro for analysis, or head back to your dashboard.</p>
 
-	<div class="actions">
-		<button type="button" class="primary" onclick={onExport}>
-			<Download />
-			<span>Export retro</span>
-		</button>
-		<button type="button" class="secondary" onclick={handleDashboard}>
-			<Home />
-			<span>Dashboard</span>
-		</button>
-	</div>
+		<div class="actions">
+			<button type="button" class="primary" onclick={onExport}>
+				<Download />
+				<span>Export retro</span>
+			</button>
+			<button type="button" class="secondary" onclick={handleDashboard}>
+				<Home />
+				<span>Dashboard</span>
+			</button>
+		</div>
+	{/snippet}
 </Modal>
 
 <style>
