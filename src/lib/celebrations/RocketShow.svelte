@@ -366,4 +366,12 @@
 			opacity: 0;
 		}
 	}
+
+	@media (max-width: 32rem) {
+		.banner {
+			white-space: normal;
+			line-height: 1.05;
+			padding: 0 var(--space-3);
+		}
+	}
 </style>
