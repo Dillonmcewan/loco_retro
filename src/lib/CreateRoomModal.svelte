@@ -11,6 +11,7 @@
 	import { recentTemplates, DEFAULT_TEMPLATE, isPresetKey, type Template } from '$lib/templates';
 	import { listRooms, upsertRoom } from '$lib/rooms';
 	import CardSelector from '$lib/CardSelector.svelte';
+	import Modal from '$lib/Modal.svelte';
 	import TemplatePickerModal from '$lib/TemplatePickerModal.svelte';
 	import { tooltip } from '$lib/tooltip';
 	import InfinityIcon from 'lucide-svelte/icons/infinity';
@@ -23,7 +24,6 @@
 
 	let { open, onClose }: Props = $props();
 
-	let dialogEl = $state<HTMLDialogElement | null>(null);
 	let nameInputEl = $state<HTMLInputElement | null>(null);
 	let name = $state('');
 	const initialRecents = recentTemplates(listRooms(), 3);
@@ -36,18 +36,18 @@
 	let pickerOpen = $state(false);
 
 	$effect(() => {
-		const el = dialogEl;
-		if (!el) return;
-		if (open && !el.open) {
-			recents = recentTemplates(listRooms(), 3);
-			selectedTemplate = recents[0] ?? DEFAULT_TEMPLATE;
-			el.showModal();
-			requestAnimationFrame(() => {
-				nameInputEl?.focus();
-			});
-		} else if (!open && el.open) {
-			el.close();
-		}
+		if (!open) return;
+		// Compute fresh values into locals before assigning, so the effect's only
+		// reactive read is `open` itself — otherwise reading `recents[0]` after
+		// writing `recents` makes `recents` a dependency and the effect re-fires
+		// in a loop.
+		const fresh = recentTemplates(listRooms(), 3);
+		const initial = fresh[0] ?? DEFAULT_TEMPLATE;
+		recents = fresh;
+		selectedTemplate = initial;
+		requestAnimationFrame(() => {
+			nameInputEl?.focus();
+		});
 	});
 
 	function resetForm() {
@@ -117,113 +117,117 @@
 	}
 </script>
 
-<dialog bind:this={dialogEl} onclose={handleDialogClose} aria-labelledby="create-room-title">
-	<div class="content">
-		<h1 id="create-room-title">Create a retro</h1>
+<Modal
+	{open}
+	onClose={handleDialogClose}
+	labelledBy="create-room-title"
+	maxWidth="36rem"
+	scrollable
+>
+	<h1 id="create-room-title">Create a retro</h1>
 
-		<form onsubmit={handleSubmit} novalidate>
-			<label>
-				<span>Room name</span>
-				<input
-					type="text"
-					name="room-name"
-					bind:this={nameInputEl}
-					bind:value={name}
-					placeholder="Name this retro"
-					autocomplete="off"
-					data-1p-ignore
-					data-lpignore="true"
-					data-form-type="other"
-					aria-invalid={!!fieldErrors.roomName}
-					aria-describedby={fieldErrors.roomName ? 'room-name-error' : undefined}
-					required
-				/>
-				{#if fieldErrors.roomName}
-					<span id="room-name-error" class="error" role="alert">{fieldErrors.roomName}</span>
-				{/if}
-			</label>
+	<form onsubmit={handleSubmit} novalidate>
+		<label>
+			<span>Room name</span>
+			<input
+				type="text"
+				name="room-name"
+				bind:this={nameInputEl}
+				bind:value={name}
+				placeholder="Name this retro"
+				autocomplete="off"
+				data-1p-ignore
+				data-lpignore="true"
+				data-form-type="other"
+				aria-invalid={!!fieldErrors.roomName}
+				aria-describedby={fieldErrors.roomName ? 'room-name-error' : undefined}
+				required
+			/>
+			{#if fieldErrors.roomName}
+				<span id="room-name-error" class="error" role="alert">{fieldErrors.roomName}</span>
+			{/if}
+		</label>
 
-			<fieldset class="template-picker">
-				<legend>Template</legend>
-				<div class="template-grid">
-					{#each recents as template (template.key)}
-						<CardSelector
-							selected={selectedTemplate.key === template.key}
-							onclick={() => selectRecent(template)}
-						>
-							<span class="template-name">{template.label}</span>
-							<span class="template-cols">
-								{#each template.columns as col, i (i)}
-									<span class="col-chip">{col.title}</span>
-								{/each}
-							</span>
-						</CardSelector>
-					{/each}
-					<CardSelector variant="dashed" onclick={() => (pickerOpen = true)}>
-						<span class="template-name">More templates…</span>
-						<span class="more-sub">Browse all, or create your own</span>
+		<fieldset class="template-picker">
+			<legend>Template</legend>
+			<div class="template-grid">
+				{#each recents as template (template.key)}
+					<CardSelector
+						selected={selectedTemplate.key === template.key}
+						onclick={() => selectRecent(template)}
+					>
+						<span class="template-name">{template.label}</span>
+						<span class="template-cols">
+							{#each template.columns as col, i (i)}
+								<span class="col-chip">{col.title}</span>
+							{/each}
+						</span>
 					</CardSelector>
-				</div>
-			</fieldset>
-
-			<div class="votes-block">
-				<label for="votes-per-participant" class="votes-header">Votes per participant</label>
-				<div class="votes-row">
-					<span class="votes-input-wrap" class:chris={chrisMode}>
-						<input
-							id="votes-per-participant"
-							type="number"
-							name="votes-per-participant"
-							min="1"
-							step="1"
-							bind:value={votesPerParticipant}
-							aria-invalid={!chrisMode && !!fieldErrors.votes}
-							aria-describedby={fieldErrors.votes ? 'votes-error' : undefined}
-							disabled={chrisMode}
-							required={!chrisMode}
-						/>
-						{#if chrisMode}
-							<span class="infinity-overlay" aria-hidden="true">
-								<InfinityIcon />
-							</span>
-						{/if}
-					</span>
-					<div class="chris-cell">
-						<label
-							class="chris-checkbox"
-							use:tooltip={"Everything's made up and the points don't matter"}
-						>
-							<input type="checkbox" bind:checked={chrisMode} />
-							<span>Chris mode</span>
-						</label>
-						<button
-							type="button"
-							class="chris-help"
-							aria-label="What is Chris mode?"
-							use:tooltip={{
-								text: 'You can never have too many votes! Participants get unlimited votes',
-								delay: 2000,
-								showOnClick: true
-							}}
-						>
-							<HelpCircle />
-						</button>
-					</div>
-				</div>
-				{#if fieldErrors.votes && !chrisMode}
-					<span id="votes-error" class="error" role="alert">{fieldErrors.votes}</span>
-				{/if}
+				{/each}
+				<CardSelector variant="dashed" onclick={() => (pickerOpen = true)}>
+					<span class="template-name">More templates…</span>
+					<span class="more-sub">Browse all, or create your own</span>
+				</CardSelector>
 			</div>
+		</fieldset>
 
-			<div class="actions">
-				<button type="button" class="secondary" onclick={() => dialogEl?.close()}>Cancel</button>
-				<button type="submit" disabled={submitting}>
-					{submitting ? 'Creating…' : 'Create retro'}
-				</button>
+		<div class="votes-block">
+			<label for="votes-per-participant" class="votes-header">Votes per participant</label>
+			<div class="votes-row">
+				<span class="votes-input-wrap" class:chris={chrisMode}>
+					<input
+						id="votes-per-participant"
+						type="number"
+						name="votes-per-participant"
+						min="1"
+						step="1"
+						bind:value={votesPerParticipant}
+						aria-invalid={!chrisMode && !!fieldErrors.votes}
+						aria-describedby={fieldErrors.votes ? 'votes-error' : undefined}
+						disabled={chrisMode}
+						required={!chrisMode}
+					/>
+					{#if chrisMode}
+						<span class="infinity-overlay" aria-hidden="true">
+							<InfinityIcon />
+						</span>
+					{/if}
+				</span>
+				<div class="chris-cell">
+					<label
+						class="chris-checkbox"
+						use:tooltip={"Everything's made up and the points don't matter"}
+					>
+						<input type="checkbox" bind:checked={chrisMode} />
+						<span>Chris mode</span>
+					</label>
+					<button
+						type="button"
+						class="chris-help"
+						aria-label="What is Chris mode?"
+						use:tooltip={{
+							text: 'You can never have too many votes! Participants get unlimited votes',
+							delay: 2000,
+							showOnClick: true
+						}}
+					>
+						<HelpCircle />
+					</button>
+				</div>
 			</div>
-		</form>
-	</div>
-</dialog>
+			{#if fieldErrors.votes && !chrisMode}
+				<span id="votes-error" class="error" role="alert">{fieldErrors.votes}</span>
+			{/if}
+		</div>
+
+		<div class="actions">
+			<button type="button" class="secondary" onclick={onClose}>Cancel</button>
+			<button type="submit" disabled={submitting}>
+				{submitting ? 'Creating…' : 'Create retro'}
+			</button>
+		</div>
+	</form>
+</Modal>
 
 <TemplatePickerModal
 	open={pickerOpen}
@@ -232,30 +236,6 @@
 />
 
 <style>
-	dialog {
-		border: none;
-		padding: 0;
-		background: transparent;
-		max-width: min(36rem, 100vw - var(--space-8));
-		width: 100%;
-		max-height: calc(100vh - var(--space-12));
-		overflow: visible;
-	}
-
-	dialog::backdrop {
-		background: rgba(0, 0, 0, 0.4);
-	}
-
-	.content {
-		background: var(--color-surface);
-		padding: var(--space-8) var(--space-10) var(--space-10);
-		border-radius: var(--radius-lg);
-		border: 1px solid var(--color-border);
-		box-shadow: var(--shadow-card);
-		max-height: calc(100vh - var(--space-12));
-		overflow-y: auto;
-	}
-
 	h1 {
 		margin: 0 0 var(--space-6);
 		font-size: var(--font-size-xl);
