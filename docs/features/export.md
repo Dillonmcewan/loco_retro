@@ -66,7 +66,7 @@ A new `src/lib/exporters.ts` module holds the pure builders + a tiny `downloadBl
 
 ## Format details (defaults — confirm in Open Questions)
 
-**CSV** — one row per card. Columns: `Column, Card, Author, Votes, Discussed, Created At, Edited At`. RFC 4180 quoting: wrap in `"..."` if the value contains `,`, `"`, or newline; double internal `"`. `Discussed` is `yes` / empty. Timestamps as ISO 8601. Header row first; one-line preamble (`# Room: <name> — Exported <ISO>`) is **omitted** so the file parses as plain CSV in any tool.
+**CSV** — one row per card. Columns: `Column, Card, Author, Votes, Discussed`. RFC 4180 quoting: wrap in `"..."` if the value contains `,`, `"`, or newline; double internal `"`. `Discussed` is `yes` / empty. Header row first; one-line preamble (`# Room: <name> — Exported <ISO>`) is **omitted** so the file parses as plain CSV in any tool.
 
 **Markdown** — H1 for the room name, then a metadata block (template, phase, export timestamp, room URL). One H3 per column. Cards as `- ` bullets, in the form `- <text> — _<author>_ · <N> votes · ✓ discussed`. Empty columns render the H3 with `_(no cards)_` underneath. Vote count omitted when 0; discussed mark omitted when not discussed.
 
