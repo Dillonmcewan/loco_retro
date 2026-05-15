@@ -676,6 +676,37 @@
 		}
 	}
 
+	@media (max-width: 48rem) {
+		main.room {
+			padding: var(--space-4) var(--space-3);
+		}
+
+		header {
+			display: flex;
+			flex-direction: column;
+			align-items: stretch;
+			gap: var(--space-3);
+		}
+
+		.title {
+			gap: var(--space-2);
+			min-width: 0;
+		}
+
+		.title h1 {
+			font-size: var(--font-size-xl);
+			min-width: 0;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+			flex: 1 1 auto;
+		}
+
+		.participants {
+			display: none;
+		}
+	}
+
 	.columns {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));

@@ -130,4 +130,10 @@
 	.close:hover {
 		background: var(--color-surface-soft);
 	}
+
+	@media (max-width: 32rem) {
+		.content {
+			padding: var(--space-6);
+		}
+	}
 </style>
