@@ -2,6 +2,17 @@
 	"name": "loco_retro",
 	"version": "0.0.1",
 	"private": true,
+	"license": "MIT",
+	"author": "Dillon McEwan",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/dillonmcewan/loco_retro.git"
+	},
+	"homepage": "https://github.com/dillonmcewan/loco_retro#readme",
+	"bugs": {
+		"url": "https://github.com/dillonmcewan/loco_retro/issues"
+	},
+	"packageManager": "pnpm@10.11.0",
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
@@ -44,6 +55,7 @@
 		"typescript-eslint": "^8.6.0",
 		"vite": "^5.4.0",
 		"vitest": "^2.1.0",
+		"@vitest/coverage-v8": "^2.1.0",
 		"wrangler": "^4.0.0"
 	},
 	"dependencies": {
