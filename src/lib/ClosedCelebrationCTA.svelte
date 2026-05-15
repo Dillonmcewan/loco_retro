@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import Modal from '$lib/Modal.svelte';
 	import Download from 'lucide-svelte/icons/download';
 	import Home from 'lucide-svelte/icons/home';
-	import X from 'lucide-svelte/icons/x';
 
 	type Props = {
 		open: boolean;
@@ -12,109 +12,35 @@
 
 	let { open, onClose, onExport }: Props = $props();
 
-	let dialogEl = $state<HTMLDialogElement | null>(null);
-
-	$effect(() => {
-		const el = dialogEl;
-		if (!el) return;
-		if (open && !el.open) {
-			el.showModal();
-		} else if (!open && el.open) {
-			el.close();
-		}
-	});
-
-	function handleClose() {
-		onClose();
-	}
-
-	function handleExport() {
-		onExport();
-	}
-
 	function handleDashboard() {
 		goto('/');
 	}
-
-	// Backdrop click: native <dialog> doesn't dismiss on backdrop click out of
-	// the box. The click target is the <dialog> itself when the user clicks the
-	// backdrop (the inner .content swallows clicks on its own subtree).
-	function handleBackdropClick(e: MouseEvent) {
-		if (e.target === dialogEl) dialogEl?.close();
-	}
 </script>
 
-<dialog
-	bind:this={dialogEl}
-	onclose={handleClose}
-	onclick={handleBackdropClick}
-	aria-labelledby="closed-cta-title"
+<Modal
+	{open}
+	{onClose}
+	labelledBy="closed-cta-title"
+	maxWidth="32rem"
+	dismissOnBackdrop
+	showCloseButton
 >
-	<div class="content">
-		<button type="button" class="close" aria-label="Close" onclick={() => dialogEl?.close()}>
-			<X />
+	<h2 id="closed-cta-title">Great work!</h2>
+	<p class="subtext">Export your retro for analysis, or head back to your dashboard.</p>
+
+	<div class="actions">
+		<button type="button" class="primary" onclick={onExport}>
+			<Download />
+			<span>Export retro</span>
 		</button>
-
-		<h2 id="closed-cta-title">Great work!</h2>
-		<p class="subtext">Export your retro for analysis, or head back to your dashboard.</p>
-
-		<div class="actions">
-			<button type="button" class="primary" onclick={handleExport}>
-				<Download />
-				<span>Export retro</span>
-			</button>
-			<button type="button" class="secondary" onclick={handleDashboard}>
-				<Home />
-				<span>Dashboard</span>
-			</button>
-		</div>
+		<button type="button" class="secondary" onclick={handleDashboard}>
+			<Home />
+			<span>Dashboard</span>
+		</button>
 	</div>
-</dialog>
+</Modal>
 
 <style>
-	dialog {
-		border: none;
-		padding: 0;
-		background: transparent;
-		max-width: min(32rem, 100vw - var(--space-8));
-		width: 100%;
-	}
-
-	dialog::backdrop {
-		background: rgba(0, 0, 0, 0.4);
-	}
-
-	.content {
-		position: relative;
-		background: var(--color-surface);
-		padding: var(--space-8) var(--space-10) var(--space-10);
-		border-radius: var(--radius-lg);
-		border: 1px solid var(--color-border);
-		box-shadow: var(--shadow-card);
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-4);
-	}
-
-	.close {
-		position: absolute;
-		top: var(--space-3);
-		right: var(--space-3);
-		background: transparent;
-		border: none;
-		padding: var(--space-2);
-		border-radius: var(--radius-md);
-		color: var(--color-text);
-		cursor: pointer;
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-	}
-
-	.close:hover {
-		background: var(--color-surface-soft);
-	}
-
 	h2 {
 		margin: 0;
 		font-size: var(--font-size-xl);
