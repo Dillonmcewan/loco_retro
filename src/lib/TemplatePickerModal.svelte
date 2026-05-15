@@ -3,6 +3,7 @@
 	import { listRooms } from '$lib/rooms';
 	import CardSelector from '$lib/CardSelector.svelte';
 	import ColumnEditor from '$lib/ColumnEditor.svelte';
+	import Modal from '$lib/Modal.svelte';
 	import Plus from 'lucide-svelte/icons/plus';
 
 	type Props = {
@@ -13,22 +14,16 @@
 
 	let { open, onSelect, onClose }: Props = $props();
 
-	let dialogEl = $state<HTMLDialogElement | null>(null);
 	let yours = $state<Template[]>([]);
 	let presets = $state<Template[]>([]);
 	let editorOpen = $state(false);
 
 	$effect(() => {
-		const el = dialogEl;
-		if (!el) return;
-		if (open && !el.open) {
+		if (open) {
 			const agg = aggregatedTemplates(listRooms());
 			yours = agg.yours;
 			presets = agg.presets;
 			editorOpen = false;
-			el.showModal();
-		} else if (!open && el.open) {
-			el.close();
 		}
 	});
 
@@ -46,88 +41,66 @@
 	}
 </script>
 
-<dialog bind:this={dialogEl} onclose={handleClose} aria-labelledby="template-picker-title">
-	<div class="content">
-		<h2 id="template-picker-title">{editorOpen ? 'Create new template' : 'Choose a template'}</h2>
+<Modal
+	{open}
+	onClose={handleClose}
+	labelledBy="template-picker-title"
+	maxWidth="40rem"
+	scrollable
+	dismissOnBackdrop={!editorOpen}
+>
+	<h2 id="template-picker-title">{editorOpen ? 'Create new template' : 'Choose a template'}</h2>
 
-		{#if editorOpen}
-			<ColumnEditor onSave={handleEditorSave} onCancel={() => (editorOpen = false)} />
-		{:else}
-			<section aria-labelledby="custom-heading" class="section">
-				<h3 id="custom-heading">Custom</h3>
-				<div class="template-grid">
-					{#each yours as t (t.key)}
-						<CardSelector onclick={() => selectTemplate(t)}>
-							<span class="template-name">{t.label}</span>
-							<span class="template-cols">
-								{#each t.columns as c, i (i)}
-									<span class="col-chip">{c.title}</span>
-								{/each}
-							</span>
-						</CardSelector>
-					{/each}
-					<CardSelector
-						variant="dashed"
-						ariaLabel="Create new template"
-						onclick={() => (editorOpen = true)}
-					>
-						<Plus />
-						<span class="template-name">New template</span>
+	{#if editorOpen}
+		<ColumnEditor onSave={handleEditorSave} onCancel={() => (editorOpen = false)} />
+	{:else}
+		<section aria-labelledby="custom-heading" class="section">
+			<h3 id="custom-heading">Custom</h3>
+			<div class="template-grid">
+				{#each yours as t (t.key)}
+					<CardSelector onclick={() => selectTemplate(t)}>
+						<span class="template-name">{t.label}</span>
+						<span class="template-cols">
+							{#each t.columns as c, i (i)}
+								<span class="col-chip">{c.title}</span>
+							{/each}
+						</span>
 					</CardSelector>
-				</div>
-			</section>
-
-			<section aria-labelledby="presets-heading" class="section">
-				<h3 id="presets-heading">Presets</h3>
-				<div class="template-grid">
-					{#each presets as t (t.key)}
-						<CardSelector onclick={() => selectTemplate(t)}>
-							<span class="template-name">{t.label}</span>
-							<span class="template-cols">
-								{#each t.columns as c, i (i)}
-									<span class="col-chip">{c.title}</span>
-								{/each}
-							</span>
-						</CardSelector>
-					{/each}
-				</div>
-			</section>
-
-			<div class="actions">
-				<button type="button" class="secondary" onclick={() => dialogEl?.close()}>Cancel</button>
+				{/each}
+				<CardSelector
+					variant="dashed"
+					ariaLabel="Create new template"
+					onclick={() => (editorOpen = true)}
+				>
+					<Plus />
+					<span class="template-name">New template</span>
+				</CardSelector>
 			</div>
-		{/if}
-	</div>
-</dialog>
+		</section>
+
+		<section aria-labelledby="presets-heading" class="section">
+			<h3 id="presets-heading">Presets</h3>
+			<div class="template-grid">
+				{#each presets as t (t.key)}
+					<CardSelector onclick={() => selectTemplate(t)}>
+						<span class="template-name">{t.label}</span>
+						<span class="template-cols">
+							{#each t.columns as c, i (i)}
+								<span class="col-chip">{c.title}</span>
+							{/each}
+						</span>
+					</CardSelector>
+				{/each}
+			</div>
+		</section>
+
+		<div class="actions">
+			<button type="button" class="secondary" onclick={onClose}>Cancel</button>
+		</div>
+	{/if}
+</Modal>
 
 <style>
-	dialog {
-		border: none;
-		padding: 0;
-		background: transparent;
-		max-width: min(40rem, 100vw - var(--space-8));
-		width: 100%;
-		max-height: calc(100vh - var(--space-12));
-		overflow: visible;
-	}
-
-	dialog::backdrop {
-		background: rgba(0, 0, 0, 0.4);
-	}
-
-	.content {
-		background: var(--color-surface);
-		padding: var(--space-8) var(--space-10) var(--space-10);
-		border-radius: var(--radius-lg);
-		border: 1px solid var(--color-border);
-		box-shadow: var(--shadow-card);
-		max-height: calc(100vh - var(--space-12));
-		overflow-y: auto;
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-5);
-	}
-
 	h2 {
 		margin: 0;
 		font-size: var(--font-size-xl);
