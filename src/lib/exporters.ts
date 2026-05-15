@@ -58,7 +58,7 @@ export function buildSnapshot(doc: Y.Doc, now: number = Date.now()): ExportSnaps
 
 // ─── CSV ───────────────────────────────────────────────────────────────────
 
-const CSV_HEADERS = ['Column', 'Card', 'Author', 'Votes', 'Discussed', 'Created At', 'Edited At'];
+const CSV_HEADERS = ['Column', 'Card', 'Author', 'Votes', 'Discussed'];
 
 function csvEscape(value: string): string {
 	if (/[",\n\r]/.test(value)) {
@@ -81,9 +81,7 @@ export function buildCsv(snapshot: ExportSnapshot): string {
 					card.text,
 					card.author,
 					String(card.votes),
-					card.discussed ? 'yes' : '',
-					new Date(card.createdAt).toISOString(),
-					card.editedAt ? new Date(card.editedAt).toISOString() : ''
+					card.discussed ? 'yes' : ''
 				])
 			);
 		}

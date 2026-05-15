@@ -12,7 +12,6 @@ import {
 	addCard,
 	advancePhase,
 	castVote,
-	editCard,
 	readColumns,
 	seedRoom,
 	setPhase,
@@ -66,8 +65,8 @@ describe('buildCsv', () => {
 		const snap = buildSnapshot(doc);
 		const csv = buildCsv(snap);
 		const lines = csv.trim().split('\n');
-		expect(lines[0]).toBe('Column,Card,Author,Votes,Discussed,Created At,Edited At');
-		expect(lines[1]).toMatch(/^Went well,Hello,Alice,0,,/);
+		expect(lines[0]).toBe('Column,Card,Author,Votes,Discussed');
+		expect(lines[1]).toBe('Went well,Hello,Alice,0,');
 	});
 
 	it('emits header-only when no cards', () => {
@@ -96,7 +95,7 @@ describe('buildCsv', () => {
 		setPhase(doc, 'discuss');
 		toggleDiscussed(doc, colId, card.id);
 		const csv = buildCsv(buildSnapshot(doc));
-		expect(csv).toMatch(/,X,A,0,yes,/);
+		expect(csv).toMatch(/,X,A,0,yes/);
 	});
 
 	it('captures closed-phase rooms (phase is metadata, rows unaffected)', () => {
@@ -112,19 +111,7 @@ describe('buildCsv', () => {
 		expect(csv).toContain('final');
 	});
 
-	it('populates the Edited At column with an ISO timestamp when a card has been edited', () => {
-		const doc = seededDoc();
-		const colId = readColumns(doc)[0].id;
-		const card = addCard(doc, { columnId: colId, text: 'first', author: 'A', authorId: 'a' })!;
-		editCard(doc, colId, card.id, 'second');
-		const csv = buildCsv(buildSnapshot(doc));
-		const dataRow = csv.trim().split('\n')[1];
-		const cols = dataRow.split(',');
-		expect(cols.length).toBe(7);
-		expect(cols[6]).toMatch(/^\d{4}-\d{2}-\d{2}T/);
-	});
-
-	it('chrisMode does not change the row shape', () => {
+it('chrisMode does not change the row shape', () => {
 		const doc = new Y.Doc();
 		seedRoom(doc, { name: 'Free', columns: DEFAULT_COLS, chrisMode: true });
 		const colId = readColumns(doc)[0].id;
