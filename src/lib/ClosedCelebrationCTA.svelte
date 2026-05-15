@@ -35,16 +35,28 @@
 	function handleDashboard() {
 		goto('/');
 	}
+
+	// Backdrop click: native <dialog> doesn't dismiss on backdrop click out of
+	// the box. The click target is the <dialog> itself when the user clicks the
+	// backdrop (the inner .content swallows clicks on its own subtree).
+	function handleBackdropClick(e: MouseEvent) {
+		if (e.target === dialogEl) dialogEl?.close();
+	}
 </script>
 
-<dialog bind:this={dialogEl} onclose={handleClose} aria-labelledby="closed-cta-title">
+<dialog
+	bind:this={dialogEl}
+	onclose={handleClose}
+	onclick={handleBackdropClick}
+	aria-labelledby="closed-cta-title"
+>
 	<div class="content">
 		<button type="button" class="close" aria-label="Close" onclick={() => dialogEl?.close()}>
 			<X />
 		</button>
 
-		<h2 id="closed-cta-title">Nice retro.</h2>
-		<p class="subtext">Save it for next time, or head back to your dashboard.</p>
+		<h2 id="closed-cta-title">Great work!</h2>
+		<p class="subtext">Export your retro for analysis, or head back to your dashboard.</p>
 
 		<div class="actions">
 			<button type="button" class="primary" onclick={handleExport}>
@@ -53,7 +65,7 @@
 			</button>
 			<button type="button" class="secondary" onclick={handleDashboard}>
 				<Home />
-				<span>Back to dashboard</span>
+				<span>Dashboard</span>
 			</button>
 		</div>
 	</div>

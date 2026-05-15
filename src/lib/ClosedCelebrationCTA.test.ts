@@ -30,7 +30,7 @@ describe('ClosedCelebrationCTA', () => {
 		await tick();
 		const dlg = document.querySelector('dialog');
 		expect(dlg?.hasAttribute('open')).toBe(true);
-		expect(screen.getByRole('heading', { name: /nice retro/i })).toBeInTheDocument();
+		expect(screen.getByRole('heading', { name: /great work/i })).toBeInTheDocument();
 	});
 
 	it('calls close when open flips back to false', async () => {
@@ -67,7 +67,7 @@ describe('ClosedCelebrationCTA', () => {
 		render(ClosedCelebrationCTA, { open: true, onClose, onExport: vi.fn() });
 		await tick();
 
-		await user.click(screen.getByRole('button', { name: /back to dashboard/i }));
+		await user.click(screen.getByRole('button', { name: /^dashboard$/i }));
 		expect(gotoMock).toHaveBeenCalledWith('/');
 		expect(onClose).not.toHaveBeenCalled();
 	});
