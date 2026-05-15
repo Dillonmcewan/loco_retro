@@ -48,8 +48,9 @@
 	maxWidth="40rem"
 	scrollable
 	dismissOnBackdrop={!editorOpen}
+	showCloseButton={!editorOpen}
 >
-	{#snippet children({ close })}
+	{#snippet children(_)}
 		<h2 id="template-picker-title">{editorOpen ? 'Create new template' : 'Choose a template'}</h2>
 
 		{#if editorOpen}
@@ -94,10 +95,6 @@
 					{/each}
 				</div>
 			</section>
-
-			<div class="actions">
-				<button type="button" class="secondary" onclick={close}>Cancel</button>
-			</div>
 		{/if}
 	{/snippet}
 </Modal>
@@ -153,36 +150,5 @@
 	:global(.card-selector.is-selected) .col-chip {
 		background: white;
 		color: var(--color-text);
-	}
-
-	.actions {
-		display: flex;
-		gap: var(--space-3);
-	}
-
-	.actions button {
-		flex: 1;
-		padding: var(--space-3) var(--space-5);
-		background: var(--color-primary);
-		color: white;
-		border: none;
-		border-radius: var(--radius-md);
-		font-weight: 600;
-		font-size: var(--font-size-md);
-		cursor: pointer;
-	}
-
-	.actions button.secondary {
-		background: var(--color-surface);
-		color: var(--color-text);
-		border: 1px solid var(--color-border-strong);
-	}
-
-	.actions button:hover:not(:disabled) {
-		background: var(--color-primary-hover);
-	}
-
-	.actions button.secondary:hover {
-		background: var(--color-surface-soft);
 	}
 </style>

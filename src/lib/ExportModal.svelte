@@ -36,8 +36,15 @@
 	];
 </script>
 
-<Modal {open} {onClose} labelledBy="export-title" maxWidth="34rem" dismissOnBackdrop>
-	{#snippet children({ close })}
+<Modal
+	{open}
+	{onClose}
+	labelledBy="export-title"
+	maxWidth="34rem"
+	dismissOnBackdrop
+	showCloseButton
+>
+	{#snippet children(_)}
 		<h2 id="export-title">Export retro</h2>
 
 		<div class="format-grid">
@@ -52,7 +59,6 @@
 		</div>
 
 		<div class="actions">
-			<button type="button" class="secondary" onclick={close}>Cancel</button>
 			<button type="button" onclick={handleConfirm} disabled={!selected}>Export</button>
 		</div>
 	{/snippet}
@@ -107,18 +113,8 @@
 		cursor: pointer;
 	}
 
-	.actions button.secondary {
-		background: var(--color-surface);
-		color: var(--color-text);
-		border: 1px solid var(--color-border-strong);
-	}
-
 	.actions button:hover:not(:disabled) {
 		background: var(--color-primary-hover);
-	}
-
-	.actions button.secondary:hover {
-		background: var(--color-surface-soft);
 	}
 
 	.actions button:disabled {
