@@ -69,12 +69,7 @@
 >
 	<div class="content" class:scrollable>
 		{#if showCloseButton}
-			<button
-				type="button"
-				class="close"
-				aria-label={closeLabel}
-				onclick={() => dialogEl?.close()}
-			>
+			<button type="button" class="close" aria-label={closeLabel} onclick={() => dialogEl?.close()}>
 				<X />
 			</button>
 		{/if}
