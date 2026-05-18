@@ -34,7 +34,8 @@ export default [
 			'dist/',
 			'node_modules/',
 			'playwright-report/',
-			'test-results/'
+			'test-results/',
+			'coverage/'
 		]
 	}
 ];

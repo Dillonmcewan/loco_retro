@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import Edit3 from 'lucide-svelte/icons/edit-3';
 	import ThumbsUp from 'lucide-svelte/icons/thumbs-up';
 	import MessageSquare from 'lucide-svelte/icons/message-square';
@@ -28,7 +29,7 @@
 	const phaseAccentStyle = $derived(`--card-accent: var(--color-phase-${phase})`);
 
 	function open() {
-		goto(`/r/${entry.id}`);
+		goto(resolve('/r/[id]', { id: entry.id }));
 	}
 </script>
 

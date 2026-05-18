@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import Modal from '$lib/Modal.svelte';
 	import Download from 'lucide-svelte/icons/download';
 	import Home from 'lucide-svelte/icons/home';
@@ -13,7 +14,7 @@
 	let { open, onClose, onExport }: Props = $props();
 
 	function handleDashboard() {
-		goto('/');
+		goto(resolve('/'));
 	}
 </script>
 
