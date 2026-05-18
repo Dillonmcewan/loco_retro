@@ -5,11 +5,11 @@ export default defineConfig({
 	testMatch: '**/*.spec.ts',
 	webServer: [
 		{
-			command: 'pnpm party:dev',
-			// PartyKit serves WebSockets only — its HTTP root returns 404, which
-			// Playwright 1.59+ treats as "not ready" (its URL probe accepts only
-			// 2xx–3xx). `port` triggers a port-bound check (`isPortUsed`), which
-			// is the right readiness signal for a WS-only server.
+			command: 'pnpm sync:dev',
+			// wrangler dev (like partykit dev before it) is WebSockets-first; the
+			// HTTP root returns non-2xx, which Playwright 1.59+ treats as "not
+			// ready". `port` triggers a port-bound check (`isPortUsed`), which is
+			// the right readiness signal here.
 			port: 1999,
 			reuseExistingServer: !process.env.CI,
 			timeout: 120_000
@@ -19,7 +19,7 @@ export default defineConfig({
 			url: 'http://localhost:5173',
 			reuseExistingServer: !process.env.CI,
 			timeout: 120_000,
-			env: { VITE_PARTYKIT_HOST: 'localhost:1999' }
+			env: { VITE_SYNC_HOST: 'localhost:1999' }
 		}
 	],
 	use: { baseURL: 'http://localhost:5173' },
