@@ -1,5 +1,12 @@
 /* ─── Design tokens ─────────────────────────────────────────────────────── */
 
+/*
+ * Spacing, font sizes, icon sizes, and the --card-* family are tokens — all
+ * component CSS reads from these variables. Raw `rem` / `px` literals in
+ * `padding`, `margin`, `gap`, or `font-size` belong only to fixed-size
+ * primitives (icon hit targets, container max-width). Add a new token at this
+ * :root block before introducing a new literal value.
+ */
 :root {
 	/* Surfaces */
 	--color-bg: #fbf7f0; /* warm cream — page background */

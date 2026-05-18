@@ -1,3 +1,8 @@
+// One snapshot, many formats. `buildSnapshot` is the SOLE walker of the
+// Y.Doc; every format-specific builder (`buildCsv`, `buildMarkdown`, the print
+// route) must be a pure function over `ExportSnapshot`. Do not add a second
+// walker — a new format keeps exports consistent only if it derives from the
+// same snapshot.
 import type * as Y from 'yjs';
 import {
 	readCards,

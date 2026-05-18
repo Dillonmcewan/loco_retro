@@ -34,8 +34,10 @@
 		onToggleDiscussed
 	}: Props = $props();
 
-	// Animation fires only on the false → true transition. Re-mounts with an
-	// already-discussed card don't trigger it; neither does un-discussing.
+	// Animation fires only on the false → true transition. `prevDiscussed`
+	// starts undefined so the first observation on mount is a no-op — without
+	// this guard, mounting an already-discussed card (e.g. joining a room
+	// late) would replay the burst. Un-discussing is also a no-op.
 	let prevDiscussed: boolean | undefined;
 	let animating = $state(false);
 

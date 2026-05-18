@@ -1,3 +1,13 @@
+<!--
+	Owns shape only — border, radius, shadow, hover-lift, focus-visible ring,
+	active, reduced-motion. Do NOT add padding, text-align, or any other
+	content-layout property here.
+
+	Why: this component's scoped selector outranks consumer `:global(.card-surface)`
+	rules on specificity, so any layout property set on the base silently
+	overrides consumer overrides and there's no clean escape hatch. Route layout
+	through the wrapper layer (CardSelector) or caller-scoped content styles.
+-->
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 

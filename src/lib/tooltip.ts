@@ -1,10 +1,14 @@
 /**
  * Svelte action: shows a small floating hint after a hover delay. Accepts a
  * label string or an options object `{ text, delay, showOnClick }`. Falls back
- * to the element's aria-label / title if no text is given. The tooltip is
- * appended to the nearest open <dialog> ancestor — so it shares the dialog's
- * top-layer stacking context — or to <body> otherwise; styling lives in
+ * to the element's aria-label / title if no text is given. Styling lives in
  * app.css under `.tooltip`.
+ *
+ * Portal target: the tip is appended to the nearest open <dialog> ancestor,
+ * not <body>. A <dialog> opened via showModal() renders in the browser's top
+ * layer, which sits above everything else in the document — a tip appended to
+ * <body> would render *behind* the modal. Falls back to <body> when no open
+ * dialog is in the chain.
  */
 const DEFAULT_DELAY_MS = 500;
 const VERTICAL_OFFSET_PX = 6;

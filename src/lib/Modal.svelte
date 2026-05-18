@@ -1,3 +1,20 @@
+<!--
+	Shared <dialog> wrapper for every modal in the app. Owns the shell, the
+	showModal()/close() lifecycle, the optional X close button, and the optional
+	backdrop-click dismiss path.
+
+	Dismiss policy by purpose — two crisp shapes consumers MUST pick between:
+	  - Form modals (CreateRoomModal, TemplatePickerModal in column-editor mode):
+	    leave dismissOnBackdrop and showCloseButton off and add an explicit
+	    Cancel/Back button — a stray backdrop click must not destroy in-progress
+	    input.
+	  - Decision/info modals (ExportModal, ClosedCelebrationCTA, browse-mode
+	    TemplatePickerModal): set both dismissOnBackdrop and showCloseButton.
+
+	The children snippet receives a `close` callback; Cancel buttons MUST call
+	it instead of the parent's onClose prop, so every close path routes through
+	the single <dialog>-onclose event and onClose fires exactly once.
+-->
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import X from 'lucide-svelte/icons/x';
