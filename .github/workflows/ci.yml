@@ -33,7 +33,7 @@ jobs:
         run: pnpm lint
 
       - name: Unit tests (with coverage)
-        run: pnpm test:unit -- --coverage
+        run: pnpm test:unit --coverage
 
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium
