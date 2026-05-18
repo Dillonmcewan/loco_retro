@@ -3,6 +3,7 @@
 Lovingly vibe-coded local-first app for running remote retros.
 
 [![CI](https://github.com/dillonmcewan/loco_retro/actions/workflows/ci.yml/badge.svg)](https://github.com/dillonmcewan/loco_retro/actions/workflows/ci.yml)
+[![Deploy](https://github.com/dillonmcewan/loco_retro/actions/workflows/deploy.yml/badge.svg)](https://github.com/dillonmcewan/loco_retro/actions/workflows/deploy.yml)
 [![codecov](https://codecov.io/gh/dillonmcewan/loco_retro/branch/main/graph/badge.svg)](https://codecov.io/gh/dillonmcewan/loco_retro)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
