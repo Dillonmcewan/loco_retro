@@ -85,7 +85,7 @@ The PartyKit and Wrangler login flows both want to open a browser; the dev conta
 
 - **App URL:** `https://loco-retro.pages.dev` (plus any custom domain attached in the Pages dashboard).
 - **Worker URL:** `https://loco-retro.<account>.partykit.dev`.
-- **No pre-deploy gate yet.** `pnpm deploy` does not run `check` / `lint` / tests today — deploys are local-only and the developer is responsible for sanity-checking before shipping. A pre-deploy gate will land alongside the GitHub Actions migration (see below).
+- Manual `pnpm deploy` from a maintainer laptop is still supported as a fallback when CI is unavailable.
 
 ### Rollback
 
@@ -93,9 +93,23 @@ The PartyKit and Wrangler login flows both want to open a browser; the dev conta
 - **PartyKit:** `git checkout <previous-sha> && pnpm party:deploy`.
 - No database, no migrations — rollback is purely a redeploy of older code.
 
-### Future: GitHub Actions
+### GitHub Actions
 
-When we move CI/CD to GitHub Actions on push to `main`, the workflow will run `pnpm check && pnpm lint && pnpm test:unit && pnpm test:e2e` as a gate, then run the same `pnpm deploy` chain. Required repo secrets at that point: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, and a PartyKit deploy token. Preview environments per PR are out of scope until there are users.
+Two workflows live under `.github/workflows/`:
+
+- **`ci.yml`** — PR gate. Triggers on `pull_request` (any branch) and `push` to `main`. Runs `pnpm check`, `pnpm lint`, `pnpm test:unit --coverage` (uploaded to Codecov), `pnpm build` against the committed `.env.production`, and `pnpm test:e2e` (Playwright spins up its own PartyKit + Vite via the existing `webServer` block). Playwright report + test-results uploaded as artifacts on failure.
+- **`deploy.yml`** — Production deploy. Triggers on `push` to `main` and `workflow_dispatch`. Runs a sanity pass (`pnpm check && pnpm lint && pnpm test:unit`), then `pnpm party:deploy`, then `pnpm build`, then `wrangler pages deploy` via `cloudflare/wrangler-action@v3`. Concurrency `group: deploy-main, cancel-in-progress: false` to avoid racing deploys.
+
+Required repository secrets:
+
+| Secret | Source |
+| --- | --- |
+| `CLOUDFLARE_API_TOKEN` | Cloudflare dashboard → My Profile → API Tokens (scopes: Pages Edit + Account Read). |
+| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare dashboard → account home (right sidebar). |
+| `PARTYKIT_TOKEN` | `partykit token` output on a logged-in machine. |
+| `CODECOV_TOKEN` | Codecov dashboard after the repo is linked. |
+
+Branch protection for `main` is defined as code at `.github/rulesets/main.json` and imported once via `gh api -X POST repos/<owner>/loco_retro/rulesets --input .github/rulesets/main.json`. Preview environments per PR remain out of scope until there are users.
 
 ## Open decisions
 

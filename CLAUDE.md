@@ -12,6 +12,8 @@ This repo follows a strict spec-first loop. Before writing or editing applicatio
 
 If a request conflicts with the PRD or dev plan, surface the conflict before implementing — don't silently deviate.
 
+External contributors: see [`CONTRIBUTING.md`](CONTRIBUTING.md) for the human-facing version of this workflow (local setup, tests, commit style, PR expectations).
+
 ## Stack (pin early; details live in `docs/plan.md`)
 
 - **Framework:** SvelteKit (TypeScript), full-stack via SvelteKit endpoints
