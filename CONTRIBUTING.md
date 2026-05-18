@@ -7,10 +7,10 @@ Thanks for your interest. This is a small project with a clear spec; the cheapes
 This repo treats `docs/` as the source of truth, not the code:
 
 - **`docs/prd.md`** — what we're building (numbered requirements R1–R13).
-- **`docs/plan.md`** — how we're building it (stack, architecture, conventions). **Re-read the relevant section before touching code on any feature.**
+- **`docs/architecture.md`** — how we're building it (stack, architecture). **Re-read the relevant section before touching code on any feature.**
 - **`docs/features/<feature-name>.md`** — per-feature plan, traced back to a PRD requirement.
 
-A change that conflicts with the PRD or dev plan should either update the docs in the same PR or be discussed in an issue first.
+A change that conflicts with the PRD or architecture doc should either update the docs in the same PR or be discussed in an issue first.
 
 `CLAUDE.md` at the repo root documents this workflow for AI coding assistants — it's worth a read for human contributors too, since it reflects how the codebase is actually maintained.
 
@@ -36,6 +36,8 @@ The dev container at `.devcontainer/devcontainer.json` works out of the box for 
 
 `pnpm test:e2e` starts both PartyKit and the Vite dev server automatically via Playwright's `webServer` config; no setup needed beyond `pnpm install`.
 
+Tests live next to the code they cover (`*.test.ts` for unit/component, `*.spec.ts` under `e2e/` for Playwright).
+
 ## Commit style
 
 Conventional-commit style, scoped by feature area:
@@ -44,7 +46,7 @@ Conventional-commit style, scoped by feature area:
 feat(voting): add Chris mode toggle to room creation
 fix(export): strip null author from CSV rows
 refactor(modal): drop Cancel from info modals
-docs(plan): document phase-transition gating with $effect.pre
+docs(architecture): document phase-transition gating with $effect.pre
 ```
 
 Prefer **many small commits** over one large one — the diff is the review surface.
@@ -52,7 +54,7 @@ Prefer **many small commits** over one large one — the diff is the review surf
 ## Pull requests
 
 - Open against `main`.
-- Keep PRs scoped to one logical change. Architectural changes should update `docs/plan.md` in the same PR.
+- Keep PRs scoped to one logical change. Architectural changes should update `docs/architecture.md` in the same PR.
 - CI (`.github/workflows/ci.yml`) runs `check`, `lint`, unit tests with coverage, build, and e2e tests on every PR. Green CI is required before merge.
 - The PR template prompts you for a summary, linked issue, and test plan — please fill it in.
 

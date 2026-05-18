@@ -15,7 +15,7 @@ A frictionless retrospective tool for distributed software teams. Join by code, 
 - **Export** to PDF, CSV, or Markdown from any open or closed room.
 - **Presets** (Went well / Didn't go well / Actions, Start / Stop / Continue, Mad / Sad / Glad, 4Ls) or define custom columns.
 
-See [`docs/prd.md`](docs/prd.md) for the full product spec and [`docs/plan.md`](docs/plan.md) for the architecture, conventions, and deploy story.
+See [`docs/prd.md`](docs/prd.md) for the full product spec and [`docs/architecture.md`](docs/architecture.md) for the tech stack and runtime architecture.
 
 ## Quickstart
 
@@ -45,25 +45,9 @@ Other useful commands:
 - **`y-partykit`** over WebSocket for realtime sync against a Cloudflare Durable Object (the `party/main.ts` worker).
 - **Vitest** (unit/component) + **Playwright** (e2e).
 
-## Deploy your own
-
-The hosted PartyKit worker baked into `.env.production` is the maintainer's. To deploy your own copy:
-
-1. `pnpm dlx partykit login` and `pnpm dlx wrangler login` (both OAuth into Cloudflare; run on your host machine, not in a dev container).
-2. `pnpm party:deploy` — first deploy of the worker. The CLI prints your host as `loco-retro.<your-account>.partykit.dev`.
-3. Create a local `.env.production.local` (gitignored) with your host:
-   ```
-   VITE_PARTYKIT_HOST=loco-retro.<your-account>.partykit.dev
-   ```
-   This overrides the committed `.env.production` for your build only.
-4. `pnpm dlx wrangler pages project create loco-retro --production-branch=main` once.
-5. `pnpm deploy` ships PartyKit + Cloudflare Pages in order.
-
-Full deploy walkthrough in [`docs/plan.md`](docs/plan.md#deploy).
-
 ## Contributing
 
-Contributions welcome — please read [`CONTRIBUTING.md`](CONTRIBUTING.md) first. This repo follows a strict **spec-first workflow**: PRs that change behavior should trace back to a requirement in `docs/prd.md` and a section of `docs/plan.md`.
+Contributions welcome — please read [`CONTRIBUTING.md`](CONTRIBUTING.md) first. This repo follows a strict **spec-first workflow**: PRs that change behavior should trace back to a requirement in `docs/prd.md` and a section of `docs/architecture.md`.
 
 Found a security issue? See [`SECURITY.md`](SECURITY.md) for private reporting.
 
