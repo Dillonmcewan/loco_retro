@@ -55,14 +55,14 @@ test('CSV export downloads with the expected filename and content', async ({ pag
 	for await (const c of stream) chunks.push(c as Buffer);
 	const csv = Buffer.concat(chunks).toString('utf-8');
 	const lines = csv.trim().split('\n');
-	expect(lines[0]).toBe('Column,Card,Author,Votes,Discussed,Created At,Edited At');
+	expect(lines[0]).toBe('Column,Card,Author,Votes,Discussed');
 	// None of the seeded values contain commas/quotes, so a plain split is
 	// sufficient to assert column count and catch accidental column drift.
-	expect(lines[0].split(',').length).toBe(7);
-	expect(lines[1].split(',').length).toBe(7);
+	expect(lines[0].split(',').length).toBe(5);
+	expect(lines[1].split(',').length).toBe(5);
 	expect(csv).toContain('side quests');
-	expect(csv).toMatch(/side quests,Alice,2,yes,/);
-	expect(csv).toMatch(/do a stand up,Alice,1,,/);
+	expect(csv).toMatch(/side quests,Alice,2,yes\n/);
+	expect(csv).toMatch(/do a stand up,Alice,1,\n/);
 });
 
 test('Markdown export downloads with H1 and bullet lines', async ({ page }) => {
