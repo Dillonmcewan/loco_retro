@@ -117,8 +117,8 @@
 	}
 
 	.github-link :global(svg) {
-		width: 1.25rem;
-		height: 1.25rem;
+		width: var(--icon-size-md);
+		height: var(--icon-size-md);
 	}
 
 	main {
