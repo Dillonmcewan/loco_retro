@@ -1,53 +1,30 @@
 # loco_retro
 
-Local-first app for running remote retros.
+Lovingly vibe-coded local-first app for running remote retros.
 
 [![CI](https://github.com/dillonmcewan/loco_retro/actions/workflows/ci.yml/badge.svg)](https://github.com/dillonmcewan/loco_retro/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/dillonmcewan/loco_retro/branch/main/graph/badge.svg)](https://codecov.io/gh/dillonmcewan/loco_retro)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A frictionless retrospective tool for distributed software teams. Join by code, work offline, and never lose a card to a dropped connection.
+A simple retro tool for distributed teams. No accounts or set up; simply share a URL and get started. Data is stored locally in the browser and synced in realtime with other participants via a CRDT (Yjs) and WebSocket transport (`y-partykit`).
 
 - **No accounts.** Share a URL, pick a display name, go.
-- **Local-first.** Every participant holds the full retro state in their browser via a CRDT (Yjs) backed by IndexedDB. Offline edits merge cleanly on reconnect.
-- **Phases:** Collect → Vote → Discuss → Closed. Facilitator advances.
-- **Dot voting** with optional uncapped "Chris mode."
+- **Local-first.** Every participant holds the full retro state in their browser via a CRDT (Yjs) backed by IndexedDB.
+- **Phases:** Collect → Vote → Discuss → Closed.
 - **Export** to PDF, CSV, or Markdown from any open or closed room.
-- **Presets** (Went well / Didn't go well / Actions, Start / Stop / Continue, Mad / Sad / Glad, 4Ls) or define custom columns.
+- **Presets** (Went well / Didn't go well / Actions, Start / Stop / Continue, Mad / Sad / Glad, 4Ls) or define custom templates.
 
 See [`docs/prd.md`](docs/prd.md) for the full product spec and [`docs/architecture.md`](docs/architecture.md) for the tech stack and runtime architecture.
 
-## Quickstart
-
-Requires Node 22 and pnpm 10.
-
-```sh
-pnpm install
-pnpm dev:all
-```
-
-`dev:all` boots Vite on `localhost:5173` and a local PartyKit dev server on `localhost:1999` in one terminal. Open the browser at `http://localhost:5173`.
-
-Other useful commands:
-
-| Purpose    | Command          |
-| ---------- | ---------------- |
-| Type-check | `pnpm check`     |
-| Lint       | `pnpm lint`      |
-| Unit tests | `pnpm test:unit` |
-| E2E tests  | `pnpm test:e2e`  |
-| Format     | `pnpm format`    |
+## Quick Start
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for local development setup and commands.
 
 ## Stack
-
-- **SvelteKit** (TypeScript) + Vite, deployed to Cloudflare Pages via `@sveltejs/adapter-cloudflare`.
-- **Yjs** + **`y-indexeddb`** for local CRDT state and persistence.
-- **`y-partykit`** over WebSocket for realtime sync against a Cloudflare Durable Object (the `party/main.ts` worker).
-- **Vitest** (unit/component) + **Playwright** (e2e).
+See [`docs/architecture.md`](docs/architecture.md) for the tech stack and runtime architecture.
 
 ## Contributing
 
-Contributions welcome — please read [`CONTRIBUTING.md`](CONTRIBUTING.md) first. This repo follows a strict **spec-first workflow**: PRs that change behavior should trace back to a requirement in `docs/prd.md` and a section of `docs/architecture.md`.
+Contributions welcome — please read [`CONTRIBUTING.md`](CONTRIBUTING.md) first.
 
 Found a security issue? See [`SECURITY.md`](SECURITY.md) for private reporting.
 

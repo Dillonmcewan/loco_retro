@@ -2,7 +2,7 @@
 
 This folder holds **one markdown file per feature**, named `<feature-name>.md`.
 
-Each feature plan is a contract between the PRD (`../prd.md`), the dev plan (`../architecture.md`), and the code that gets written. It is produced by the `/feature-plan` slash command and consumed by `/implement`.
+Each feature plan is a contract between the PRD (`../prd.md`), the architecture (`../architecture.md`), and the code that gets written. It is produced by the `/feature-plan` slash command and consumed by `/implement`.
 
 ## What a feature plan must contain
 
