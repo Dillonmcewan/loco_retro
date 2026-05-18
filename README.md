@@ -30,13 +30,13 @@ pnpm dev:all
 
 Other useful commands:
 
-| Purpose | Command |
-| --- | --- |
-| Type-check | `pnpm check` |
-| Lint | `pnpm lint` |
+| Purpose    | Command          |
+| ---------- | ---------------- |
+| Type-check | `pnpm check`     |
+| Lint       | `pnpm lint`      |
 | Unit tests | `pnpm test:unit` |
-| E2E tests | `pnpm test:e2e` |
-| Format | `pnpm format` |
+| E2E tests  | `pnpm test:e2e`  |
+| Format     | `pnpm format`    |
 
 ## Stack
 

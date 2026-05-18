@@ -27,12 +27,12 @@ The dev container at `.devcontainer/devcontainer.json` works out of the box for 
 
 ### Tests
 
-| Suite | Command |
-| --- | --- |
-| Unit / component (Vitest, jsdom) | `pnpm test:unit` |
-| End-to-end (Playwright, Chromium) | `pnpm test:e2e` |
-| Type-check (svelte-check) | `pnpm check` |
-| Lint (prettier + eslint) | `pnpm lint` |
+| Suite                             | Command          |
+| --------------------------------- | ---------------- |
+| Unit / component (Vitest, jsdom)  | `pnpm test:unit` |
+| End-to-end (Playwright, Chromium) | `pnpm test:e2e`  |
+| Type-check (svelte-check)         | `pnpm check`     |
+| Lint (prettier + eslint)          | `pnpm lint`      |
 
 `pnpm test:e2e` starts both PartyKit and the Vite dev server automatically via Playwright's `webServer` config; no setup needed beyond `pnpm install`.
 

@@ -81,13 +81,7 @@ export function buildCsv(snapshot: ExportSnapshot): string {
 	for (const col of snapshot.columns) {
 		for (const card of col.cards) {
 			lines.push(
-				csvRow([
-					col.title,
-					card.text,
-					card.author,
-					String(card.votes),
-					card.discussed ? 'yes' : ''
-				])
+				csvRow([col.title, card.text, card.author, String(card.votes), card.discussed ? 'yes' : ''])
 			);
 		}
 	}

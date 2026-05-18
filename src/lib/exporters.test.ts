@@ -111,7 +111,7 @@ describe('buildCsv', () => {
 		expect(csv).toContain('final');
 	});
 
-it('chrisMode does not change the row shape', () => {
+	it('chrisMode does not change the row shape', () => {
 		const doc = new Y.Doc();
 		seedRoom(doc, { name: 'Free', columns: DEFAULT_COLS, chrisMode: true });
 		const colId = readColumns(doc)[0].id;
