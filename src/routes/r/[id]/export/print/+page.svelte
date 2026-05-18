@@ -34,7 +34,7 @@
 	onDestroy(() => {
 		// The print tab owns its own module-scoped `active` session — the
 		// originating room tab has a separate one. Tear ours down so the
-		// y-partykit websocket + IndexedDB persistence don't leak.
+		// y-partyserver websocket + IndexedDB persistence don't leak.
 		leaveRoom();
 	});
 
