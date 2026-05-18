@@ -7,5 +7,6 @@
 		"bindings": [{ "name": "RetroRoom", "class_name": "RetroRoom" }]
 	},
 	"migrations": [{ "tag": "v1", "new_sqlite_classes": ["RetroRoom"] }],
-	"observability": { "enabled": true }
+	"observability": { "enabled": true },
+	"routes": [{ "pattern": "sync.locoretro.us", "custom_domain": true }]
 }
