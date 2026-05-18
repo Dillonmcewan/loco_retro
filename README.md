@@ -17,9 +17,11 @@ A simple retro tool for distributed teams. No accounts or set up; simply share a
 See [`docs/prd.md`](docs/prd.md) for the full product spec and [`docs/architecture.md`](docs/architecture.md) for the tech stack and runtime architecture.
 
 ## Quick Start
+
 See [`CONTRIBUTING.md`](CONTRIBUTING.md) for local development setup and commands.
 
 ## Stack
+
 See [`docs/architecture.md`](docs/architecture.md) for the tech stack and runtime architecture.
 
 ## Contributing
