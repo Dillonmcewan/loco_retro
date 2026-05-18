@@ -38,7 +38,8 @@
         "dbaeumer.vscode-eslint",
         "vitest.explorer",
         "ms-playwright.playwright",
-        "anthropic.claude-code"
+        "anthropic.claude-code",
+        "eamodio.gitlens"
       ]
     }
   }
