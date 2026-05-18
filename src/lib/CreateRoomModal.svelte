@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import {
 		generateRoomId,
 		ensureRoom,
@@ -107,7 +108,7 @@
 				templateName,
 				lastOpenedAt: Date.now()
 			});
-			await goto(`/r/${id}`);
+			await goto(resolve('/r/[id]', { id }));
 		} catch (err) {
 			leaveRoom();
 			const message = err instanceof Error ? err.message : 'Failed to create room.';

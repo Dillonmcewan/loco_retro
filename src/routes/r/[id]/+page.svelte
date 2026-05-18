@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
+	import { SvelteMap } from 'svelte/reactivity';
+	import { resolve } from '$app/paths';
 	import {
 		ensureRoom,
 		leaveRoom,
@@ -97,7 +99,7 @@
 	const showProgress = $derived(phase === 'collect' || phase === 'vote');
 	const voteDone = $derived(phase === 'vote' && (chrisMode ? localReady : votesRemaining <= 0));
 	const doneByClientId = $derived.by(() => {
-		const out = new Map<number, boolean>();
+		const out = new SvelteMap<number, boolean>();
 		for (const p of people) {
 			if (phase === 'collect') {
 				out.set(p.clientId, p.ready);
@@ -375,7 +377,7 @@
 			<div class="title">
 				<a
 					class="link back"
-					href="/"
+					href={resolve('/')}
 					aria-label="Back to dashboard"
 					use:tooltip={'Back to dashboard'}
 				>

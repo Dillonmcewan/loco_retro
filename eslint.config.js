@@ -18,9 +18,7 @@ export default [
 			'@typescript-eslint/no-unused-vars': [
 				'error',
 				{ argsIgnorePattern: '^_', varsIgnorePattern: '^_' }
-			],
-			'svelte/no-navigation-without-resolve': 'off',
-			'svelte/prefer-svelte-reactivity': 'off'
+			]
 		}
 	},
 	{
