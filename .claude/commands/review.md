@@ -19,7 +19,7 @@ Launch the `pr-reviewer` agent via the `Agent` tool with `subagent_type: "pr-rev
 - The base (`main`) and head (`HEAD`) refs, plus the merge-base SHA.
 - The branch name and inferred feature name.
 - Instruct it to gather the diff via `git diff <merge-base>...HEAD` and the commit log via `git log <merge-base>..HEAD --oneline`.
-- Tell it to read `docs/plan.md` and, if present, `docs/features/<name>.md`.
+- Tell it to read `docs/architecture.md` and, if present, `docs/features/<name>.md`.
 - Ask for its report in the exact format defined in its agent spec (Verdict / Must-fix / Should-fix / Nits / Plan-PRD drift / Test coverage gaps).
 
 Do not pre-summarize the diff yourself — the agent does the reading.

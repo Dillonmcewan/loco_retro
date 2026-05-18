@@ -25,7 +25,7 @@
 
 **Privacy.** Per the resolved design question, ballots live in the persisted CRDT keyed by `authorId`. Only the local viewer's ballot is bound to UI; everyone else's per-card allocation is never rendered. Aggregates are derived in the store, not stored separately — there is no counter to fall out of sync.
 
-**Alignment with `docs/plan.md`.**
+**Alignment with `docs/architecture.md`.**
 - *CRDT shape.* Ballots are a new top-level shared Yjs type on the existing per-room `Y.Doc`, mirrored to IndexedDB by `y-indexeddb` and synced via `y-websocket` with no transport changes.
 - *Store conventions.* Reads route through new Svelte stores (`myBallotStore`, `voteTotalsStore`) that subscribe to Yjs observers; writes mutate Yjs directly via helpers, matching `addCard`/`setPhase`/etc.
 - *Flat lib structure.* New files (`VoteControls.svelte`, `VoteBudget.svelte`) live under `src/lib/` alongside `RetroCard.svelte`, `CardForm.svelte`, `PhaseControls.svelte`. No subfolder yet.
@@ -54,7 +54,7 @@
 - `src/routes/r/[id]/+page.svelte` — in the Vote phase: render `<VoteBudget>` in the header, render `<VoteControls>` per card inside the existing column body (no aggregate badges). In Discuss + Closed phases: render aggregate badges on each card (no controls, no budget chip). Subscribe to `myBallotStore` in Vote, `voteTotalsStore` from Discuss onward.
 - `src/routes/r/[id]/+page.test.ts` — extend to cover header budget visibility per phase and that VoteControls only render in Vote phase.
 - `e2e/voting.spec.ts` (new) — two-client end-to-end flow (see Test plan).
-- `docs/plan.md` — note in the CRDT-shape section that `ballots` is now a top-level shared type on the room doc; note the privacy-is-UI-layer convention.
+- `docs/architecture.md` — note in the CRDT-shape section that `ballots` is now a top-level shared type on the room doc; note the privacy-is-UI-layer convention.
 
 ## Test plan
 
@@ -110,4 +110,4 @@ _All resolved — see commit history of this file for the trail._
 6. **`feat(retro-card): aggregate badge + voting snippet slot`** — surface `voteTotal` on `RetroCard.svelte`; render badge from Vote phase onward; tests.
 7. **`feat(room-page): wire voting UI during Vote phase`** — header budget chip, per-card VoteControls, store subscriptions; page-level tests.
 8. **`test(e2e): two-client dot voting flow`** — Playwright spec end to end.
-9. **`docs(plan): note ballots top-level shared type + UI-layer privacy`** — update `docs/plan.md` CRDT-shape section.
+9. **`docs(plan): note ballots top-level shared type + UI-layer privacy`** — update `docs/architecture.md` CRDT-shape section.

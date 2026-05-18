@@ -26,7 +26,7 @@ The `create-and-join-room` feature shipped the room shell with empty columns and
 
 **Authorship.** A card stores both `author` (the display name string captured at creation, for rendering) and `authorId` (a stable per-browser UUID v4, for ownership checks). The `authorId` is generated lazily on first use and persisted in `localStorage` alongside the display name. This avoids ambiguity when two participants share a name (the bootstrap feature explicitly accepted display-name collisions) and survives a name change without orphaning prior cards.
 
-**Alignment with `docs/plan.md`.**
+**Alignment with `docs/architecture.md`.**
 - *Architecture — CRDT.* Cards live in shared Yjs types in the same `Y.Doc` as `meta` and `columns`, so `y-indexeddb` and `y-websocket` carry them with no transport changes.
 - *Architecture — Svelte stores backed by Yjs.* `cardsStore` follows the same `readable` pattern as `columnsStore` / `roomMetaStore`.
 - *Conventions — flat `src/lib`, tests-next-to-code, TS strict.* New components and helpers all colocate; no subfolders.

@@ -20,4 +20,4 @@ What else did you try or think about?
 
 ## Spec alignment
 
-If this affects existing requirements in `docs/prd.md` or architecture in `docs/plan.md`, note the section and what would need to change.
+If this affects existing requirements in `docs/prd.md` or architecture in `docs/architecture.md`, note the section and what would need to change.

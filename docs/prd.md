@@ -1,7 +1,7 @@
 # loco_retro — Product Requirements
 
 > **Source of truth for *what* we're building.** Update this file as scope changes.
-> Implementation details and *how* belong in `docs/plan.md`.
+> Implementation details and *how* belong in `docs/architecture.md`.
 
 ## One-liner
 

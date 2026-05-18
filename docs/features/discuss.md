@@ -27,7 +27,7 @@ The `voting` feature shipped ballots, aggregates, and the numeric `Votes: N` bad
 - *Derive sort in the view, not in the store.* `cardsStore` stays a flat columnId-keyed map; the route layer composes it with `voteTotalsStore` (already subscribed) to produce a sorted list during Discuss/Closed. No new store, no doubling up of observer wiring, and the sort cost is trivial at retro scale (3–15 participants × tens of cards).
 - *Phase-gate the toggle, don't gate the field.* The CRDT happily stores `discussed` at any phase, but the helper refuses to write outside Discuss. This matches how `castVote` is gated to Vote: defense-in-depth at the data layer, no UI-only enforcement.
 
-**Alignment with `docs/plan.md`.**
+**Alignment with `docs/architecture.md`.**
 - *CRDT shape.* No new top-level shared types; `discussed` is an additional field inside the existing per-card `Y.Map` already enumerated in the plan's "Top-level shared types" note.
 - *Stores backed by Yjs.* The existing `cardsStore` uses `observeDeep` on the columns array, so nested card-field writes already trigger re-emission. No new store is added.
 - *Flat `src/lib/`, tests-next-to-code, TS strict.* All changes land in `room.ts` / `RetroCard.svelte` / their existing test files, plus one new e2e spec. No subfolder.

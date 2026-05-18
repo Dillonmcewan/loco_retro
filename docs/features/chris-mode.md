@@ -19,14 +19,14 @@ This feature adds a **Chris mode** option at room creation that uncaps the per-p
 
 **Storage — `chrisMode: boolean` on `meta`.** Added alongside `votesPerParticipant` in the Yjs `meta` map. `votesPerParticipant` keeps its existing validation (positive integer required) and persisted value; when `chrisMode` is true the modal disables the input visually and `castVote` consults the flag to skip the `spent >= budget` check. `retractVote` is unaffected (no cap to bypass). `readRoomMeta` defaults a missing `chrisMode` to `false` so pre-existing rooms don't need a migration.
 
-**Create-modal UI.** A native `<input type="checkbox">` labeled "Chris mode" sits in the right half of a two-column grid alongside the votes input. When checked, the number input becomes `disabled` and an `∞` glyph overlays the field. The checkbox label carries a tooltip via the `tooltip` action — *"Everything's made up and the points don't matter"*. (The modal-aware tooltip portal target, documented as a convention in `docs/plan.md`, keeps the tip above the modal's backdrop.)
+**Create-modal UI.** A native `<input type="checkbox">` labeled "Chris mode" sits in the right half of a two-column grid alongside the votes input. When checked, the number input becomes `disabled` and an `∞` glyph overlays the field. The checkbox label carries a tooltip via the `tooltip` action — *"Everything's made up and the points don't matter"*. (The modal-aware tooltip portal target, documented as a convention in `docs/architecture.md`, keeps the tip above the modal's backdrop.)
 
 **Vote-phase UI — `VoteBudget` is mode-conditional.**
 
 - **Normal mode (`unlimited === false`).** Passive `<span class="budget">` showing `X / N votes remaining`, flipping to green `Done voting!` when `remaining <= 0`. No click handler, no `aria-pressed` — same as the pre-Chris-mode behavior.
 - **Chris mode (`unlimited === true`).** Interactive `<button class="budget">` with the toggle pattern `○ I'm done · ∞ votes` ↔ `✓ Done voting!`. `aria-label` is action-describing (`"Mark voting complete"` / `"Mark voting incomplete"`). Clicking calls `onToggleDone`, which sets the awareness `ready` flag — the same flag the Collect-phase "I'm done" toggle already drives.
 
-**"Done voting" state — reuses the awareness `ready` flag.** No new awareness field. To prevent leakage between phases (e.g. a user marked ready in Collect shouldn't enter Vote already "done"), `+page.svelte` carries a `$effect.pre` that clears `localReady` (and the awareness `ready`) on every phase transition, with the standard `prevPhase !== undefined` guard so initial mount is a no-op (see the Phase-transition gating convention in `docs/plan.md`).
+**"Done voting" state — reuses the awareness `ready` flag.** No new awareness field. To prevent leakage between phases (e.g. a user marked ready in Collect shouldn't enter Vote already "done"), `+page.svelte` carries a `$effect.pre` that clears `localReady` (and the awareness `ready`) on every phase transition, with the standard `prevPhase !== undefined` guard so initial mount is a no-op (see the Phase-transition gating convention in `docs/architecture.md`).
 
 The Vote-phase branch of `doneByClientId` splits cleanly by mode:
 
@@ -48,7 +48,7 @@ The Vote-phase branch of `doneByClientId` splits cleanly by mode:
 - *Conditional button vs span, not a single button in both modes.* The first iteration made the chip interactive in both modes. Review caught an irreversibility bug: when normal-mode auto-done was true, clicking the chip silently set `localReady = true` but the green state stayed (depletion dominated), and after retracting a vote the user got stuck "done." Splitting the modes removes the overlap — each path has one source of truth.
 - *Reuse `ready`, not a new `doneVoting` field on awareness.* The semantic is "I'm done with the current phase." Generalizes; one less name to coin.
 
-**Alignment with `docs/plan.md`.**
+**Alignment with `docs/architecture.md`.**
 - *CRDT shape.* `chrisMode` is one more field in `meta`, already enumerated in the plan's "Top-level shared types" note.
 - *Stores backed by Yjs.* `roomMetaStore` already observes the meta map; component code reads `meta.chrisMode` like any other field.
 - *Flat `src/lib/`, tests-next-to-code, TS strict.* All changes land in existing files plus the e2e suite. No new subfolder.
@@ -61,9 +61,9 @@ The Vote-phase branch of `doneByClientId` splits cleanly by mode:
 - `src/lib/CreateRoomModal.svelte` — Chris-mode `<input type="checkbox">` with tooltip; disables the votes input + overlays `∞` when checked; prefills `Retro YYYY-MM-DD` into the room name and focus-and-selects it on open (small adjacent UX upgrade landed in the same pass).
 - `src/lib/VoteBudget.svelte` — mode-conditional render: passive span in normal mode (auto-done at depletion), interactive button in Chris mode (manual toggle with action-describing `aria-label`).
 - `src/routes/r/[id]/+page.svelte` — `chrisMode` and `voteDone` derivations; mode-split `doneByClientId` Vote branch; phase-transition `$effect.pre` resets `localReady`.
-- `src/lib/tooltip.ts` — appends the tip to the nearest open `<dialog>` ancestor so tooltips on controls inside modals clear the top layer. Falls back to `<body>` when no dialog is present. New project-wide convention; documented in `docs/plan.md`.
+- `src/lib/tooltip.ts` — appends the tip to the nearest open `<dialog>` ancestor so tooltips on controls inside modals clear the top layer. Falls back to `<body>` when no dialog is present. New project-wide convention; documented in `docs/architecture.md`.
 - `src/lib/room.test.ts`, `src/lib/VoteBudget.test.ts`, `src/lib/CreateRoomModal.test.ts`, `src/routes/r/[id]/page.test.ts`, `e2e/voting.spec.ts` — unit + e2e coverage (see Test plan).
-- `docs/plan.md` — meta-shape enumeration + tooltip-portal convention bullet.
+- `docs/architecture.md` — meta-shape enumeration + tooltip-portal convention bullet.
 - `docs/prd.md` — R6 amendment.
 
 ## Test plan

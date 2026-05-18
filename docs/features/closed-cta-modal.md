@@ -36,13 +36,13 @@ Because the CTA's appearance is *driven by* `onDismiss`, the transition-only sem
 - Secondary button: `Home` icon + **"Dashboard"** → calls `goto('/')`.
 - Close button: `X` icon top-right → `dialogEl.close()` → triggers the dialog's `onclose` → `onClose()`. ESC and backdrop click route through the same `onclose` path.
 
-**How it aligns with `docs/plan.md`:**
+**How it aligns with `docs/architecture.md`:**
 
-- *Phase-transition gating with `$effect.pre`* (plan.md:43): satisfied via the celebration's existing gate — we don't add a second one.
-- *Flat `src/lib/` structure* (plan.md:38): `ClosedCelebrationCTA.svelte` + `ClosedCelebrationCTA.test.ts` live at the top of `src/lib/`, prefix-grouped with `ClosedCelebration.*`.
-- *Design tokens* (plan.md:39): the modal's CSS reuses `--color-surface`, `--space-*`, `--radius-lg`, `--shadow-card`, `--font-size-*`, `--color-primary`, `--color-border` — same tokens as `ExportModal.svelte`. No raw literals.
-- *Tooltip portal target* (plan.md:42): N/A — the modal has no tooltips inside it.
-- *Reduced-motion gating* (plan.md:41): the dialog has no entry animation, so no `prefers-reduced-motion` rule is required. The celebration's own reduced-motion fallback still runs upstream of the CTA.
+- *Phase-transition gating with `$effect.pre`* (architecture.md:43): satisfied via the celebration's existing gate — we don't add a second one.
+- *Flat `src/lib/` structure* (architecture.md:38): `ClosedCelebrationCTA.svelte` + `ClosedCelebrationCTA.test.ts` live at the top of `src/lib/`, prefix-grouped with `ClosedCelebration.*`.
+- *Design tokens* (architecture.md:39): the modal's CSS reuses `--color-surface`, `--space-*`, `--radius-lg`, `--shadow-card`, `--font-size-*`, `--color-primary`, `--color-border` — same tokens as `ExportModal.svelte`. No raw literals.
+- *Tooltip portal target* (architecture.md:42): N/A — the modal has no tooltips inside it.
+- *Reduced-motion gating* (architecture.md:41): the dialog has no entry animation, so no `prefers-reduced-motion` rule is required. The celebration's own reduced-motion fallback still runs upstream of the CTA.
 - *Icons*: per-icon `lucide-svelte/icons/<name>` imports — `Download`, `Home`, `X`.
 
 **Alternatives considered:**

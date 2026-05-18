@@ -10,7 +10,7 @@ Feature name: `$ARGUMENTS`
 ## Steps
 
 1. Read `docs/prd.md` end-to-end. Identify the specific requirement(s) this feature addresses. If the PRD does not yet cover this feature, stop and ask the user to add a requirement first.
-2. Read `docs/plan.md` end-to-end. Note the architecture, tech stack, conventions, and testing strategy. Your design choices must align with this document — if they can't, surface the conflict and propose a dev-plan update before continuing.
+2. Read `docs/architecture.md` end-to-end. Note the architecture, tech stack, conventions, and testing strategy. Your design choices must align with this document — if they can't, surface the conflict and propose a dev-plan update before continuing.
 3. Explore the current codebase enough to understand what files will be touched. Do not edit anything.
 4. Write `docs/features/$ARGUMENTS.md` using the structure below. If the file already exists, propose updates rather than overwriting blindly.
 
@@ -25,7 +25,7 @@ Feature name: `$ARGUMENTS`
 
 ## Design
 - Summary of the approach (2–4 sentences)
-- How it aligns with `docs/plan.md` (call out the specific sections)
+- How it aligns with `docs/architecture.md` (call out the specific sections)
 - Alternatives considered and why rejected
 
 ## File-level changes

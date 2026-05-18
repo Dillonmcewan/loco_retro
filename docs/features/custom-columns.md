@@ -25,8 +25,8 @@ Templates become a pure presentation concept: `{ key, label, columns: { title: s
 
 The Yjs doc no longer stores `templateId`. `seedRoom` accepts `columns: { title: string }[]` directly and generates per-column UUIDs at seed time. `RoomIndexEntry` gains `columnTitles: string[]` (required) and `templateName?: string` (optional user-given name, preserved for picker display only). The picker's "Yours" section aggregates unique templates from the local retro index, deduped by key, sorted by most-recent `lastOpenedAt`.
 
-**Alignment with `docs/plan.md`.**
-- *Top-level Yjs schema* (plan.md §Architecture): `meta` keeps `name`, `phase`, `votesPerParticipant`; `templateId` is removed. Columns remain a `Y.Array<Y.Map>` with `{ id, title, cards }`. The doc-level shape is unchanged otherwise.
+**Alignment with `docs/architecture.md`.**
+- *Top-level Yjs schema* (architecture.md §Architecture): `meta` keeps `name`, `phase`, `votesPerParticipant`; `templateId` is removed. Columns remain a `Y.Array<Y.Map>` with `{ id, title, cards }`. The doc-level shape is unchanged otherwise.
 - *Flat `src/lib/` structure*: new files (`TemplatePickerModal.svelte`, `ColumnEditor.svelte`) live in `src/lib/` next to `CreateRoomModal.svelte`.
 - *Design tokens*: new UI uses existing `--space-*`, `--font-size-*`, `--icon-size-*`, `--color-*` tokens.
 - *Tests live next to code*: `*.test.ts` colocated with new components and helpers.
@@ -95,7 +95,7 @@ The Yjs doc no longer stores `templateId`. `seedRoom` accepts `columns: { title:
 
 **Docs**
 
-- `docs/plan.md` — update the "Top-level shared types on the room doc" bullet to note that `meta` carries `{ name, phase, votesPerParticipant }` only, and columns are the sole source of truth for room shape. Same commit as `room.ts` changes.
+- `docs/architecture.md` — update the "Top-level shared types on the room doc" bullet to note that `meta` carries `{ name, phase, votesPerParticipant }` only, and columns are the sole source of truth for room shape. Same commit as `room.ts` changes.
 
 **Existing files unchanged (verified):** `src/lib/Card.svelte`, `src/lib/RetroCard.svelte`, `src/lib/Toast.svelte`, `src/lib/displayName.ts`, `src/lib/participantColor.ts`, voting & phase machinery — these never read `templateId`.
 
@@ -130,7 +130,7 @@ The Yjs doc no longer stores `templateId`. `seedRoom` accepts `columns: { title:
 Sequenced so each commit leaves the app green:
 
 1. **Refactor `templates.ts` shape** — rename `id` → `key`, drop per-column ids from preset definitions, add `templateKeyFromTitles` / `deriveTemplateLabel` / `recentTemplates` / `aggregatedTemplates`. Update preset consumers in the same commit. Tests updated.
-2. **Drop `templateId` from `room.ts` + plan.md** — change `MetaShape`, `SeedParams`, `RoomMetaSnapshot`; `seedRoom` accepts `columns`; remove `getTemplate` call. Update `docs/plan.md` Architecture bullet. Tests updated.
+2. **Drop `templateId` from `room.ts` + architecture.md** — change `MetaShape`, `SeedParams`, `RoomMetaSnapshot`; `seedRoom` accepts `columns`; remove `getTemplate` call. Update `docs/architecture.md` Architecture bullet. Tests updated.
 3. **Switch `rooms.ts` schema** — `templateId` → `columnTitles` + optional `templateName`; add `getRoom(id)` helper. Tests updated. Bump validator strictly (no migration).
 4. **Wire dashboard + room route to new schema** — `RoomTile` uses `deriveTemplateLabel(columnTitles)`; `+page.svelte` writes `columnTitles` / preserves `templateName`. Tests updated.
 5. **CreateRoomModal: recent-three picker** — render `recentTemplates(listRooms(), 3)` + "More templates" placeholder card (button disabled until step 6). Tests updated.

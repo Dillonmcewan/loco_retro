@@ -22,7 +22,7 @@
 
 Replace `y-websocket` + the `relay/` Node package with `y-partykit`. The client uses `YPartyKitProvider` (a thin WebSocket-based Yjs provider); the room state lives in a Cloudflare Durable Object whose `onConnect` delegates to `y-partykit`'s built-in Yjs sync helper. The SvelteKit app deploys to Cloudflare Pages; the PartyKit server deploys via `partykit deploy` to the same Cloudflare account. After this lands, the MVP is genuinely live: zero servers we run, one bill, one dashboard, native Yjs sync, and late joiners can connect even when no peer is online.
 
-### How it aligns with `docs/plan.md`
+### How it aligns with `docs/architecture.md`
 
 - **Tech stack → "Realtime transport"** (line 17): wholesale rewrite — `y-partykit` over WebSocket, with a Cloudflare DO as the server. No Node relay, no signaling server, no relay package.
 - **Tech stack → "Deployment adapter"** (line 18): pin `@sveltejs/adapter-cloudflare` (replacing `adapter-auto`). The SPA deploys to Cloudflare Pages; the PartyKit worker deploys alongside via `partykit deploy`. This is the v1 hosting decision.
@@ -80,7 +80,7 @@ Replace `y-websocket` + the `relay/` Node package with `y-partykit`. The client 
 - `playwright.config.ts` — `webServer` array runs `partykit dev` (with a healthcheck URL on `http://localhost:1999`) alongside `pnpm dev` (with `VITE_PARTYKIT_HOST=localhost:1999` injected via env).
 - `.devcontainer/devcontainer.json` — replace forwarded port `1234` ("Yjs relay") with `1999` ("PartyKit dev").
 - `e2e/create-and-join.spec.ts:32`, `e2e/persistence.spec.ts:4-6` — comment-only updates describing PartyKit/WebSocket transport instead of relay/WebSocket.
-- `docs/plan.md`:
+- `docs/architecture.md`:
   - Rewrite Tech-stack and Architecture transport sections.
   - Pin the deploy adapter (`adapter-cloudflare`) — closes the "deferred" status.
   - Close both Open decisions; add a single-line note that DO storage holds Yjs history for active rooms.
@@ -88,7 +88,7 @@ Replace `y-websocket` + the `relay/` Node package with `y-partykit`. The client 
   - Update R8 wording slightly: "syncs through a managed Cloudflare Durable Object" instead of "lightweight relay." Optional — could leave R8 vague and add a one-line implementation note. Decide during implementation.
   - Update the (already-marked-resolved) relay-persistence open question's text to reflect the new answer: CF holds room state in DO storage; we don't operate or persist anything ourselves.
 - `CLAUDE.md` — refresh the **Standard commands** block to add `pnpm dev:all` / `pnpm party:dev` / `pnpm party:deploy`. The "Two-tab sync in the devcontainer" section from the deleted y-webrtc branch is already gone (the branch was force-deleted before merging), so no removal needed.
-- No new README; deploy + dev-flow documentation lives in `docs/plan.md` (Architecture / Standard commands) and `CLAUDE.md` (commands cheatsheet).
+- No new README; deploy + dev-flow documentation lives in `docs/architecture.md` (Architecture / Standard commands) and `CLAUDE.md` (commands cheatsheet).
 
 ## Test plan
 
@@ -121,7 +121,7 @@ Replace `y-websocket` + the `relay/` Node package with `y-partykit`. The client 
 1. **PartyKit project name** = `loco-retro` (kebab-case, per PartyKit convention; produces a deploy host of `loco-retro.<account>.partykit.dev`). Renaming later is annoying but possible.
 2. **Persist mode** = `snapshot`. Cheapest option that still survives DO hibernation. Yjs CRDT idempotency handles the late-merge cases. Revisit `history` only if real merge issues surface.
 3. **`dev:all`** = restored. Single command runs Vite + `partykit dev` via `concurrently`.
-4. **README** = not added. Update `docs/plan.md` and `CLAUDE.md` instead.
+4. **README** = not added. Update `docs/architecture.md` and `CLAUDE.md` instead.
 
 ## Open questions
 
@@ -134,6 +134,6 @@ Each commit independently reviewable; the working tree should pass `pnpm check` 
 1. **`chore(deploy): pin adapter-cloudflare`** — `svelte.config.js` + `package.json` (`adapter-auto` → `adapter-cloudflare`) + lockfile. App still builds; no transport change yet.
 2. **`feat(sync): introduce PartyKit Durable Object backend`** — add `partykit.json`, `party/main.ts`, the `y-partykit` + `partykit` deps, the `party:dev` / `party:deploy` scripts, the `VITE_PARTYKIT_HOST` env var. Update `src/lib/room.ts` to use `YPartyKitProvider`. Wire `playwright.config.ts` to run `partykit dev`. Update `.devcontainer/devcontainer.json` port forward. Should leave `pnpm dev` + `pnpm party:dev` flow working end-to-end locally; e2e green.
 3. **`chore: remove dev-only y-websocket relay`** — delete `relay/`, drop the `relay` script, drop `pnpm-workspace.yaml`, update `.env` env-var name, drop any lingering `y-websocket` references. Smaller commit; could be folded into #2 if reviewer prefers a single behavior-change diff.
-4. **`docs: pin Cloudflare/PartyKit transport in PRD and plan`** — `docs/plan.md` rewrites; `docs/prd.md` open-question + R8 wording; `CLAUDE.md` commands cheatsheet refresh.
+4. **`docs: pin Cloudflare/PartyKit transport in PRD and plan`** — `docs/architecture.md` rewrites; `docs/prd.md` open-question + R8 wording; `CLAUDE.md` commands cheatsheet refresh.
 5. **`test(e2e): cover late-joiner bootstrap`** — add `e2e/bootstrap.spec.ts`. This is the test that proves we actually fixed the thing that broke under y-webrtc.
-6. **(Out-of-scope for this commit sequence, listed for visibility) `pnpm party:deploy` + Cloudflare Pages first deploy.** Not a code commit — operational step we do once #1–#5 are merged *and* the Cloudflare account exists. Document the exact commands in `docs/plan.md`.
+6. **(Out-of-scope for this commit sequence, listed for visibility) `pnpm party:deploy` + Cloudflare Pages first deploy.** Not a code commit — operational step we do once #1–#5 are merged *and* the Cloudflare account exists. Document the exact commands in `docs/architecture.md`.

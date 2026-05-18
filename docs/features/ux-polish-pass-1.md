@@ -18,7 +18,7 @@ Single polish pass, three groupings:
 - **Brand**: "LocoRetro" everywhere user-facing. The `loco_retro` wordmark (lowercase, underscored) is replaced by a two-tone "Loco | Retro" treatment in a new `src/lib/Wordmark.svelte`.
 - **Tab title**: `LocoRetro` default (in `app.html`), overridden per page via `<svelte:head>`: `LocoRetro` on the dashboard, `{retro name} · LocoRetro` on the retro page.
 - **Favicon**: new `static/favicon.svg` (SVG-only — universally supported in evergreen browsers, no PNG fallback). Linked from `app.html`.
-- **Palette**: keep the warm cream + coral primary. Add two new accents (teal secondary, mustard tertiary) and four phase-specific tokens so retro tiles can be color-coded by current phase. All new colors land as `--color-*` tokens in `src/app.css` per the design-token discipline in `docs/plan.md`.
+- **Palette**: keep the warm cream + coral primary. Add two new accents (teal secondary, mustard tertiary) and four phase-specific tokens so retro tiles can be color-coded by current phase. All new colors land as `--color-*` tokens in `src/app.css` per the design-token discipline in `docs/architecture.md`.
 
 ### B. Dashboard polish
 
@@ -70,9 +70,9 @@ Single polish pass, three groupings:
 - `src/lib/RetroCard.svelte` — keep footer always rendered; always-mounted vote-total / vote-controls / discussed-toggle / owner-actions slots with placeholder fallbacks; textarea min-height; stronger discussed tint.
 - `src/routes/page.test.ts`, `e2e/dashboard.spec.ts` — replace assertions on the removed "show up here" hint with assertions on the new placeholder copy.
 
-## Update to `docs/plan.md`
+## Update to `docs/architecture.md`
 
-The original plan items needed no architectural change. The addendum scope below introduced three reusable patterns (reduced-motion gating, `$effect.pre` transition gating, deterministic per-room registry pick) that have been captured under the Conventions section of `docs/plan.md`.
+The original plan items needed no architectural change. The addendum scope below introduced three reusable patterns (reduced-motion gating, `$effect.pre` transition gating, deterministic per-room registry pick) that have been captured under the Conventions section of `docs/architecture.md`.
 
 ## Addendum: scope that landed beyond this plan
 

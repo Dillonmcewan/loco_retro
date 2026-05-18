@@ -27,7 +27,7 @@ This feature ships the state machine, the shared phase indicator, the advance/ba
 
 The phase machine is a flat enum (`'collect' | 'vote' | 'discuss' | 'closed'`) with a fixed forward order. There is no implicit transition — every change is an explicit user action persisted via Yjs. Because the helpers gate at the data layer, a stale tab whose phase observer hasn't updated yet still cannot corrupt state on a closed room.
 
-**Alignment with `docs/plan.md`.**
+**Alignment with `docs/architecture.md`.**
 - *Architecture — CRDT.* `phase` lives on the same `meta` `Y.Map` we already seed and observe; no new shared types, no transport changes.
 - *Architecture — Svelte stores backed by Yjs.* `roomMetaStore` already subscribes to `meta.observe`; promoting `RoomMetaSnapshot` to include `phase` reuses the existing pipe. The plan's note in `room.ts` ("if meta ever gains nested Y types … switch to `observeDeep`") still doesn't apply — phase is a flat string.
 - *Conventions — flat `src/lib`, tests-next-to-code, TS strict.* New `Phase` type, helpers, and `PhaseControls.svelte` component all colocate.

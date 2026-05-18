@@ -25,13 +25,13 @@ We deliberately keep this local-first: the export reflects *the requester's view
 
 A new `src/lib/exporters.ts` module holds the pure builders + a tiny `downloadBlob(blob, filename)` helper + a `buildSnapshot(doc)` function that walks the existing `readRoomMeta` / `readCards` / `readVoteTotals` helpers (`src/lib/room.ts`) into a single POJO consumed by all three formats. The print route, CSV builder, and Markdown builder all read from this same snapshot — one source of truth for what an "export" sees.
 
-**How it aligns with `docs/plan.md`:**
-- *Local-first sync model* (plan.md:22-26): exports read from the local Yjs doc — no server, no relay round-trip. Works offline.
-- *Flat `src/lib/` structure* (plan.md:38): new files (`exporters.ts`, `exporters.test.ts`, `ExportModal.svelte`, `ExportModal.test.ts`) live at the top level of `src/lib/`, prefix-disambiguated.
-- *Design tokens* (plan.md:39): the new modal and Download header button consume existing CSS variables — no raw literals introduced.
-- *Routes that touch CRDT state are client-rendered* (plan.md:29): the new `/r/[id]/export/print` route gets `export const ssr = false` and `export const prerender = false`, matching the existing room route's posture.
+**How it aligns with `docs/architecture.md`:**
+- *Local-first sync model* (architecture.md:22-26): exports read from the local Yjs doc — no server, no relay round-trip. Works offline.
+- *Flat `src/lib/` structure* (architecture.md:38): new files (`exporters.ts`, `exporters.test.ts`, `ExportModal.svelte`, `ExportModal.test.ts`) live at the top level of `src/lib/`, prefix-disambiguated.
+- *Design tokens* (architecture.md:39): the new modal and Download header button consume existing CSS variables — no raw literals introduced.
+- *Routes that touch CRDT state are client-rendered* (architecture.md:29): the new `/r/[id]/export/print` route gets `export const ssr = false` and `export const prerender = false`, matching the existing room route's posture.
 - *Icons*: per-icon `lucide-svelte/icons/<name>` imports — `Download` for the header button, `FileText` / `FileSpreadsheet` / `FileType2` (or similar) for the three format cards.
-- *Tooltip portal target* (plan.md:42): the Download button uses `use:tooltip={'Export retro'}` so it appends to body (not inside a dialog).
+- *Tooltip portal target* (architecture.md:42): the Download button uses `use:tooltip={'Export retro'}` so it appends to body (not inside a dialog).
 
 **Alternatives considered:**
 - **`jspdf` / `pdf-lib` PDF library** — true single-click PDF download. Rejected: adds 150–300 KB to the bundle, lazy-load complexity, and the print route gives objectively better typography for free. The "two clicks" cost (Save as PDF in print dialog) is acceptable for an action used a few times per retro.
@@ -54,7 +54,7 @@ A new `src/lib/exporters.ts` module holds the pure builders + a tiny `downloadBl
 
 **Modified:**
 - `src/routes/r/[id]/+page.svelte` — import `Download` icon and `ExportModal`; add the Download `.link` button to the `.title` block right after the Share2 button (`+page.svelte:341-349`); add `showExportModal` state; on confirm, dispatch CSV/MD via `downloadBlob` + show toast, or `window.open('/r/<id>/export/print', '_blank')` for PDF; reuse the existing `showToast('success'|'error', message)` plumbing (`+page.svelte:57-64`).
-- `docs/plan.md` — append a one-line entry under **Conventions** describing the export module pattern (single `buildSnapshot` → format-specific builders) and the print-route convention (`/r/[id]/export/print`, `ssr=false`, `prerender=false`). Updated in the same commit that lands the route.
+- `docs/architecture.md` — append a one-line entry under **Conventions** describing the export module pattern (single `buildSnapshot` → format-specific builders) and the print-route convention (`/r/[id]/export/print`, `ssr=false`, `prerender=false`). Updated in the same commit that lands the route.
 - `src/setup-tests.ts` — only if needed: stub `window.print` to a no-op so the print route's auto-print doesn't blow up in jsdom.
 
 **Reused (no changes):**
@@ -145,4 +145,4 @@ Each commit independently reviewable; tests land with the code they cover.
 3. **`feat(export): wire Download button + CSV/MD flows on room page`** — modifies `src/routes/r/[id]/+page.svelte`; PDF option still a no-op (or opens a placeholder route). CSV + MD downloads work end-to-end.
 4. **`feat(export): add /r/[id]/export/print route for PDF flow`** — new route files + `print.test.ts`. Wires the PDF option in the modal to `window.open(...)`.
 5. **`test(export): e2e flows for CSV, Markdown, PDF`** — `e2e/export.spec.ts`.
-6. **`docs(plan): note exporters module + print-route convention`** — short note in `docs/plan.md` under Conventions.
+6. **`docs(plan): note exporters module + print-route convention`** — short note in `docs/architecture.md` under Conventions.

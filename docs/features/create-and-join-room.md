@@ -21,14 +21,14 @@ This is the bootstrap feature — there is no application code yet, so it scaffo
 
 **Approach.** A facilitator's *Create* form produces a fresh `Y.Doc`, seeds it with the room name and the chosen template's columns, persists it via `y-indexeddb`, and opens a `y-websocket` connection to a small standalone relay running on `localhost`. The system generates an opaque random room id (UUID v4) which becomes the document name and the URL slug (`/r/<id>`). The facilitator shares that URL; anyone who opens it loads the same `Y.Doc` by name, the relay forwards the existing state, and they appear in the participant list via Yjs **awareness** (ephemeral, not part of the persisted CRDT). The room route gates rendering behind a display-name prompt: if `localStorage` has no name, an inline form takes one before the room shell renders; on subsequent visits the saved name pre-fills and the gate is skipped.
 
-**Alignment with `docs/plan.md`.** This feature pins three of the four currently-deferred decisions in the dev plan and updates the Architecture / Open-decisions sections in the same change:
+**Alignment with `docs/architecture.md`.** This feature pins three of the four currently-deferred decisions in the dev plan and updates the Architecture / Open-decisions sections in the same change:
 
 - *Database / local-first persistence layer* → **Yjs + `y-indexeddb`**.
 - *Realtime transport for remote retros* → **`y-websocket`**, with a standalone Node relay process under `relay/` for development.
 - *Authentication / room model* → **Anonymous: shareable room URL + locally-stored display name; awareness for presence.**
 - *Hosting / deploy adapter* → still deferred; `@sveltejs/adapter-auto`.
 
-The feature also honors the standing conventions from `docs/plan.md`: TypeScript strict mode, Vitest for unit/component, Playwright for e2e, tests next to code (`*.test.ts`) with Playwright specs under `e2e/`, small focused commits.
+The feature also honors the standing conventions from `docs/architecture.md`: TypeScript strict mode, Vitest for unit/component, Playwright for e2e, tests next to code (`*.test.ts`) with Playwright specs under `e2e/`, small focused commits.
 
 **Alternatives considered.**
 
@@ -79,7 +79,7 @@ All files are new unless noted.
 
 **Docs**
 
-- `docs/plan.md` — update the *Architecture* section to describe the pinned stack (Yjs + IndexedDB + WebSocket relay; awareness for presence) and remove the corresponding entries from *Open decisions*. Same commit as the wiring code.
+- `docs/architecture.md` — update the *Architecture* section to describe the pinned stack (Yjs + IndexedDB + WebSocket relay; awareness for presence) and remove the corresponding entries from *Open decisions*. Same commit as the wiring code.
 
 ## Test plan
 
@@ -110,7 +110,7 @@ Each step a single, independently-reviewable commit:
 
 1. **Scaffold SvelteKit + tooling.** `package.json`, configs, empty placeholder routes, `pnpm install`, `pnpm check` clean. No app behavior yet.
 2. **Wire Vitest + Playwright** with one trivial passing test each, so CI/test commands work end-to-end.
-3. **Update `docs/plan.md`** to pin Yjs + `y-indexeddb` + `y-websocket` and the awareness/anonymous identity model; remove those entries from *Open decisions*.
+3. **Update `docs/architecture.md`** to pin Yjs + `y-indexeddb` + `y-websocket` and the awareness/anonymous identity model; remove those entries from *Open decisions*.
 4. **Add preset templates** (`src/lib/templates.ts`) + tests.
 5. **Add room-id generator** (`src/lib/room/id.ts`) + tests.
 6. **Add display-name helper** (`src/lib/identity/displayName.ts`) + tests.
