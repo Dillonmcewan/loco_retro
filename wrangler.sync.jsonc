@@ -4,7 +4,7 @@
 	"main": "party/main.ts",
 	"compatibility_date": "2026-05-01",
 	"durable_objects": {
-		"bindings": [{ "name": "RetroRoom", "class_name": "RetroRoom" }]
+		"bindings": [{ "name": "Main", "class_name": "RetroRoom" }]
 	},
 	"migrations": [{ "tag": "v1", "new_sqlite_classes": ["RetroRoom"] }],
 	"observability": { "enabled": true },

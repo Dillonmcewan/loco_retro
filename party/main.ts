@@ -3,8 +3,12 @@ import { YServer } from 'y-partyserver';
 
 export class RetroRoom extends YServer {}
 
+// Binding is named `Main` (not `RetroRoom`) so the URL path `/parties/main/<id>`
+// that y-partyserver's client uses by default resolves to this DO without the
+// client having to pass a non-default `party` option. The class itself stays
+// `RetroRoom` for readability in code and migrations.
 type Env = {
-	RetroRoom: DurableObjectNamespace;
+	Main: DurableObjectNamespace;
 };
 
 export default {
