@@ -17,8 +17,8 @@
 	"scripts": {
 		"dev": "vite dev",
 		"dev:all": "VITE_SYNC_HOST=localhost:1999 concurrently -n app,sync -c blue,green \"pnpm dev\" \"pnpm sync:dev\"",
-		"sync:dev": "wrangler dev --port 1999 --local",
-		"sync:deploy": "wrangler deploy",
+		"sync:dev": "wrangler dev --config wrangler.sync.jsonc --port 1999 --local",
+		"sync:deploy": "wrangler deploy --config wrangler.sync.jsonc",
 		"build": "vite build",
 		"deploy:app": "vite build && wrangler pages deploy .svelte-kit/cloudflare --project-name=loco-retro --branch=main --commit-dirty=true",
 		"deploy": "pnpm sync:deploy && pnpm deploy:app",

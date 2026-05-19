@@ -27,7 +27,7 @@ For workflow, setup, and commands see [`CONTRIBUTING.md`](../CONTRIBUTING.md). C
 
 ## Deploy
 
-Two deployable units run on Cloudflare under our own account: the **sync Worker** (`party/main.ts`, deployed by `wrangler deploy` using `wrangler.jsonc`) and the **SvelteKit app** (Cloudflare Pages, deployed by `wrangler pages deploy`). GitHub Actions deploys both on every push to `main` via `.github/workflows/deploy.yml` — the sync Worker first (its host is baked into the SvelteKit build), then Pages. Rollback is a redeploy of an earlier SHA; there's no database or migrations to reverse.
+Two deployable units run on Cloudflare under our own account: the **sync Worker** (`party/main.ts`, deployed by `wrangler deploy --config wrangler.sync.jsonc`) and the **SvelteKit app** (Cloudflare Pages, deployed by `wrangler pages deploy`). GitHub Actions deploys both on every push to `main` via `.github/workflows/deploy.yml` — the sync Worker first (its host is baked into the SvelteKit build), then Pages. Rollback is a redeploy of an earlier SHA; there's no database or migrations to reverse.
 
 ## Open decisions
 
