@@ -41,7 +41,7 @@ The Vote-phase branch of `doneByClientId` splits cleanly by mode:
 }
 ```
 
-**Sync surface.** `chrisMode` is persisted on the `meta` Y.Map → automatically replicated by Yjs / `y-partykit`. The `ready` flag is awareness as before (ephemeral). No new top-level shared types, no transport changes.
+**Sync surface.** `chrisMode` is persisted on the `meta` Y.Map → automatically replicated by Yjs / `y-partyserver`. The `ready` flag is awareness as before (ephemeral). No new top-level shared types, no transport changes.
 
 **Why these shapes.**
 - *Flag on `meta`, not a sentinel `votesPerParticipant = -1`.* Conflates "how many" with "unlimited"; would invalidate `isValidVoteCount`'s positive-integer invariant and force every reader to special-case the sentinel.

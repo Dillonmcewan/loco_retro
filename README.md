@@ -7,7 +7,7 @@ Lovingly vibe-coded local-first app for running remote retros.
 [![codecov](https://codecov.io/gh/dillonmcewan/loco_retro/branch/main/graph/badge.svg)](https://codecov.io/gh/dillonmcewan/loco_retro)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A simple retro tool for distributed teams. No accounts or set up; simply share a URL and get started. Data is stored locally in the browser and synced in realtime with other participants via a CRDT (Yjs) and WebSocket transport (`y-partykit`).
+A simple retro tool for distributed teams. No accounts or set up; simply share a URL and get started. Data is stored locally in the browser and synced in realtime with other participants via a CRDT (Yjs) and WebSocket transport (`y-partyserver`).
 
 - **No accounts.** Share a URL, pick a display name, go.
 - **Local-first.** Every participant holds the full retro state in their browser via a CRDT (Yjs) backed by IndexedDB.

@@ -32,11 +32,12 @@ jobs:
       - name: Sanity pass
         run: pnpm check && pnpm lint && pnpm test:unit
 
-      - name: Deploy PartyKit worker
-        env:
-          PARTYKIT_TOKEN: ${{ secrets.PARTYKIT_TOKEN }}
-          PARTYKIT_LOGIN: ${{ secrets.PARTYKIT_LOGIN }}
-        run: pnpm party:deploy
+      - name: Deploy sync Worker
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: deploy --config wrangler.sync.jsonc
 
       - name: Build app
         run: pnpm build

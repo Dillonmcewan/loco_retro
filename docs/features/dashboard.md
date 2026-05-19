@@ -33,7 +33,7 @@ The sidecar can drift from the Yjs doc (e.g. a facilitator renames the room and 
 **Alternatives considered.**
 
 - *Enumerate IndexedDB at dashboard mount.* Rejected. We'd need to call `indexedDB.databases()`, open each Yjs doc, wait for it to hydrate, and read `meta`. That's slow with many rooms and brittle (DB list isn't supported uniformly across browsers in Safari/Firefox private modes). The sidecar makes the read O(1) and the drift cost is bounded.
-- *Yjs index doc shared across the browser.* Rejected. A second `Y.Doc` would invite the same `y-partykit`/`y-indexeddb` machinery for a strictly local list — overkill for what's effectively a flat array in `localStorage`.
+- *Yjs index doc shared across the browser.* Rejected. A second `Y.Doc` would invite the same `y-partyserver`/`y-indexeddb` machinery for a strictly local list — overkill for what's effectively a flat array in `localStorage`.
 - *Dedicated `/create` route instead of a modal.* Rejected (user preference). The "New Retro" affordance is framed as a tile; a modal sits naturally inside the grid without forcing another routing surface or a back-button discontinuity.
 - *Phase badge on tile.* Rejected (user preference). Adds a state we'd have to keep fresh in the sidecar and crowds the tile. Trivially re-addable later by extending `RoomIndexEntry`.
 

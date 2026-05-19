@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { addCardUnder, createRoom, joinRoom } from './helpers';
 
 // Proves the late-joiner-bootstrap claim: a fresh client can rehydrate
-// from the PartyKit Durable Object even after the original creator has
+// from the sync Worker Durable Object even after the original creator has
 // closed their tab entirely. This is the specific guarantee that the
 // previous y-webrtc attempt couldn't deliver.
 
