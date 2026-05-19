@@ -27,7 +27,7 @@
   "portsAttributes": {
     "5173": { "label": "SvelteKit dev", "onAutoForward": "silent" },
     "4173": { "label": "SvelteKit preview", "onAutoForward": "silent" },
-    "1999": { "label": "PartyKit dev", "onAutoForward": "silent" }
+    "1999": { "label": "Sync worker dev", "onAutoForward": "silent" }
   },
   "customizations": {
     "vscode": {

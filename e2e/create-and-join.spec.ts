@@ -23,7 +23,7 @@ test('two clients can create and join the same room', async ({ browser }) => {
 	await pageB.goto(roomUrl);
 	await joinRoom(pageB, 'Bob');
 
-	// B sees the same room name + columns synced via the PartyKit DO.
+	// B sees the same room name + columns synced via the sync Worker DO.
 	await expect(pageB.getByRole('heading', { name: 'Sprint 42' })).toBeVisible();
 	await expect(pageB.getByRole('heading', { name: 'Start' })).toBeVisible();
 

@@ -1,7 +1,7 @@
 import { readable, type Readable } from 'svelte/store';
 import * as Y from 'yjs';
 import { IndexeddbPersistence } from 'y-indexeddb';
-import YPartyKitProvider from 'y-partykit/provider';
+import YProvider from 'y-partyserver/provider';
 
 export type Column = {
 	id: string;
@@ -10,15 +10,12 @@ export type Column = {
 
 // ─── Config ────────────────────────────────────────────────────────────────
 
-// VITE_PARTYKIT_HOST is required. The committed `.env` carries the dev default
+// VITE_SYNC_HOST is required. The committed `.env` carries the dev default
 // (localhost:1999); prod builds get it from the deploy target. Fail fast at
 // module load rather than silently connecting to the wrong place.
-const PARTYKIT_HOST =
-	typeof import.meta !== 'undefined' ? import.meta.env?.VITE_PARTYKIT_HOST : undefined;
-if (!PARTYKIT_HOST) {
-	throw new Error(
-		'VITE_PARTYKIT_HOST is not set. Add it to .env (dev) or your deploy target (prod).'
-	);
+const SYNC_HOST = typeof import.meta !== 'undefined' ? import.meta.env?.VITE_SYNC_HOST : undefined;
+if (!SYNC_HOST) {
+	throw new Error('VITE_SYNC_HOST is not set. Add it to .env (dev) or your deploy target (prod).');
 }
 
 // ─── Types ─────────────────────────────────────────────────────────────────
@@ -27,8 +24,8 @@ export type RoomId = string;
 
 export type OpenRoom = {
 	doc: Y.Doc;
-	awareness: YPartyKitProvider['awareness'];
-	provider: YPartyKitProvider;
+	awareness: YProvider['awareness'];
+	provider: YProvider;
 	persistence: IndexeddbPersistence;
 	destroy: () => void;
 };
@@ -155,14 +152,14 @@ export function isRoomId(value: unknown): value is RoomId {
 
 /**
  * Open the Y.Doc for a room: wires up local IndexedDB persistence and a
- * y-partykit provider against the Cloudflare Durable Object. Caller is
+ * y-partyserver provider against the Cloudflare Durable Object. Caller is
  * responsible for invoking destroy() when leaving the room (e.g. on Svelte
  * component teardown).
  */
 export function openRoomDoc(id: RoomId): OpenRoom {
 	const doc = new Y.Doc();
 	const persistence = new IndexeddbPersistence(`loco_retro:room:${id}`, doc);
-	const provider = new YPartyKitProvider(PARTYKIT_HOST, id, doc);
+	const provider = new YProvider(SYNC_HOST, id, doc);
 
 	return {
 		doc,

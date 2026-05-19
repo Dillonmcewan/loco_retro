@@ -16,12 +16,12 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
-		"dev:all": "VITE_PARTYKIT_HOST=localhost:1999 concurrently -n app,party -c blue,green \"pnpm dev\" \"pnpm party:dev\"",
-		"party:dev": "partykit dev",
-		"party:deploy": "partykit deploy",
+		"dev:all": "VITE_SYNC_HOST=localhost:1999 concurrently -n app,sync -c blue,green \"pnpm dev\" \"pnpm dev:sync\"",
+		"dev:sync": "wrangler dev --config wrangler.sync.jsonc --port 1999 --local",
 		"build": "vite build",
+		"deploy": "pnpm deploy:sync && pnpm deploy:app",
 		"deploy:app": "vite build && wrangler pages deploy .svelte-kit/cloudflare --project-name=loco-retro --branch=main --commit-dirty=true",
-		"deploy": "pnpm party:deploy && pnpm deploy:app",
+		"deploy:sync": "wrangler deploy --config wrangler.sync.jsonc",
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"format": "prettier --write .",
@@ -47,7 +47,6 @@
 		"eslint-plugin-svelte": "^3.17.1",
 		"globals": "^17.6.0",
 		"jsdom": "^29.1.1",
-		"partykit": "^0.0.115",
 		"prettier": "^3.8.3",
 		"prettier-plugin-svelte": "^3.5.2",
 		"svelte": "^5.55.8",
@@ -60,8 +59,9 @@
 	},
 	"dependencies": {
 		"@lucide/svelte": "^1.16.0",
+		"partyserver": "^0.5.6",
 		"y-indexeddb": "^9.0.12",
-		"y-partykit": "^0.0.33",
+		"y-partyserver": "^2.2.0",
 		"yjs": "^13.6.30"
 	}
 }

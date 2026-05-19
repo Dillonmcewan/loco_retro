@@ -20,7 +20,7 @@ Requires **Node 22** (see `.nvmrc`) and **pnpm 10**.
 
 ```sh
 pnpm install
-pnpm dev:all   # Vite on :5173 + PartyKit on :1999
+pnpm dev:all   # Vite on :5173 + sync Worker on :1999
 ```
 
 The dev container at `.devcontainer/devcontainer.json` works out of the box for VS Code Remote Containers and GitHub Codespaces.
@@ -34,7 +34,7 @@ The dev container at `.devcontainer/devcontainer.json` works out of the box for 
 | Type-check (svelte-check)         | `pnpm check`     |
 | Lint (prettier + eslint)          | `pnpm lint`      |
 
-`pnpm test:e2e` starts both PartyKit and the Vite dev server automatically via Playwright's `webServer` config; no setup needed beyond `pnpm install`.
+`pnpm test:e2e` starts both the sync Worker and the Vite dev server automatically via Playwright's `webServer` config; no setup needed beyond `pnpm install`.
 
 Tests live next to the code they cover (`*.test.ts` for unit/component, `*.spec.ts` under `e2e/` for Playwright).
 
