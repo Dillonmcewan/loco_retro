@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Circle from 'lucide-svelte/icons/circle';
-	import CheckCircle2 from 'lucide-svelte/icons/check-circle-2';
+	import Circle from '@lucide/svelte/icons/circle';
+	import CheckCircle2 from '@lucide/svelte/icons/check-circle-2';
 	import StatusBadge from './StatusBadge.svelte';
 
 	type Props = {

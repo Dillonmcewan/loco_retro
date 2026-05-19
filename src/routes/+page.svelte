@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import Plus from 'lucide-svelte/icons/plus';
-	import Sparkles from 'lucide-svelte/icons/sparkles';
+	import Plus from '@lucide/svelte/icons/plus';
+	import Sparkles from '@lucide/svelte/icons/sparkles';
 	import CardSurface from '$lib/CardSurface.svelte';
 	import CreateRoomModal from '$lib/CreateRoomModal.svelte';
 	import RoomTile from '$lib/RoomTile.svelte';

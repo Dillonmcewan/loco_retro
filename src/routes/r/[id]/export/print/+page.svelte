@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount, onDestroy, tick } from 'svelte';
-	import Printer from 'lucide-svelte/icons/printer';
+	import Printer from '@lucide/svelte/icons/printer';
 	import { ensureRoom, leaveRoom, type OpenRoom } from '$lib/room';
 	import { buildSnapshot, type ExportSnapshot } from '$lib/exporters';
 	import type { PageData } from './$types';

@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Minus from 'lucide-svelte/icons/minus';
-	import Plus from 'lucide-svelte/icons/plus';
+	import Minus from '@lucide/svelte/icons/minus';
+	import Plus from '@lucide/svelte/icons/plus';
 	import { tooltip } from './tooltip';
 
 	type Props = {

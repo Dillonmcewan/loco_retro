@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { templateKeyFromTitles, deriveTemplateLabel, type Template } from '$lib/templates';
 	import { MIN_COLUMNS, MAX_COLUMNS } from '$lib/room';
-	import X from 'lucide-svelte/icons/x';
-	import Plus from 'lucide-svelte/icons/plus';
+	import X from '@lucide/svelte/icons/x';
+	import Plus from '@lucide/svelte/icons/plus';
 	import { tick } from 'svelte';
 	import { tooltip } from '$lib/tooltip';
 

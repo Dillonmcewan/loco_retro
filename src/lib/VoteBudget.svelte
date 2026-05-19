@@ -1,7 +1,7 @@
 <script lang="ts">
-	import InfinityIcon from 'lucide-svelte/icons/infinity';
-	import CheckCircle2 from 'lucide-svelte/icons/check-circle-2';
-	import Circle from 'lucide-svelte/icons/circle';
+	import InfinityIcon from '@lucide/svelte/icons/infinity';
+	import CheckCircle2 from '@lucide/svelte/icons/check-circle-2';
+	import Circle from '@lucide/svelte/icons/circle';
 	import StatusBadge from './StatusBadge.svelte';
 
 	type Props = {

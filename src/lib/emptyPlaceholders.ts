@@ -1,9 +1,9 @@
-import Sparkles from 'lucide-svelte/icons/sparkles';
-import FlameKindling from 'lucide-svelte/icons/flame-kindling';
-import Music from 'lucide-svelte/icons/music';
-import Compass from 'lucide-svelte/icons/compass';
+import Sparkles from '@lucide/svelte/icons/sparkles';
+import FlameKindling from '@lucide/svelte/icons/flame-kindling';
+import Music from '@lucide/svelte/icons/music';
+import Compass from '@lucide/svelte/icons/compass';
 import { hashString } from './hash';
-import { Balloon, IceCreamCone, Rocket, Shovel } from 'lucide-svelte';
+import { Balloon, IceCreamCone, Rocket, Shovel } from '@lucide/svelte';
 
 export type Placeholder = {
 	Icon: typeof Sparkles;

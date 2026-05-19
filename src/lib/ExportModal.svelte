@@ -2,9 +2,9 @@
 	import CardSelector from '$lib/CardSelector.svelte';
 	import Modal from '$lib/Modal.svelte';
 	import type { ExportFormat } from '$lib/exporters';
-	import FileText from 'lucide-svelte/icons/file-text';
-	import FileSpreadsheet from 'lucide-svelte/icons/file-spreadsheet';
-	import FileType2 from 'lucide-svelte/icons/file-type-2';
+	import FileText from '@lucide/svelte/icons/file-text';
+	import FileSpreadsheet from '@lucide/svelte/icons/file-spreadsheet';
+	import FileType2 from '@lucide/svelte/icons/file-type-2';
 
 	type Props = {
 		open: boolean;
