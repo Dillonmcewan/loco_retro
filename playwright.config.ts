@@ -5,7 +5,7 @@ export default defineConfig({
 	testMatch: '**/*.spec.ts',
 	webServer: [
 		{
-			command: 'pnpm sync:dev',
+			command: 'pnpm dev:sync',
 			// wrangler dev (like partykit dev before it) is WebSockets-first; the
 			// HTTP root returns non-2xx, which Playwright 1.59+ treats as "not
 			// ready". `port` triggers a port-bound check (`isPortUsed`), which is
