@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import { createRoom, joinRoom } from './helpers';
 
 // Weaker than the planned "offline-reload" — Playwright 1.47 doesn't ship
-// page.routeWebSocket, so we can't cleanly disable the PartyKit WebSocket
+// page.routeWebSocket, so we can't cleanly disable the sync WebSocket
 // mid-test. This still verifies that a reload restores the room shell
 // (state comes from IndexedDB, the DO, or both — either way: it doesn't
 // get lost).
