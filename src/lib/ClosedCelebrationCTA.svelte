@@ -2,8 +2,8 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import Modal from '$lib/Modal.svelte';
-	import Download from 'lucide-svelte/icons/download';
-	import Home from 'lucide-svelte/icons/home';
+	import Download from '@lucide/svelte/icons/download';
+	import Home from '@lucide/svelte/icons/home';
 
 	type Props = {
 		open: boolean;

@@ -1,10 +1,10 @@
 <script lang="ts">
-	import Check from 'lucide-svelte/icons/check';
-	import CheckCircle2 from 'lucide-svelte/icons/check-circle-2';
-	import Circle from 'lucide-svelte/icons/circle';
-	import Pencil from 'lucide-svelte/icons/pencil';
-	import Trash2 from 'lucide-svelte/icons/trash-2';
-	import X from 'lucide-svelte/icons/x';
+	import Check from '@lucide/svelte/icons/check';
+	import CheckCircle2 from '@lucide/svelte/icons/check-circle-2';
+	import Circle from '@lucide/svelte/icons/circle';
+	import Pencil from '@lucide/svelte/icons/pencil';
+	import Trash2 from '@lucide/svelte/icons/trash-2';
+	import X from '@lucide/svelte/icons/x';
 	import type { Snippet } from 'svelte';
 	import type { Card as CardType, Phase } from './room';
 	import { autosize } from './autosize';

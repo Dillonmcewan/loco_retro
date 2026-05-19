@@ -4,7 +4,7 @@
 	import CardSelector from '$lib/CardSelector.svelte';
 	import ColumnEditor from '$lib/ColumnEditor.svelte';
 	import Modal from '$lib/Modal.svelte';
-	import Plus from 'lucide-svelte/icons/plus';
+	import Plus from '@lucide/svelte/icons/plus';
 
 	type Props = {
 		open: boolean;

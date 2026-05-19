@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Plus from 'lucide-svelte/icons/plus';
+	import Plus from '@lucide/svelte/icons/plus';
 	import { autosize } from './autosize';
 	import { tooltip } from './tooltip';
 

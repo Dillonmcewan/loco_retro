@@ -15,8 +15,8 @@
 	import Modal from '$lib/Modal.svelte';
 	import TemplatePickerModal from '$lib/TemplatePickerModal.svelte';
 	import { tooltip } from '$lib/tooltip';
-	import InfinityIcon from 'lucide-svelte/icons/infinity';
-	import HelpCircle from 'lucide-svelte/icons/help-circle';
+	import InfinityIcon from '@lucide/svelte/icons/infinity';
+	import HelpCircle from '@lucide/svelte/icons/help-circle';
 
 	type Props = {
 		open: boolean;

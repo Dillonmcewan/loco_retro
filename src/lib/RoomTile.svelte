@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import Edit3 from 'lucide-svelte/icons/edit-3';
-	import ThumbsUp from 'lucide-svelte/icons/thumbs-up';
-	import MessageSquare from 'lucide-svelte/icons/message-square';
-	import Check from 'lucide-svelte/icons/check';
+	import Edit3 from '@lucide/svelte/icons/edit-3';
+	import ThumbsUp from '@lucide/svelte/icons/thumbs-up';
+	import MessageSquare from '@lucide/svelte/icons/message-square';
+	import Check from '@lucide/svelte/icons/check';
 	import CardSurface from '$lib/CardSurface.svelte';
 	import { deriveTemplateLabel } from '$lib/templates';
 	import { formatRelative, type RoomIndexEntry } from '$lib/rooms';

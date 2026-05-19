@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Check from 'lucide-svelte/icons/check';
-	import CircleAlert from 'lucide-svelte/icons/circle-alert';
+	import Check from '@lucide/svelte/icons/check';
+	import CircleAlert from '@lucide/svelte/icons/circle-alert';
 
 	type Props = {
 		kind: 'success' | 'error';

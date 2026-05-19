@@ -32,10 +32,10 @@
 	} from '$lib/room';
 	import { getDisplayName, setDisplayName, getAuthorId } from '$lib/displayName';
 	import { upsertRoom, getRoom } from '$lib/rooms';
-	import Share2 from 'lucide-svelte/icons/share-2';
-	import Download from 'lucide-svelte/icons/download';
-	import Home from 'lucide-svelte/icons/home';
-	import Check from 'lucide-svelte/icons/check';
+	import Share2 from '@lucide/svelte/icons/share-2';
+	import Download from '@lucide/svelte/icons/download';
+	import Home from '@lucide/svelte/icons/home';
+	import Check from '@lucide/svelte/icons/check';
 	import { tooltip } from '$lib/tooltip';
 	import { placeholderFor } from '$lib/emptyPlaceholders';
 	import { colorsByParticipant } from '$lib/participantColor';
