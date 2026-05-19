@@ -9,6 +9,12 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  actions: read
+  checks: read
+  packages: read
+
 jobs:
   check:
     name: check
