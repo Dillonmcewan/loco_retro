@@ -39,8 +39,7 @@
 		use:autosize={text}
 		{placeholder}
 		aria-label="New card text"
-		rows="1"
-	></textarea>
+		rows="1"></textarea>
 	<button
 		type="submit"
 		aria-label="Add card"

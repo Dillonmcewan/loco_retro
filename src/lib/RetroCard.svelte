@@ -162,8 +162,7 @@
 				onblur={onTextareaBlur}
 				use:autosize={draft}
 				aria-label="Edit card"
-				rows="1"
-			></textarea>
+				rows="1"></textarea>
 		{:else}
 			<p class="text" class:editable={canMutate} ondblclick={canMutate ? startEdit : undefined}>
 				{card.text}

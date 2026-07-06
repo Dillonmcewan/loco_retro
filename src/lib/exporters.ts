@@ -45,9 +45,10 @@ export function buildSnapshot(doc: Y.Doc, now: number = Date.now()): ExportSnaps
 	const totals = readVoteTotals(doc);
 
 	const columns: ExportColumn[] = columnsRaw.map((col) => {
-		const cards = (cardsByColumn[col.id] ?? []).map(
-			(c): ExportCard => ({ ...c, votes: totals[c.id] ?? 0 })
-		);
+		const cards = (cardsByColumn[col.id] ?? []).map((c): ExportCard => ({
+			...c,
+			votes: totals[c.id] ?? 0
+		}));
 		cards.sort(compareCards);
 		return { id: col.id, title: col.title, cards };
 	});
